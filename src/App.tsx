@@ -152,7 +152,7 @@ const Wordmark = () => {
   );
 };
 
-const MenuIcon = (props) => (
+const MenuIcon = (props:any) => (
   <svg
     {...props}
     xmlns="http://www.w3.org/2000/svg"
@@ -171,7 +171,7 @@ const MenuIcon = (props) => (
   </svg>
 );
 
-const CheckCircleIcon = (props) => (
+const CheckCircleIcon = (props:any) => (
   <svg
     {...props}
     xmlns="http://www.w3.org/2000/svg"
@@ -272,6 +272,7 @@ const Header = () => {
                 <Button asChild className="mt-4">
                   <a href="#cta">{content.header.ctaButton}</a>
                 </Button>
+                <AppButtons />
               </div>
             </SheetContent>
           </Sheet>
@@ -296,7 +297,7 @@ const HeroSection = () => (
           src="https://placehold.co/1000x500/18181b/ffffff?text=App+Screenshot"
           alt="Merim.bg App Screenshot"
           className="rounded-2xl shadow-2xl mx-auto ring-1 ring-white/10"
-          onError={(e) => {
+          onError={(e:any) => {
             e.target.onerror = null;
             e.target.src =
               "https://placehold.co/1000x500/18181b/ffffff?text=App+Screenshot";
@@ -340,7 +341,7 @@ const SolutionSection = () => (
             src="https://placehold.co/600x600/18181b/ffffff?text=Community"
             alt="Community of shoppers"
             className="rounded-2xl shadow-xl"
-            onError={(e) => {
+            onError={(e:any) => {
               e.target.onerror = null;
               e.target.src =
                 "https://placehold.co/600x600/18181b/ffffff?text=Community";
@@ -449,7 +450,7 @@ const FeaturesSection = () => (
             src="https://placehold.co/600x500/18181b/ffffff?text=Features"
             alt="App Features Illustration"
             className="rounded-2xl shadow-xl"
-            onError={(e) => {
+            onError={(e:any) => {
               e.target.onerror = null;
               e.target.src =
                 "https://placehold.co/600x500/18181b/ffffff?text=Features";
