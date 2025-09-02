@@ -1,53 +1,76 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { content } from "@/i18n/bg";
+import { getAllBlogPosts } from "@/utils/blog";
+import { Calendar, ArrowRight } from "lucide-react";
 
 const BlogPage: React.FC = () => {
+  const blogPosts = getAllBlogPosts();
+  
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('bg-BG', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch {
+      return dateString;
+    }
+  };
+
   return (
     <div className="py-20 sm:py-24 bg-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground mb-8">
-            {content.pages.blog.title}
-          </h1>
+        <div className="max-w-6xl mx-auto">
+          <header className="text-center mb-12">
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground mb-4">
+              {content.pages.blog.title}
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Последни новини, съвети за пазаруване и анализи на пазара от екипа на Merim.bg
+            </p>
+          </header>
           
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <Card>
-              <CardHeader>
-                <CardTitle>Как да спестите пари при пазаруване</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground text-sm">
-                  Научете как да използвате Merim.bg за да намерите най-добрите цени.
-                </p>
-                <p className="text-xs text-muted-foreground mt-2">2025-01-15</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Инфлацията и нашето приложение</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground text-sm">
-                  Как технологията помага в борбата с растящите цени.
-                </p>
-                <p className="text-xs text-muted-foreground mt-2">2025-01-10</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Новини от общността</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground text-sm">
-                  Последни новини и актуализации от потребителите ни.
-                </p>
-                <p className="text-xs text-muted-foreground mt-2">2025-01-05</p>
-              </CardContent>
-            </Card>
-          </div>
+          {blogPosts.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">
+                Все още няма публикувани статии.
+              </p>
+            </div>
+          ) : (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {blogPosts.map((post) => (
+                <Card key={post.slug} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                  <CardHeader>
+                    <CardTitle className="group-hover:text-primary transition-colors line-clamp-2">
+                      {post.title}
+                    </CardTitle>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Calendar className="h-4 w-4" />
+                      <time dateTime={post.date}>
+                        {formatDate(post.date)}
+                      </time>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground text-sm mb-4 line-clamp-3">
+                      {post.excerpt}
+                    </p>
+                    <Link
+                      to={`/blog/${post.slug}`}
+                      className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors text-sm font-medium"
+                    >
+                      Прочети повече
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
