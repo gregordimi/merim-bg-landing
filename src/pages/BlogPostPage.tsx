@@ -86,7 +86,7 @@ const BlogPostPage: React.FC = () => {
           </header>
           
           {/* Article content */}
-          <article className="prose prose-lg max-w-none">
+          <article className="max-w-none">
             <BlogMDXProvider>
               <post.content />
             </BlogMDXProvider>
