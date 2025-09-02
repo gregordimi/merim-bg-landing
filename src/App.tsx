@@ -9,18 +9,18 @@ const content = {
   seo: {
     title: "Merim.bg - Цените. Следени от всички.",
     description:
-      "Присъедини се към нашата общност. Вземете информиран избор за пазаруване с Merim.bg. Сравни цените на продукти от всеки магазин, директно от телефона си.",
+      "Присъедини се към общността на Мерим.бг и вземете инфоррмиран избор за всяка покупка. Сравнете цените при продукти от всеки магазин, директно от телефона си.",
     keywords:
       "цени, сравнение на цени, спестяване, пазаруване, инфлация, еврозона, България, супермаркет, баркод скенер",
   },
   header: {
     nav: { howItWorks: "Как работи", aboutUs: "За нас", blog: "Блог" },
-    ctaButton: "Изтегли приложението",
+    ctaButton: "Свали безплатно",
   },
   hero: {
-    title: "Цените. Следена от всички.",
+    title: "Цените. Следени от всички.",
     subtitle:
-      "Присъедини се към нашата общност. Вземете информиран избор за пазаруване с Merim.bg. Сравни цените на продукти от всеки магазин, директно от телефона си.",
+      "Присъедини се към общността на Мерим(.бг). Взимайте инфоррмиран избор относно всяка покупка. Сравнявайте цените при продукти от всеки магазин, директно от телефона си.",
   },
   appButtons: {
     googlePlay: "Google Play",
@@ -29,28 +29,28 @@ const content = {
     downloadOn: "СВАЛИ ОТ",
   },
   problem: {
-    title: "Притесняват ли те растящите цени?",
+    title: "Притеснявате се растящите цени?",
     cards: [
       {
         title: "Инфлация и Еврозона",
-        text: "С наближаващото приемане на еврото и постоянната инфлация, потребителите се притесняват от спекулативни цени.",
+        text: "С наближаващото приемане на еврото и постоянната инфлация, потребителите основателно се притесняват от спекулативни цени.",
       },
       {
-        title: "Чувство, че плащаш твърде много",
-        text: "Липсата на прозрачност води до финансово напрежение и усещането, че губиш контрол над бюджета.",
+        title: "Чувство, че плащате твърде много. Не сте сами.",
+        text: "Липсата на прозрачност води до финансово напрежение и усещането за загуба на контрол над разходите.",
       },
       {
-        title: "Трудно е да помниш всичко",
-        text: "Да помниш точните цени на десетки продукти от различни магазини е почти невъзможно.",
+        title: "Следенето на цените е трудно",
+        text: "Да запомните точните цени на стотици продукти от различни магазини е почти невъзможно.",
       },
     ],
   },
   solution: {
-    title: "Силата е в твоите ръце. И в твоя телефон.",
+    title: "Силата е във вашите ръце. Или по-точно в телефона ви.",
     text: "Merim.bg е безплатно мобилно приложение, което обединява силата на всички потребители. Чрез споделяне на информация в реално време, ние създаваме прозрачен пазар, където всеки може да направи най-добрия избор.",
   },
   howItWorks: {
-    title: "Лесно е като 1-2-3",
+    title: "Лесно, Безплатно и Достъпно за всички",
     steps: [
       {
         title: "Сканирай",
@@ -58,11 +58,11 @@ const content = {
       },
       {
         title: "Сравни",
-        text: "Виж цените на същия продукт в други магазини и исторически данни.",
+        text: "Виж цените на същия продукт в други магазини, както и цената в миналото.",
       },
       {
         title: "Спести",
-        text: "Вземи информирано решение и получи най-добрата стойност.",
+        text: "Вземи информирано решение къде да пазаруваш.",
       },
     ],
   },
@@ -75,7 +75,7 @@ const content = {
       },
       {
         title: "Пазарувай информирано:",
-        text: "Вземай решения, базирани на реални данни от хиляди потребители.",
+        text: "Вземай решения, базирани на данни от хиляди потребители.",
       },
       {
         title: "Бъди част от общност:",
@@ -92,7 +92,7 @@ const content = {
     list: [
       "База данни с цени в реално време",
       "Търсене и сравнение на продукти",
-      "Сканиране на баркодове и касови бележки",
+      "Сканиране на баркодове, касови бележки и етиктети",
       "Исторически данни за цените",
       'Индикатори "Добра" / "Лоша" сделка',
       "Рангове на магазини и продукти",
@@ -104,7 +104,7 @@ const content = {
   },
   footer: {
     mission:
-      "Нашата мисия е да върнем силата в ръцете на потребителя чрез прозрачност на цените.",
+      "Нашата мисия е да дадем силата на потребителите чрез прозрачност на цените.",
     columns: [
       {
         title: "Продукт",
@@ -117,7 +117,7 @@ const content = {
       {
         title: "Компания",
         links: [
-          { text: "За нас", href: "#about-us" },
+          { text: "За нас", href: "/about" },
           { text: "Блог", href: "#blog" },
           { text: "За бизнеса", href: "#" },
         ],
@@ -199,7 +199,7 @@ const AppButtons = () => (
 </div>
   );
 // --- Page Sections ---
-const Header = () => {
+export const Header = () => {
   return (
     <header className="bg-background/80 backdrop-blur-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-20">
@@ -292,18 +292,50 @@ const HeroSection = () => (
         {content.hero.subtitle}
       </p>
       <AppButtons />
-      <div className="mt-12 relative">
-        <img
-          src="https://placehold.co/1000x500/18181b/ffffff?text=App+Screenshot"
-          alt="Merim.bg App Screenshot"
-          className="rounded-2xl shadow-2xl mx-auto ring-1 ring-white/10"
-          onError={(e:any) => {
-            e.target.onerror = null;
-            e.target.src =
-              "https://placehold.co/1000x500/18181b/ffffff?text=App+Screenshot";
-          }}
-        />
+
+      <div className="mt-16 w-full max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 items-start justify-center">
+          <Card className="w-full h-80 md:h-[600px] p-0">
+            <div className="w-full h-full overflow-hidden rounded-2xl">
+              <img
+                src="https://placehold.co/300x600/9CA3AF/E5E7EB?text=App+Screenshot+1"
+                alt="App Screenshot 1"
+                className="w-full h-full object-cover transform transition-transform duration-500 hover:scale-110"
+              />
+            </div>
+          </Card>
+          <Card className="w-full h-80 md:h-[600px] p-0">
+            <div className="w-full h-full overflow-hidden rounded-2xl">
+              <img
+                src="https://placehold.co/300x600/9CA3AF/E5E7EB?text=App+Screenshot+2"
+                alt="App Screenshot 2"
+                className="w-full h-full object-cover transform transition-transform duration-500 hover:scale-110"
+              />
+            </div>
+          </Card>
+          <Card className="w-full h-80 md:h-[600px] p-0">
+            <div className="w-full h-full overflow-hidden rounded-2xl">
+              <img
+                src="https://placehold.co/300x600/9CA3AF/E5E7EB?text=App+Screenshot+3"
+                alt="App Screenshot 3"
+                className="w-full h-full object-cover transform transition-transform duration-500 hover:scale-110"
+              />
+            </div>
+          </Card>
+          <Card className="w-full h-80 md:h-[600px] p-0">
+            <div className="w-full h-full overflow-hidden rounded-2xl">
+              <img
+                src="https://placehold.co/300x600/9CA3AF/E5E7EB?text=App+Screenshot+4"
+                alt="App Screenshot 4"
+                className="w-full h-full object-cover transform transition-transform duration-500 hover:scale-110"
+              />
+            </div>
+          </Card>
+        </div>
       </div>
+  
+     
+
     </div>
   </section>
 );
@@ -478,7 +510,7 @@ const CTASection = () => (
   </section>
 );
 
-const Footer = () => (
+export const Footer = () => (
   <footer className="py-12 bg-secondary/10">
     <div className="container mx-auto px-4 sm:px-6 lg:px-8">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
