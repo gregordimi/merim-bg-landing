@@ -1,19 +1,28 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Suspense, lazy } from "react";
 import { ThemeProvider } from "@/components/theme-provider";
-import BlogMDXProvider from "@/components/BlogMDXProvider";
 import Layout from "@/layouts/Layout";
 import HomePage from "@/pages/HomePage";
-import AboutPage from "@/pages/AboutPage";
-import BlogPage from "@/pages/BlogPage";
-import BlogPostPage from "@/pages/BlogPostPage";
-import TermsPage from "@/pages/TermsPage";
-import PrivacyPage from "@/pages/PrivacyPage";
+
+// Lazy load pages that aren't immediately needed
+const AboutPage = lazy(() => import("@/pages/AboutPage"));
+const BlogPage = lazy(() => import("@/pages/BlogPage"));
+const BlogPostPage = lazy(() => import("@/pages/BlogPostPage"));
+const TermsPage = lazy(() => import("@/pages/TermsPage"));
+const PrivacyPage = lazy(() => import("@/pages/PrivacyPage"));
+
+// Loading component
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+  </div>
+);
 
 function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <BlogMDXProvider>
-        <Router>
+      <Router>
+        <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/" element={<Layout />}>
               <Route index element={<HomePage />} />
@@ -24,8 +33,8 @@ function App() {
               <Route path="privacy" element={<PrivacyPage />} />
             </Route>
           </Routes>
-        </Router>
-      </BlogMDXProvider>
+        </Suspense>
+      </Router>
     </ThemeProvider>
   );
 }

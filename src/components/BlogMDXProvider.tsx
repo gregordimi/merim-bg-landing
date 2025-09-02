@@ -1,10 +1,25 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { MDXProvider } from "@mdx-js/react";
-import Chart from "@/components/Chart";
+
+// Lazy load Chart component to reduce bundle size
+const Chart = lazy(() => import("@/components/Chart"));
+
+// Chart loading fallback
+const ChartLoader = () => (
+  <div className="my-6 p-4 border rounded-lg bg-card">
+    <div className="flex items-center justify-center h-64">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    </div>
+  </div>
+);
 
 // Components that will be available in all MDX files
 const components = {
-  Chart,
+  Chart: (props: any) => (
+    <Suspense fallback={<ChartLoader />}>
+      <Chart {...props} />
+    </Suspense>
+  ),
   // Add more components here as needed
   h1: (props: any) => (
     <h1
