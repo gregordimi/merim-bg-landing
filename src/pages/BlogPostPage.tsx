@@ -1,7 +1,6 @@
 import React from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { getBlogPostBySlug } from '@/utils/blog';
-import BlogMDXProvider from '@/components/BlogMDXProvider';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -87,9 +86,7 @@ const BlogPostPage: React.FC = () => {
           
           {/* Article content */}
           <article className="max-w-none">
-            <BlogMDXProvider>
-              <post.content />
-            </BlogMDXProvider>
+            <post.content />
           </article>
           
           {/* Article footer */}

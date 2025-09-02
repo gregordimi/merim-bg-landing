@@ -229,7 +229,7 @@ We welcome contributions to improve Merim.bg! Please read our documentation befo
 
 ## 📄 License
 
-Copyright © 2025 Gregor Dimitrov. All rights reserved.
+Copyright © 2025 Grigor Dimitrov. All rights reserved.
 
 This project is proprietary software. Unauthorized copying, modification, distribution, or use of this software is strictly prohibited without explicit written permission from the copyright holder.
 
@@ -243,7 +243,7 @@ This project is proprietary software. Unauthorized copying, modification, distri
 
 For questions, feedback, or collaboration opportunities:
 
-- **Project Maintainer**: Gregor Dimitrov
+- **Project Maintainer**: Grigor Dimitrov
 - **GitHub**: [@gregordimi](https://github.com/gregordimi)
 - **Email**: [Contact through GitHub]
 

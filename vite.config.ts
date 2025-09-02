@@ -5,6 +5,7 @@ import mdx from "@mdx-js/rollup"
 import { defineConfig } from "vite"
 import remarkFrontmatter from 'remark-frontmatter'
 import remarkMdxFrontmatter from 'remark-mdx-frontmatter'
+import remarkGfm from 'remark-gfm'
 
 // https://vite.dev/config/
 /** @type {import('vite').UserConfig} */
@@ -15,9 +16,11 @@ export default defineConfig({
     mdx({
       jsxImportSource: "react",
       remarkPlugins: [
+        remarkGfm,
         remarkFrontmatter,
         [remarkMdxFrontmatter, { name: 'frontmatter' }]
       ],
+      providerImportSource: "@mdx-js/react",
     }),
   ],
   resolve: {
