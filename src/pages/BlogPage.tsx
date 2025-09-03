@@ -30,14 +30,14 @@ const BlogPage: React.FC = () => {
               {content.pages.blog.title}
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Последни новини, съвети за пазаруване и анализи на пазара от екипа на Merim.bg
+              {content.pages.blog.description}
             </p>
           </header>
           
           {blogPosts.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground">
-                Все още няма публикувани статии.
+                {content.pages.blog.noarticles}
               </p>
             </div>
           ) : (
@@ -63,7 +63,7 @@ const BlogPage: React.FC = () => {
                       to={`/blog/${post.slug}`}
                       className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors text-sm font-medium"
                     >
-                      Прочети повече
+                     {content.pages.blog.readmore}
                       <ArrowRight className="h-4 w-4" />
                     </Link>
                   </CardContent>

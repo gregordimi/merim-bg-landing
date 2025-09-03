@@ -8,28 +8,16 @@ const AboutPage: React.FC = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground mb-8">
-            {content.pages.about.title}
+            {content.pages.about.pagetitle}
           </h1>
           
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle>Нашата мисия</CardTitle>
+              <CardTitle>{content.pages.about.title}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
                 {content.pages.about.content}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Как работим</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Ние създаваме технология, която позволява на потребителите да споделят 
-                информация за цени в реално време, създавайки прозрачен пазар за всички.
               </p>
             </CardContent>
           </Card>
