@@ -45,7 +45,7 @@ const HeroSection = () => (
           <Card className="w-full h-80 md:h-[600px] p-0">
             <div className="w-full h-full overflow-hidden rounded-2xl">
               <img
-                src="https://placehold.co/300x600/9CA3AF/E5E7EB?text=App+Screenshot+1"
+                src="https://placehold.co/300x600/9CA3AF/E5E7EB?text=Екран+1"
                 alt="App Screenshot 1"
                 className="w-full h-full object-cover transform transition-transform duration-500 hover:scale-110"
               />
@@ -54,7 +54,7 @@ const HeroSection = () => (
           <Card className="w-full h-80 md:h-[600px] p-0">
             <div className="w-full h-full overflow-hidden rounded-2xl">
               <img
-                src="https://placehold.co/300x600/9CA3AF/E5E7EB?text=App+Screenshot+2"
+                src="https://placehold.co/300x600/9CA3AF/E5E7EB?text=Екран+2"
                 alt="App Screenshot 2"
                 className="w-full h-full object-cover transform transition-transform duration-500 hover:scale-110"
               />
@@ -63,7 +63,7 @@ const HeroSection = () => (
           <Card className="w-full h-80 md:h-[600px] p-0">
             <div className="w-full h-full overflow-hidden rounded-2xl">
               <img
-                src="https://placehold.co/300x600/9CA3AF/E5E7EB?text=App+Screenshot+3"
+                src="https://placehold.co/300x600/9CA3AF/E5E7EB?text=Екран+3"
                 alt="App Screenshot 3"
                 className="w-full h-full object-cover transform transition-transform duration-500 hover:scale-110"
               />
@@ -72,7 +72,7 @@ const HeroSection = () => (
           <Card className="w-full h-80 md:h-[600px] p-0">
             <div className="w-full h-full overflow-hidden rounded-2xl">
               <img
-                src="https://placehold.co/300x600/9CA3AF/E5E7EB?text=App+Screenshot+4"
+                src="https://placehold.co/300x600/9CA3AF/E5E7EB?text=Екран+4"
                 alt="App Screenshot 4"
                 className="w-full h-full object-cover transform transition-transform duration-500 hover:scale-110"
               />
@@ -114,13 +114,13 @@ const SolutionSection = () => (
       <div className="grid md:grid-cols-2 gap-12 items-center">
         <div>
           <img
-            src="https://placehold.co/600x600/18181b/ffffff?text=Community"
+            src="https://placehold.co/600x600/18181b/ffffff?text=Общност"
             alt="Community of shoppers"
             className="rounded-2xl shadow-xl"
             onError={(e: any) => {
               e.target.onerror = null;
               e.target.src =
-                "https://placehold.co/600x600/18181b/ffffff?text=Community";
+                "https://placehold.co/600x600/18181b/ffffff?text=Общност";
             }}
           />
         </div>
@@ -223,13 +223,13 @@ const FeaturesSection = () => (
         </div>
         <div>
           <img
-            src="https://placehold.co/600x500/18181b/ffffff?text=Features"
+            src="https://placehold.co/600x500/18181b/ffffff?text=Функции"
             alt="App Features Illustration"
             className="rounded-2xl shadow-xl"
             onError={(e: any) => {
               e.target.onerror = null;
               e.target.src =
-                "https://placehold.co/600x500/18181b/ffffff?text=Features";
+                "https://placehold.co/600x500/18181b/ffffff?text=Функции";
             }}
           />
         </div>

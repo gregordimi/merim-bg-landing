@@ -13,14 +13,35 @@ const ChartLoader = () => (
   </div>
 );
 
+// --- NEW COLUMN COMPONENTS ---
+// Container for the two-column layout.
+// It's responsive: 1 column on small screens, 2 on medium and larger.
+const Columns = ({ children }: { children: React.ReactNode }) => (
+  <div className="my-8 grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+    {children}
+  </div>
+);
+
+// Wrapper for the content within a single column.
+const Column = ({ children }: { children: React.ReactNode }) => (
+  <div className="flex flex-col space-y-4">{children}</div>
+);
+
+
 // Components that will be available in all MDX files
 const components = {
+  // Add the new column components here
+  Columns,
+  Column,
+
+  // Chart component with lazy loading
   Chart: (props: any) => (
     <Suspense fallback={<ChartLoader />}>
       <Chart {...props} />
     </Suspense>
   ),
-  // Add more components here as needed
+  
+  // All your original styled components
   h1: (props: any) => (
     <h1
       className="text-3xl font-bold mb-4 mt-6 text-foreground first:mt-0"

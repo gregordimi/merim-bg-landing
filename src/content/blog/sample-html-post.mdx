@@ -1,0 +1,87 @@
+---
+title: "5 начина да оптимизирате пазарската си листа"
+date: "2025-01-12"
+excerpt: "Практични съвети за планиране на покупки и максимално спестяване."
+---
+
+# 5 начина да оптимизирате пазарската си листа
+
+    <div class="container mx-auto p-4 md:p-8">
+
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-[#003F5C] mb-4">Инфлацията в България: Поглед след пандемията</h1>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">Интерактивен анализ на причините, развитието и въздействието на инфлационните процеси в страната от 2020 г. насам.</p>
+        </header>
+
+        <main class="space-y-12">
+            
+            <section id="peak-inflation" class="text-center">
+                 <div class="kpi-card max-w-sm mx-auto bg-gradient-to-br from-[#EF5675] to-[#BC5090]">
+                    <h3 class="text-2xl font-semibold text-white">Пикова инфлация (ХИПЦ)</h3>
+                    <p class="text-6xl font-bold text-white my-4">15.3%</p>
+                    <p class="text-lg text-white">септември 2022 г.</p>
+                </div>
+                <p class="mt-4 text-gray-600 max-w-2xl mx-auto">През есента на 2022 г. инфлацията в България достигна своя връх за последните десетилетия, оказвайки значителен натиск върху домакинствата и бизнеса.</p>
+            </section>
+
+            <section id="inflation-trend">
+                <div class="bg-white rounded-lg shadow-md p-4 md:p-6">
+                    <h2 class="text-2xl font-bold text-[#003F5C] mb-2 text-center">Динамика на годишната инфлация (ХИПЦ), 2020-2025</h2>
+                    <p class="text-center text-gray-600 mb-6">Графиката проследява процента на изменение на Хармонизирания индекс на потребителските цени (ХИПЦ) на годишна база. Вижда се резкият скок през 2021-2022 г. и последващото плавно забавяне на темпа.</p>
+                    <div class="chart-container h-[40vh] max-h-[500px]">
+                        <canvas id="hicpTrendChart"></canvas>
+                    </div>
+                </div>
+            </section>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <section id="inflation-comparison">
+                    <div class="bg-white rounded-lg shadow-md p-4 md:p-6 h-full">
+                        <h2 class="text-2xl font-bold text-[#003F5C] mb-2 text-center">Сравнение на инфлацията: България vs. Еврозона</h2>
+                        <p class="text-center text-gray-600 mb-6">Сравнението показва, че макар тенденциите да са сходни, инфлацията в България достига по-високи върхови стойности и се задържа на по-високи нива в сравнение със средното за Еврозоната.</p>
+                        <div class="chart-container">
+                            <canvas id="inflationComparisonChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="inflation-breakdown">
+                    <div class="bg-white rounded-lg shadow-md p-4 md:p-6 h-full">
+                        <h2 class="text-2xl font-bold text-[#003F5C] mb-2 text-center">Структура на инфлацията (Принос към пика през 2022 г.)</h2>
+                         <p class="text-center text-gray-600 mb-6">Най-голям принос за високата инфлация имат цените на хранителните продукти, енергията (електроенергия, газ, горива) и транспорта, които заедно формират над половината от общото поскъпване.</p>
+                        <div class="chart-container">
+                            <canvas id="inflationBreakdownChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            
+            <section id="drivers">
+                <div class="bg-white rounded-lg shadow-md p-4 md:p-6">
+                    <h2 class="text-2xl font-bold text-[#003F5C] mb-2 text-center">Основни двигатели на инфлацията</h2>
+                    <p class="text-center text-gray-600 mb-8 max-w-3xl mx-auto">Инфлационният процес е комплексен, задвижван както от външни, така и от вътрешни фактори. Глобалните шокове при цените на енергията и нарушените вериги на доставки поставиха началото, което беше последвано от вторични ефекти в икономиката.</p>
+                    <div class="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-4">
+                        <div class="flow-step"><span>1. Глобални шокове <br/>(Енергия, Суровини)</span></div>
+                        <div class="flow-arrow"><span>➔</span></div>
+                        <div class="flow-step"><span>2. Нарушени вериги на доставки</span></div>
+                        <div class="flow-arrow"><span>➔</span></div>
+                        <div class="flow-step"><span>3. Ръст на цени на производител</span></div>
+                        <div class="flow-arrow"><span>➔</span></div>
+                        <div class="flow-step"><span>4. Ръст на потребителски цени</span></div>
+                        <div class="flow-arrow"><span>➔</span></div>
+                        <div class="flow-step"><span>5. Натиск за ръст на доходите</span></div>
+                    </div>
+                </div>
+            </section>
+            
+        </main>
+
+        <footer class="text-center mt-12 pt-8 border-t border-gray-300">
+            <p class="text-gray-600">Данните са базирани на публична информация от следните източници:</p>
+            <div class="flex justify-center space-x-6 mt-4">
+                <a href="https://www.nsi.bg/" target="_blank" class="text-[#003F5C] hover:text-[#7A5195] transition-colors">Национален статистически институт (НСИ)</a>
+                <a href="https://www.bnb.bg/" target="_blank" class="text-[#003F5C] hover:text-[#7A5195] transition-colors">Българска народна банка (БНБ)</a>
+                <a href="https://ec.europa.eu/eurostat" target="_blank" class="text-[#003F5C] hover:text-[#7A5195] transition-colors">Евростат</a>
+            </div>
+        </footer>
+    </div>
