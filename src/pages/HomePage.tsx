@@ -2,6 +2,7 @@ import React from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { AppStoreButton, GooglePlayButton } from "@/components/app-store-buttons";
 import { content } from "@/i18n/bg";
+import { RegisterDialogue } from "@/components/register-dialogue";
 
 const CheckCircleIcon = (props: any) => (
   <svg
@@ -24,8 +25,15 @@ const CheckCircleIcon = (props: any) => (
 // --- Reusable UI Components ---
 const AppButtons = () => (
   <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
-    <GooglePlayButton size="lg" className="w-36" href="" />
-    <AppStoreButton size="lg" className="w-36" href="" />
+    <RegisterDialogue>
+      <GooglePlayButton size="lg" className="w-36" />
+    </RegisterDialogue>
+    <RegisterDialogue>
+      <AppStoreButton size="lg" className="w-36" />
+    </RegisterDialogue>
+    <div className="text-sm text-muted-foreground mt-2">
+      {content.appButtons.comingSoon}
+    </div>
   </div>
 );
 
