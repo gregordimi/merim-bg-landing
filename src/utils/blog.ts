@@ -1,27 +1,27 @@
 import { lazy } from "react";
 
-// Lazy load MDX files to reduce initial bundle size
-const spestetePariBlog = lazy(
-  () => import("/src/content/blog/spestete-pari.mdx")
-);
-const inflatsiaBlog = lazy(
-  () => import("/src/content/blog/inflatsiya-i-tehnologii.mdx")
-);
-const noviniOtObshtnosttaBlog = lazy(
-  () => import("/src/content/blog/novini-ot-obshtnostta.mdx")
-);
-const optimiziranePazarskaListaBlog = lazy(
-  () => import("/src/content/blog/optimizirane-pazarska-lista.mdx")
-);
-const analizNaPazara2025Blog = lazy(
-  () => import("/src/content/blog/analiz-na-pazara-2025.mdx")
-);
-const aiPazaruvanneBlog = lazy(
-  () => import("/src/content/blog/ai-pazaruване.mdx")
-);
-const statistikaIDanniBlog = lazy(
-  () => import("/src/content/blog/statistika-i-danni.mdx")
-);
+// // Lazy load MDX files to reduce initial bundle size
+// const spestetePariBlog = lazy(
+//   () => import("/src/content/blog/spestete-pari.mdx")
+// );
+// const inflatsiaBlog = lazy(
+//   () => import("/src/content/blog/inflatsiya-i-tehnologii.mdx")
+// );
+// const noviniOtObshtnosttaBlog = lazy(
+//   () => import("/src/content/blog/novini-ot-obshtnostta.mdx")
+// );
+// const optimiziranePazarskaListaBlog = lazy(
+//   () => import("/src/content/blog/optimizirane-pazarska-lista.mdx")
+// );
+// const analizNaPazara2025Blog = lazy(
+//   () => import("/src/content/blog/analiz-na-pazara-2025.mdx")
+// );
+// const aiPazaruvanneBlog = lazy(
+//   () => import("/src/content/blog/ai-pazaruване.mdx")
+// );
+// const statistikaIDanniBlog = lazy(
+//   () => import("/src/content/blog/statistika-i-danni.mdx")
+// );
 
 const postConvid = lazy(
   () => import("/src/content/blog/post-covid-inflation.mdx")

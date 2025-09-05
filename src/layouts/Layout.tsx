@@ -58,22 +58,49 @@ const useScrollToSection = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  return (sectionId: string) => {
-    if (location.pathname === "/") {
-      // Already on homepage, just scroll
-      const section = document.getElementById(sectionId);
-      if (section) {
-        section.scrollIntoView({ behavior: "smooth" });
-      }
-    } else {
-      // Navigate to homepage first, then scroll
-      navigate("/");
-      setTimeout(() => {
+  return (href: string) => {
+    // Handle different href formats
+    if (href.startsWith("/#")) {
+      // Homepage section link (e.g., "/#how-it-works")
+      const sectionId = href.substring(2);
+      if (location.pathname === "/") {
+        // Already on homepage, just scroll
         const section = document.getElementById(sectionId);
         if (section) {
           section.scrollIntoView({ behavior: "smooth" });
         }
-      }, 100);
+      } else {
+        // Navigate to homepage first, then scroll
+        navigate("/");
+        setTimeout(() => {
+          const section = document.getElementById(sectionId);
+          if (section) {
+            section.scrollIntoView({ behavior: "smooth" });
+          }
+        }, 100);
+      }
+    } else if (href.includes("#")) {
+      // Other page with anchor (e.g., "/about#contact")
+      const [path, sectionId] = href.split("#");
+      if (location.pathname === path) {
+        // Already on the target page, just scroll
+        const section = document.getElementById(sectionId);
+        if (section) {
+          section.scrollIntoView({ behavior: "smooth" });
+        }
+      } else {
+        // Navigate to the page first, then scroll
+        navigate(path);
+        setTimeout(() => {
+          const section = document.getElementById(sectionId);
+          if (section) {
+            section.scrollIntoView({ behavior: "smooth" });
+          }
+        }, 100);
+      }
+    } else {
+      // Regular navigation without anchor
+      navigate(href);
     }
   };
 };
@@ -95,7 +122,7 @@ export const Header = () => {
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-6">
           <button
-            onClick={() => scrollToSection("how-it-works")}
+            onClick={() => scrollToSection("/#how-it-works")}
             className="text-muted-foreground hover:text-foreground transition-colors bg-transparent border-none cursor-pointer"
           >
             {content.header.nav.howItWorks}
@@ -116,7 +143,7 @@ export const Header = () => {
 
         <div className="hidden md:flex items-center gap-4">
           <ModeToggle />
-          <Button onClick={() => scrollToSection("cta")}>
+          <Button onClick={() => scrollToSection("/#cta")}>
             {content.header.ctaButton}
           </Button>
         </div>
@@ -132,7 +159,7 @@ export const Header = () => {
             <SheetContent side="right">
               <div className="flex flex-col gap-6 p-6">
                 <button
-                  onClick={() => scrollToSection("how-it-works")}
+                  onClick={() => scrollToSection("/#how-it-works")}
                   className="text-lg text-foreground hover:text-primary bg-transparent border-none cursor-pointer text-left"
                 >
                   {content.header.nav.howItWorks}
@@ -149,7 +176,10 @@ export const Header = () => {
                 >
                   {content.header.nav.blog}
                 </Link>
-                <Button className="mt-4" onClick={() => scrollToSection("cta")}>
+                <Button
+                  className="mt-4"
+                  onClick={() => scrollToSection("/#cta")}
+                >
                   {content.header.ctaButton}
                 </Button>
                 <AppButtons />
@@ -190,11 +220,9 @@ export const Footer = () => {
                 <ul className="mt-4 space-y-2">
                   {column.links.map((link, linkIndex) => (
                     <li key={linkIndex}>
-                      {link.href.startsWith("/#") ? (
+                      {link.href.startsWith("/#") || link.href.includes("#") ? (
                         <button
-                          onClick={() =>
-                            scrollToSection(link.href.substring(2))
-                          }
+                          onClick={() => scrollToSection(link.href)}
                           className="text-sm text-muted-foreground hover:text-foreground transition-colors bg-transparent border-none cursor-pointer text-left p-0"
                         >
                           {link.text}

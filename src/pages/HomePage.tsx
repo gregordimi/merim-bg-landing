@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { AppStoreButton, GooglePlayButton } from "@/components/app-store-buttons";
 import { content } from "@/i18n/bg";
 
@@ -43,40 +43,44 @@ const HeroSection = () => (
       <div className="mt-16 w-full max-w-6xl mx-auto">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 items-start justify-center">
           <Card className="w-full h-80 md:h-[600px] p-0">
-            <div className="w-full h-full overflow-hidden rounded-2xl">
+            <div className="w-full h-full overflow-hidden rounded-t-2xl">
               <img
                 src="https://placehold.co/300x600/9CA3AF/E5E7EB?text=Екран+1"
                 alt="App Screenshot 1"
                 className="w-full h-full object-cover transform transition-transform duration-500 hover:scale-110"
               />
             </div>
+            <CardFooter className="m-3 justify-center"><div>{content.hero.scr1}</div></CardFooter>
           </Card>
           <Card className="w-full h-80 md:h-[600px] p-0">
-            <div className="w-full h-full overflow-hidden rounded-2xl">
+          <div className="w-full h-full overflow-hidden rounded-t-2xl">
               <img
                 src="https://placehold.co/300x600/9CA3AF/E5E7EB?text=Екран+2"
                 alt="App Screenshot 2"
                 className="w-full h-full object-cover transform transition-transform duration-500 hover:scale-110"
               />
             </div>
+            <CardFooter className="m-3 justify-center"><div>{content.hero.scr2}</div></CardFooter>
           </Card>
           <Card className="w-full h-80 md:h-[600px] p-0">
-            <div className="w-full h-full overflow-hidden rounded-2xl">
+          <div className="w-full h-full overflow-hidden rounded-t-2xl">
               <img
                 src="https://placehold.co/300x600/9CA3AF/E5E7EB?text=Екран+3"
                 alt="App Screenshot 3"
                 className="w-full h-full object-cover transform transition-transform duration-500 hover:scale-110"
               />
             </div>
+            <CardFooter className="m-3 justify-center"><div>{content.hero.scr3}</div></CardFooter>
           </Card>
           <Card className="w-full h-80 md:h-[600px] p-0">
-            <div className="w-full h-full overflow-hidden rounded-2xl">
+          <div className="w-full h-full overflow-hidden rounded-t-2xl">
               <img
                 src="https://placehold.co/300x600/9CA3AF/E5E7EB?text=Екран+4"
                 alt="App Screenshot 4"
                 className="w-full h-full object-cover transform transition-transform duration-500 hover:scale-110"
               />
             </div>
+            <CardFooter className="m-3 justify-center"><div>{content.hero.scr4}</div></CardFooter>
           </Card>
         </div>
       </div>

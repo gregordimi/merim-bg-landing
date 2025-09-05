@@ -11,7 +11,7 @@ const AboutPage: React.FC = () => {
             {content.pages.about.pagetitle}
           </h1>
           
-          <Card className="mb-8">
+          <Card className="mb-8" id="about">
             <CardHeader>
               <CardTitle>{content.pages.about.title}</CardTitle>
             </CardHeader>
@@ -19,6 +19,21 @@ const AboutPage: React.FC = () => {
               <p className="text-muted-foreground">
                 {content.pages.about.content}
               </p>
+            </CardContent>
+          </Card>
+
+          <Card className="mb-8" id="contact">
+            <CardHeader>
+              <CardTitle>{content.pages.about.contacttitle}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">
+                {content.pages.about.contact}
+              </p>
+              <a className="text-muted-foreground"
+               href={content.pages.about.contacthref}>
+                {content.pages.about.contacta}
+              </a>
             </CardContent>
           </Card>
         </div>
