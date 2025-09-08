@@ -28,12 +28,12 @@ const AboutPage: React.FC = () => {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                {content.pages.about.contact}
-              </p>
-              <a className="text-muted-foreground"
+                {content.pages.about.contact}{" "}
+              <a className="font-mono underline"
                href={content.pages.about.contacthref}>
                 {content.pages.about.contacta}
               </a>
+              </p>
             </CardContent>
           </Card>
         </div>

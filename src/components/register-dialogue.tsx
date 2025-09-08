@@ -181,7 +181,7 @@ export function RegisterDialogue({
                 </div>
               )}
             </div>
-            {/* <div className="space-y-2">
+            <div className="space-y-2">
               <div className="flex items-start space-x-3">
                 <Checkbox
                   id="terms"
@@ -227,9 +227,9 @@ export function RegisterDialogue({
                   {errors.terms}
                 </div>
               )}
-            </div> */}
+            </div>
 
-            {/* <div className="space-y-2">
+            <div className="space-y-2">
               <div className="flex items-start space-x-3">
                 <Checkbox
                   id="marketing"
@@ -247,13 +247,7 @@ export function RegisterDialogue({
                   {content.preRegister.marketingLabel}
                 </label>
               </div>
-            </div> */}
-                <Label
-                  htmlFor="marketing"
-                  className="text-sm font-normal leading-5 cursor-pointer flex-1"
-                >
-                  {content.preRegister.marketingLabel}
-                </Label>
+            </div>
 
             <Button type="submit" className="w-full" disabled={!isFormValid}>
               {isSubmitting ? (

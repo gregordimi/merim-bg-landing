@@ -10,6 +10,7 @@ const BlogPage = lazy(() => import("@/pages/BlogPage"));
 const BlogPostPage = lazy(() => import("@/pages/BlogPostPage"));
 const TermsPage = lazy(() => import("@/pages/TermsPage"));
 const PrivacyPage = lazy(() => import("@/pages/PrivacyPage"));
+const RewardsPage = lazy(() => import("@/pages/RewardsPage"));
 
 // Loading component
 const PageLoader = () => (
@@ -31,6 +32,7 @@ function App() {
               <Route path="blog/:slug" element={<BlogPostPage />} />
               <Route path="terms" element={<TermsPage />} />
               <Route path="privacy" element={<PrivacyPage />} />
+              <Route path="rewards" element={<RewardsPage />} />
             </Route>
           </Routes>
         </Suspense>
