@@ -167,10 +167,10 @@ export function RegisterDialogue({
       onSuccess?.();
 
       // Close dialog after success message
-      setTimeout(() => {
-        setIsOpen(false);
-        setIsSuccess(false);
-      }, 2500);
+      // setTimeout(() => {
+      //   setIsOpen(false);
+      //   setIsSuccess(false);
+      // }, 2500);
     } catch (err) {
       console.error("Registration error:", err);
       const errorMessage =
@@ -332,28 +332,6 @@ export function RegisterDialogue({
                 content.preRegister.submitButton
               )}
             </Button>
-
-            <div className="text-xs text-gray-500 text-center">
-              This site is protected by reCAPTCHA and the Google{" "}
-              <a
-                href="https://policies.google.com/privacy"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline hover:no-underline"
-              >
-                Privacy Policy
-              </a>{" "}
-              and{" "}
-              <a
-                href="https://policies.google.com/terms"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline hover:no-underline"
-              >
-                Terms of Service
-              </a>{" "}
-              apply.
-            </div>
           </form>
         )}
       </DialogContent>
