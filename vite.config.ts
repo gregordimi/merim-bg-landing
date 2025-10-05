@@ -11,7 +11,7 @@ import { fileURLToPath, URL } from "node:url";
 // https://vite.dev/config/
 /** @type {import('vite').UserConfig} */
 export default defineConfig({
-  // base: "./", // <-- Add this line right here
+ base: "./", // <-- Add this line right here
   plugins: [
     react(),
     tailwindcss(),
