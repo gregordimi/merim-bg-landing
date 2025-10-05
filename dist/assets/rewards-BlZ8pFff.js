@@ -1,0 +1,1 @@
+import{u as r,j as e}from"./blog-chunk-BedMKAT9.js";import"./react-vendor-DcQ1tznY.js";const u=void 0;function o(n){const t={h1:"h1",...r(),...n.components};return e.jsx(t.h1,{children:"Награди"})}function m(n={}){const{wrapper:t}={...r(),...n.components};return t?e.jsx(t,{...n,children:e.jsx(o,{...n})}):o(n)}export{m as default,u as frontmatter};
