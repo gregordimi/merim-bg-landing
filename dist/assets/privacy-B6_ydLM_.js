@@ -1,4 +1,4 @@
-import{u as i,j as n}from"./blog-chunk-0v7l2AT3.js";import"./react-vendor-DcQ1tznY.js";const d=void 0;function l(r){const s={a:"a",br:"br",em:"em",h1:"h1",h2:"h2",hr:"hr",li:"li",ol:"ol",p:"p",strong:"strong",table:"table",tbody:"tbody",td:"td",th:"th",thead:"thead",tr:"tr",ul:"ul",...i(),...r.components};return n.jsxs(n.Fragment,{children:[n.jsx(s.h1,{children:"Политика за поверителност"}),`
+import{u as i,j as n}from"./blog-chunk-BedMKAT9.js";import"./react-vendor-DcQ1tznY.js";const d=void 0;function l(r){const s={a:"a",br:"br",em:"em",h1:"h1",h2:"h2",hr:"hr",li:"li",ol:"ol",p:"p",strong:"strong",table:"table",tbody:"tbody",td:"td",th:"th",thead:"thead",tr:"tr",ul:"ul",...i(),...r.components};return n.jsxs(n.Fragment,{children:[n.jsx(s.h1,{children:"Политика за поверителност"}),`
 `,n.jsx(s.p,{children:"Последна актуализация: 1 януари 2025 г."}),`
 `,n.jsx(s.h2,{children:"Събиране на информация"}),`
 `,n.jsx(s.p,{children:"Ние събираме минимално количество данни, необходими за функционирането на приложението:"}),`
