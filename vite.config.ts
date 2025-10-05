@@ -6,10 +6,12 @@ import { defineConfig } from "vite";
 import remarkFrontmatter from "remark-frontmatter";
 import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import remarkGfm from "remark-gfm";
+import { fileURLToPath, URL } from "node:url";
 
 // https://vite.dev/config/
 /** @type {import('vite').UserConfig} */
 export default defineConfig({
+  base: "./", // <-- Add this line right here
   plugins: [
     react(),
     tailwindcss(),
@@ -25,7 +27,8 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      // "@": path.resolve(__dirname, "./src"),
+      "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
   build: {
