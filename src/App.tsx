@@ -3,6 +3,7 @@ import { Suspense, lazy } from "react";
 import { ThemeProvider } from "@/components/theme-provider";
 import Layout from "@/layouts/Layout";
 import HomePage from "@/pages/HomePage";
+import Charts from "@/utils/cube/App";
 
 // Lazy load pages that aren't immediately needed
 const AboutPage = lazy(() => import("@/pages/AboutPage"));
@@ -27,6 +28,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Layout />}>
               <Route index element={<HomePage />} />
+              <Route path="charts" element={<Charts />} />
               <Route path="about" element={<AboutPage />} />
               <Route path="blog" element={<BlogPage />} />
               <Route path="blog/:slug" element={<BlogPostPage />} />
