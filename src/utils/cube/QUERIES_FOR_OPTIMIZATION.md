@@ -123,19 +123,19 @@ query CategoryChartData {
 
 ## Optimization Recommendations
 
-### 1. Pre-Aggregations
-Create pre-aggregations for the most common queries:
+### 1. Pre-Aggregations (Rollups)
+Create pre-aggregations for the most common queries. **Note: Use lowercase for table/column names in rollups.**
 
 ```javascript
 // In your Cube schema
-cube(`Prices`, {
+cube(`prices`, {
   // ... existing schema
   
   preAggregations: {
     // For retailer chart
-    retailerPricesByDay: {
-      measures: [averageRetailPrice],
-      dimensions: [Retailers.name],
+    retailerpricesbyday: {
+      measures: [averageretailprice],
+      dimensions: [retailers.name],
       timeDimension: price_date,
       granularity: `day`,
       partitionGranularity: `month`,
@@ -145,9 +145,9 @@ cube(`Prices`, {
     },
     
     // For category chart
-    categoryPricesByDay: {
-      measures: [averageRetailPrice],
-      dimensions: [CategoryGroups.name],
+    categorypricesbyday: {
+      measures: [averageretailprice],
+      dimensions: [categorygroups.name],
       timeDimension: price_date,
       granularity: `day`,
       partitionGranularity: `month`,
@@ -158,6 +158,8 @@ cube(`Prices`, {
   },
 });
 ```
+
+**Important**: Rollup names and references should be lowercase to avoid case-sensitivity issues across different database systems.
 
 ### 2. Indexes
 Ensure these database indexes exist:

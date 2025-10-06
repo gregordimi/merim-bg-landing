@@ -3,25 +3,26 @@
 ## What Changed
 
 ### Before (Old Architecture)
-- ❌ No memoization - unnecessary re-renders
 - ❌ Prop drilling (apiUrl, apiToken passed everywhere)
 - ❌ Duplicated chart logic in each component
 - ❌ Manual API calls with fetch()
 - ❌ Hard to add new charts (create new component each time)
+- ❌ Charts remount on tab switch (refetch data)
 
 ### After (New Architecture)
-- ✅ Full memoization - optimized performance
 - ✅ Context-based API access (no prop drilling)
-- ✅ Centralized chart configs - add charts in 3 lines
-- ✅ Consistent data fetching with hooks
+- ✅ Centralized chart configs - add charts easily
+- ✅ Consistent data fetching with Cube hooks
 - ✅ Reusable Chart component
+- ✅ Prefetch all data upfront
+- ✅ Charts stay mounted (no remounting on tab switch)
 
-## Performance Improvements
+## Key Improvements
 
-1. **Component Memoization**: `ChartViewer`, `QueryRenderer`, and `Chart` use `React.memo()`
-2. **Data Memoization**: Chart data and options computed once with `useMemo()`
-3. **API Instance Caching**: CubeAPI created once, not on every render
-4. **Efficient Filtering**: Retailer list fetched once and cached
+1. **Prefetching**: Both queries load before showing UI - no loading states after initial load
+2. **Persistent Charts**: Charts stay mounted when switching tabs, just hidden with CSS
+3. **Client-side Filtering**: Retailer filter works on loaded data without new queries
+4. **Simple Flow**: Load data → show UI → done
 
 ## File Structure
 

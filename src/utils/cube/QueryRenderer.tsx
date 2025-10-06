@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useRef } from "react";
 import { useCubeQuery } from "@cubejs-client/react";
 import { Query, ResultSet } from "@cubejs-client/core";
 import { ChartAreaSkeleton } from "./components/ChartSkeleton";
@@ -9,9 +9,25 @@ interface QueryRendererProps {
 }
 
 export function QueryRenderer({ query, children }: QueryRendererProps) {
-  const { resultSet, isLoading, error } = useCubeQuery(query);
+  const { resultSet, isLoading, error, progress } = useCubeQuery(query);
+  const timeoutRef = useRef<NodeJS.Timeout>();
 
-  console.log('QueryRenderer:', { isLoading, hasResultSet: !!resultSet, error });
+  useEffect(() => {
+    if (isLoading) {
+      timeoutRef.current = setTimeout(() => {
+        console.error("Query stuck loading for 10s:", {
+          query,
+          progress,
+          error,
+        });
+      }, 10000);
+    } else {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    }
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, [isLoading, query, progress, error]);
 
   if (error) {
     return (
@@ -21,12 +37,8 @@ export function QueryRenderer({ query, children }: QueryRendererProps) {
     );
   }
 
-  if (isLoading) {
+  if (isLoading || !resultSet) {
     return <ChartAreaSkeleton />;
-  }
-
-  if (!resultSet) {
-    return <div className="p-8">No data</div>;
   }
 
   return children({ resultSet });

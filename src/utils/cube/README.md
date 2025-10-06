@@ -1,25 +1,25 @@
-# Cube Dashboard - Optimized Architecture
+# Cube Dashboard - Simple Architecture
 
 ## Overview
-This dashboard provides a performant, scalable architecture for displaying Cube.js analytics charts with minimal code duplication.
+This dashboard provides a simple, straightforward architecture for displaying Cube.js analytics charts with minimal complexity.
 
-## Key Improvements
+## Key Features
 
-### 1. Performance Optimizations
-- **Memoization**: All components use `memo()` to prevent unnecessary re-renders
-- **useMemo hooks**: Chart data and options are memoized to avoid recalculation
-- **Optimized CubeAPI**: API instance created once with `useMemo`
-- **Efficient data fetching**: Retailer list fetched once and cached
+### 1. Simple Data Flow
+- **Prefetching**: Both chart queries load upfront before rendering UI
+- **No caching complexity**: Fresh data on every page load
+- **Direct rendering**: Data flows straight from query to chart
+- **Client-side filtering**: Retailer filter works on loaded data
 
-### 2. Separation of Concerns
+### 2. Clean Architecture
 - **chartConfigs.ts**: Centralized chart configurations
-- **hooks/**: Custom hooks for data fetching (e.g., `useRetailerList`)
 - **components/Chart.tsx**: Generic chart component
-- **ChartViewer.tsx**: Pure rendering logic
-- **QueryRenderer.tsx**: Data fetching wrapper
+- **ChartViewer.tsx**: Chart rendering logic
+- **QueryRenderer.tsx**: Simple data fetching wrapper
+- **App.tsx**: Prefetches all data before showing UI
 
-### 3. Scalability
-Adding a new chart is now a 3-line change in `chartConfigs.ts`!
+### 3. Easy to Extend
+Adding a new chart requires updating `chartConfigs.ts` and `App.tsx`
 
 ## How to Add a New Chart
 
@@ -99,7 +99,7 @@ src/utils/cube/
 ## Features
 
 ### Retailer Filtering
-Enable per-chart by setting `enableRetailerFilter: true` in chart config. The filter automatically appears when retailers are available.
+Enable per-chart by setting `enableRetailerFilter: true` in chart config. The filter extracts retailer names from the loaded chart data and filters client-side.
 
 ### Chart Types
 Supported via `VITE_CHART_TYPE` env variable:
@@ -121,13 +121,14 @@ VITE_CHART_TYPE=line
 VITE_CUBE_API_USE_WEBSOCKETS=false
 ```
 
-## Performance Tips
+## How It Works
 
-1. **Avoid prop drilling**: Use CubeProvider context instead of passing apiUrl/apiToken
-2. **Memoize expensive operations**: Use `useMemo` for data transformations
-3. **Lazy load charts**: Use React.lazy() for charts not immediately visible
-4. **Debounce filters**: Add debouncing to filter inputs if needed
-5. **Pagination**: For large datasets, implement pagination in queries
+1. **App loads**: `ChartsContent` component mounts
+2. **Prefetch**: Both retailer and category queries fire immediately
+3. **Wait**: Shows skeleton until BOTH queries complete
+4. **Render**: Once data is ready, shows tabs with charts
+5. **Tab switching**: Charts stay mounted, just hidden/shown with CSS
+6. **Filtering**: Retailer dropdown filters data client-side (no new query)
 
 ## Migration from Old Code
 
