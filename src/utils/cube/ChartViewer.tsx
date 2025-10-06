@@ -12,44 +12,9 @@ interface ChartViewerProps {
 export function ChartViewer(props: ChartViewerProps) {
   const { resultSet, pivotConfig, chartType, selectedRetailer } = props;
 
-  // Filter chartPivot and series by retailer if selected
-  let chartPivot = resultSet.chartPivot(pivotConfig) as Record<string, unknown>[];
-  let series = resultSet.series(pivotConfig) as Series<Record<string, unknown>>[];
-  if (selectedRetailer) {
-    // Normalize for comparison
-    const norm = (v: unknown) => (typeof v === 'string' ? v.trim().toLowerCase() : v);
-    // Debug output
-   
-    console.log('Selected retailer:', selectedRetailer);
-    console.log('Full resultSet:', resultSet);
-    if (chartPivot.length > 0) {
-      console.log('First chartPivot row:', chartPivot[0]);
-    } else {
-      console.log('ChartPivot is empty');
-      try {
-        const raw = resultSet.rawData();
-        console.log('Raw data:', raw);
-      } catch (e) {
-        console.log('No rawData available');
-      }
-    }
-    // Try to filter by retailer name, fallback if field is missing
-    chartPivot = chartPivot.filter((row: Record<string, unknown>) => {
-      const retailer = row['retailers.name'];
-      if (retailer === undefined) return true; // fallback: show all if missing
-      return norm(retailer) === norm(selectedRetailer);
-    });
-    series = series
-      .map((item: Series<Record<string, unknown>>) => ({
-        ...item,
-        series: item.series.filter((point: Record<string, unknown>) => {
-          const retailer = point['retailers.name'];
-          if (retailer === undefined) return true;
-          return norm(retailer) === norm(selectedRetailer);
-        })
-      }))
-      .filter((item: Series<Record<string, unknown>>) => item.series.length > 0);
-  }
+  // Get chart data
+  const chartPivot = resultSet.chartPivot(pivotConfig) as Record<string, unknown>[];
+  const series = resultSet.series(pivotConfig) as Series<Record<string, unknown>>[];
 
   let data;
   if (selectedRetailer) {
