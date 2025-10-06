@@ -171,7 +171,7 @@ export function ChartViewer(props: ChartViewerProps) {
     }));
 
     return (
-      <ResponsiveContainer width="100%" height={400}>
+      <ResponsiveContainer width="100%" height={600}>
         <PieChart>
           <Pie
             data={pieData}
@@ -203,7 +203,7 @@ export function ChartViewer(props: ChartViewerProps) {
 
   if (chartType === "bar") {
     return (
-      <ResponsiveContainer width="100%" height={400}>
+      <ResponsiveContainer width="100%" height={600}>
         <BarChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
@@ -226,7 +226,7 @@ export function ChartViewer(props: ChartViewerProps) {
   }
 
   return (
-    <ResponsiveContainer width="100%" height={400}>
+    <ResponsiveContainer width="100%" height={600}>
       <LineChart data={chartData}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis

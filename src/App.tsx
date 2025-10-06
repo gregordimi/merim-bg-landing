@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import { ThemeProvider } from "@/components/theme-provider";
 import Layout from "@/layouts/Layout";
+import FullscreenLayout from "@/layouts/FullscreenLayout";
 import HomePage from "@/pages/HomePage";
 import Charts from "@/utils/cube/App";
 
@@ -26,15 +27,21 @@ function App() {
       <Router>
         <Suspense fallback={<PageLoader />}>
           <Routes>
+            {/* Main layout with header and footer */}
             <Route path="/" element={<Layout />}>
               <Route index element={<HomePage />} />
-              <Route path="charts" element={<Charts />} />
               <Route path="about" element={<AboutPage />} />
               <Route path="blog" element={<BlogPage />} />
               <Route path="blog/:slug" element={<BlogPostPage />} />
               <Route path="terms" element={<TermsPage />} />
               <Route path="privacy" element={<PrivacyPage />} />
               <Route path="rewards" element={<RewardsPage />} />
+            </Route>
+
+            {/* Fullscreen layout for charts (no footer, minimal header) */}
+            <Route path="/charts" element={<FullscreenLayout />}>
+              <Route index element={<Charts />} />
+              <Route path="category" element={<Charts />} />
             </Route>
           </Routes>
         </Suspense>

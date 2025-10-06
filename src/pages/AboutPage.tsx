@@ -10,7 +10,7 @@ const AboutPage: React.FC = () => {
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground mb-8">
             {content.pages.about.pagetitle}
           </h1>
-          
+
           <Card className="mb-8" id="about">
             <CardHeader>
               <CardTitle>{content.pages.about.title}</CardTitle>
@@ -29,10 +29,12 @@ const AboutPage: React.FC = () => {
             <CardContent>
               <p className="text-muted-foreground">
                 {content.pages.about.contact}{" "}
-              <a className="font-mono underline"
-               href={content.pages.about.contacthref}>
-                {content.pages.about.contacta}
-              </a>
+                <a
+                  className="font-mono underline"
+                  href={content.pages.about.contacthref}
+                >
+                  {content.pages.about.contacta}
+                </a>
               </p>
             </CardContent>
           </Card>

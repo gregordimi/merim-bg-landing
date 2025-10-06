@@ -33,33 +33,35 @@ export default function Charts() {
   }, [apiToken, apiUrl, useWebSockets]);
 
   return (
-    <div className="min-h-screen w-full max-w-7xl mx-auto py-10 px-4">
+    <div className="h-full w-full">
       <CubeProvider cubeApi={cubeApi}>
-        <div className="mb-8">
+        <div className="px-4 sm:px-6 lg:px-8 py-6 border-b bg-muted/30">
           <h1 className="text-3xl font-bold mb-2">Price Analytics Dashboard</h1>
           <p className="text-muted-foreground">
             Track and compare retail prices across categories and retailers
           </p>
         </div>
 
-        <Tabs defaultValue="retailer" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="retailer">By Retailer</TabsTrigger>
-            <TabsTrigger value="category">By Category</TabsTrigger>
-          </TabsList>
+        <div className="px-4 sm:px-6 lg:px-8 py-6">
+          <Tabs defaultValue="retailer" className="w-full">
+            <TabsList className="grid grid-cols-2 w-full max-w-md mb-6">
+              <TabsTrigger value="retailer">By Retailer</TabsTrigger>
+              <TabsTrigger value="category">By Category</TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="retailer" className="space-y-6">
-            <div key="retailer-wrapper">
-              <Chart config={CHART_CONFIGS.retailer} chartType={chartType} />
-            </div>
-          </TabsContent>
+            <TabsContent value="retailer" className="space-y-6">
+              <div key="retailer-wrapper">
+                <Chart config={CHART_CONFIGS.retailer} chartType={chartType} />
+              </div>
+            </TabsContent>
 
-          <TabsContent value="category" className="space-y-6">
-            <div key="category-wrapper">
-              <Chart config={CHART_CONFIGS.category} chartType={chartType} />
-            </div>
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="category" className="space-y-6">
+              <div key="category-wrapper">
+                <Chart config={CHART_CONFIGS.category} chartType={chartType} />
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
       </CubeProvider>
     </div>
   );
