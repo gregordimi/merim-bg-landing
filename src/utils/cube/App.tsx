@@ -1,10 +1,10 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import cube from "@cubejs-client/core";
 import { CubeProvider } from "@cubejs-client/react";
 import WebSocketTransport from "@cubejs-client/ws-transport";
 import { extractHashConfig } from "./config";
 import { ChartType } from "./types";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Chart } from "./components/Chart";
 import { CHART_CONFIGS } from "./chartConfigs";
 
@@ -23,6 +23,8 @@ export default function Charts() {
       chartType: (import.meta.env.VITE_CHART_TYPE as ChartType) || "line",
       websockets: import.meta.env.VITE_CUBE_API_USE_WEBSOCKETS === "true",
     });
+
+  const [activeTab, setActiveTab] = useState("retailer");
 
   const cubeApi = useMemo(() => {
     let transport = undefined;
@@ -43,23 +45,28 @@ export default function Charts() {
         </div>
 
         <div className="px-4 sm:px-6 lg:px-8 py-6">
-          <Tabs defaultValue="retailer" className="w-full">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
             <TabsList className="grid grid-cols-2 w-full max-w-md mb-6">
               <TabsTrigger value="retailer">By Retailer</TabsTrigger>
               <TabsTrigger value="category">By Category</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="retailer" className="space-y-6">
-              <div key="retailer-wrapper">
+            <div className="space-y-6">
+              <div
+                style={{ display: activeTab === "retailer" ? "block" : "none" }}
+              >
                 <Chart config={CHART_CONFIGS.retailer} chartType={chartType} />
               </div>
-            </TabsContent>
-
-            <TabsContent value="category" className="space-y-6">
-              <div key="category-wrapper">
+              <div
+                style={{ display: activeTab === "category" ? "block" : "none" }}
+              >
                 <Chart config={CHART_CONFIGS.category} chartType={chartType} />
               </div>
-            </TabsContent>
+            </div>
           </Tabs>
         </div>
       </CubeProvider>

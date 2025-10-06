@@ -17,24 +17,18 @@ import {
 import { PivotConfig, ResultSet } from "@cubejs-client/core";
 import { type ChartType } from "./types";
 
-// Format date for display
 const formatDate = (dateStr: string, format?: Intl.DateTimeFormatOptions) => {
   try {
     const date = new Date(dateStr);
     return date.toLocaleDateString(
       "en-US",
-      format || {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      }
+      format || { month: "short", day: "numeric", year: "numeric" }
     );
   } catch {
     return dateStr;
   }
 };
 
-// Format currency/number with rounding
 const formatValue = (value: number, decimals: number = 2) => {
   return Number(value.toFixed(decimals));
 };
@@ -64,7 +58,6 @@ const COLORS = [
 export function ChartViewer(props: ChartViewerProps) {
   const {
     resultSet,
-    pivotConfig,
     chartType,
     selectedRetailers,
     decimals = 2,
@@ -72,89 +65,46 @@ export function ChartViewer(props: ChartViewerProps) {
     dateFormat,
   } = props;
 
-  // Custom tooltip formatter
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (!active || !payload || !payload.length) return null;
+  const pivot = resultSet.tablePivot();
 
-    return (
-      <div className="bg-background border rounded-lg shadow-lg p-3">
-        <p className="font-medium mb-2">{formatDate(label, dateFormat)}</p>
-        {payload.map((entry: any, index: number) => (
-          <p key={index} style={{ color: entry.color }} className="text-sm">
-            {entry.name}: {formatValue(entry.value, decimals)} {currency}
-          </p>
-        ))}
-      </div>
+  let chartData: any[];
+  let dataKeys: string[];
+
+  if (selectedRetailers && selectedRetailers.length > 0) {
+    const filtered = pivot.filter((row: any) =>
+      selectedRetailers.includes(row["retailers.name"])
     );
-  };
-
-  const { chartData, dataKeys } = useMemo(() => {
-    const pivot = resultSet.tablePivot();
-
-    if (selectedRetailers && selectedRetailers.length > 0 && pivot.length > 0) {
-      const filtered = pivot.filter(
-        (row: any) =>
-          !row["retailers.name"] ||
-          selectedRetailers.includes(row["retailers.name"])
+    const grouped = filtered.reduce((acc: any, row: any) => {
+      const date = row["prices.price_date.day"] || row["prices.price_date"];
+      if (!acc[date]) acc[date] = { date };
+      const retailer = row["retailers.name"];
+      const value = formatValue(
+        parseFloat(row["prices.averageRetailPrice"]) || 0,
+        decimals
       );
-
-      // Group by date and retailer
-      const grouped = filtered.reduce((acc: any, row: any) => {
-        const date = row["prices.price_date.day"] || row["prices.price_date"];
-        if (!acc[date]) {
-          acc[date] = { date };
-        }
-        const retailer = row["retailers.name"];
-        const value = formatValue(
-          parseFloat(row["prices.averageRetailPrice"]) || 0,
-          decimals
-        );
-        // Store value even if 0 (null will be handled by Recharts)
-        acc[date][retailer] = value > 0 ? value : null;
-        return acc;
-      }, {});
-
-      return {
-        chartData: Object.values(grouped),
-        dataKeys: selectedRetailers,
-      };
-    }
-
-    // Collect all unique retailers/categories across all dates
+      acc[date][retailer] = value > 0 ? value : null;
+      return acc;
+    }, {});
+    chartData = Object.values(grouped);
+    dataKeys = selectedRetailers;
+  } else {
     const allKeys = new Set<string>();
-    
     const grouped = pivot.reduce((acc: any, row: any) => {
       const date = row["prices.price_date.day"] || row["prices.price_date"];
-      if (!acc[date]) {
-        acc[date] = { date };
-      }
-
+      if (!acc[date]) acc[date] = { date };
       const name =
         row["retailers.name"] || row["category_groups.name"] || "value";
       const value = formatValue(
         parseFloat(row["prices.averageRetailPrice"]) || 0,
         decimals
       );
-
-      // Track all unique keys
-      if (name) {
-        allKeys.add(name);
-      }
-
-      // Store value even if 0 (null will be handled by Recharts)
+      if (name) allKeys.add(name);
       acc[date][name] = value > 0 ? value : null;
-
       return acc;
     }, {});
-
-    const data = Object.values(grouped);
-    const keys = Array.from(allKeys).sort();
-
-    return {
-      chartData: data,
-      dataKeys: keys,
-    };
-  }, [resultSet, pivotConfig, selectedRetailers]);
+    chartData = Object.values(grouped);
+    dataKeys = Array.from(allKeys).sort();
+  }
 
   if (!chartData || chartData.length === 0) {
     return (
@@ -218,7 +168,7 @@ export function ChartViewer(props: ChartViewerProps) {
               `${formatValue(value, decimals)} ${currency}`
             }
           />
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip />
           <Legend />
           {dataKeys.map((key, index) => (
             <Bar key={key} dataKey={key} fill={COLORS[index % COLORS.length]} />
@@ -241,7 +191,7 @@ export function ChartViewer(props: ChartViewerProps) {
             `${formatValue(value, decimals)} ${currency}`
           }
         />
-        <Tooltip content={<CustomTooltip />} />
+        <Tooltip />
         <Legend />
         {dataKeys.map((key, index) => (
           <Line

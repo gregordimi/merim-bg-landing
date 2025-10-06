@@ -1,9 +1,8 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { ChartViewer } from "../ChartViewer";
 import { QueryRenderer } from "../QueryRenderer";
 import { ChartType } from "../types";
 import { ChartConfig } from "../chartConfigs";
-import { useRetailerList } from "../hooks/useRetailerList";
 import { MultiSelect } from "./MultiSelect";
 import {
   Card,
@@ -21,13 +20,6 @@ interface ChartProps {
 export function Chart({ config, chartType }: ChartProps) {
   const [selectedRetailers, setSelectedRetailers] = useState<string[]>([]);
 
-  // Use custom query if provided in config, otherwise use default
-  const { retailers, isLoading } = useRetailerList(
-    config.retailerQuery ? { query: config.retailerQuery } : undefined
-  );
-
-  const showRetailerFilter = config.enableRetailerFilter;
-
   return (
     <Card>
       <CardHeader>
@@ -38,37 +30,48 @@ export function Chart({ config, chartType }: ChartProps) {
               <CardDescription>{config.description}</CardDescription>
             )}
           </div>
-          {showRetailerFilter && (
-            <div className="w-[300px]">
-              {isLoading ? (
-                <div className="h-10 bg-muted animate-pulse rounded-md" />
-              ) : retailers.length > 0 ? (
-                <MultiSelect
-                  options={retailers}
-                  selected={selectedRetailers}
-                  onChange={setSelectedRetailers}
-                  placeholder="All Retailers"
-                  className="w-full"
-                />
-              ) : null}
-            </div>
-          )}
         </div>
       </CardHeader>
       <CardContent>
-        <QueryRenderer query={config.query} subscribe={false}>
-          {({ resultSet }) => (
-            <ChartViewer
-              chartId={config.id}
-              chartType={chartType}
-              resultSet={resultSet}
-              pivotConfig={config.pivotConfig}
-              selectedRetailers={selectedRetailers}
-              decimals={config.decimals}
-              currency={config.currency}
-              dateFormat={config.dateFormat}
-            />
-          )}
+        <QueryRenderer query={config.query}>
+          {({ resultSet }) => {
+            const retailers = config.enableRetailerFilter
+              ? Array.from(
+                  new Set(
+                    resultSet
+                      .tablePivot()
+                      .map((row: any) => row["retailers.name"] as string)
+                      .filter(Boolean)
+                  )
+                ).sort()
+              : [];
+
+            return (
+              <>
+                {config.enableRetailerFilter && retailers.length > 0 && (
+                  <div className="mb-4 flex justify-end">
+                    <MultiSelect
+                      options={retailers}
+                      selected={selectedRetailers}
+                      onChange={setSelectedRetailers}
+                      placeholder="All Retailers"
+                      className="w-[300px]"
+                    />
+                  </div>
+                )}
+                <ChartViewer
+                  chartId={config.id}
+                  chartType={chartType}
+                  resultSet={resultSet}
+                  pivotConfig={config.pivotConfig}
+                  selectedRetailers={selectedRetailers}
+                  decimals={config.decimals}
+                  currency={config.currency}
+                  dateFormat={config.dateFormat}
+                />
+              </>
+            );
+          }}
         </QueryRenderer>
       </CardContent>
     </Card>

@@ -4,41 +4,30 @@ import { Query, ResultSet } from "@cubejs-client/core";
 import { ChartAreaSkeleton } from "./components/ChartSkeleton";
 
 interface QueryRendererProps {
-  query?: Query;
-  children?: (props: { resultSet: ResultSet }) => ReactNode;
-  subscribe?: boolean;
-  showSkeleton?: boolean;
+  query: Query;
+  children: (props: { resultSet: ResultSet }) => ReactNode;
 }
 
-export function QueryRenderer(props: QueryRendererProps) {
-  const { children, query, subscribe, showSkeleton = true } = props;
+export function QueryRenderer({ query, children }: QueryRendererProps) {
+  const { resultSet, isLoading, error } = useCubeQuery(query);
 
-  const { resultSet, isLoading, error } = useCubeQuery(query ?? {}, {
-    subscribe,
-    skip: !query,
-    resetResultSetOnChange: false, // Keep cached results - prevents refetch on remount
-  });
+  console.log('QueryRenderer:', { isLoading, hasResultSet: !!resultSet, error });
 
-  // Show loading if still loading OR if we don't have data yet
-  if (isLoading || !resultSet) {
-    // Only show error if we have an error AND we're not loading
-    if (error && !isLoading) {
-      return (
-        <div className="text-red-500 p-4 border border-red-300 rounded bg-red-50 dark:bg-red-950/20">
-          <p className="font-semibold mb-1">Error loading data</p>
-          <p className="text-sm">{error.toString()}</p>
-        </div>
-      );
-    }
-    
-    return showSkeleton ? (
-      <ChartAreaSkeleton />
-    ) : (
-      <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+  if (error) {
+    return (
+      <div className="text-red-500 p-4 border border-red-300 rounded">
+        <strong>Error:</strong> {error.toString()}
       </div>
     );
   }
 
-  return children?.({ resultSet }) || null;
+  if (isLoading) {
+    return <ChartAreaSkeleton />;
+  }
+
+  if (!resultSet) {
+    return <div className="p-8">No data</div>;
+  }
+
+  return children({ resultSet });
 }

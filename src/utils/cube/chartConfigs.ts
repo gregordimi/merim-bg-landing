@@ -27,7 +27,7 @@ export const CHART_CONFIGS: Record<string, ChartConfig> = {
         {
           dimension: "prices.price_date",
           granularity: "day",
-          dateRange: "Last 30 days", // Get last 30 days of data
+          dateRange: "Last 30 days",
         },
       ],
       measures: ["prices.averageRetailPrice"],
