@@ -36,9 +36,9 @@ export default function DashboardFilters({ globalFilters, setGlobalFilters }: Da
 
   // Fetch locations
   const { resultSet: locationsResult } = useCubeQuery({
-    dimensions: ["stores.settlements.name_en"],
+    dimensions: ["settlements.name_en"],
     measures: [],
-    order: { "stores.settlements.name_en": "asc" },
+    order: { "settlements.name_en": "asc" },
   });
 
   // Fetch categories
@@ -49,7 +49,7 @@ export default function DashboardFilters({ globalFilters, setGlobalFilters }: Da
   });
 
   const retailers = retailersResult?.tablePivot().map((row: any) => row["retailers.name"]).filter(Boolean) || [];
-  const locations = locationsResult?.tablePivot().map((row: any) => row["stores.settlements.name_en"]).filter(Boolean) || [];
+  const locations = locationsResult?.tablePivot().map((row: any) => row["settlements.name_en"]).filter(Boolean) || [];
   const categories = categoriesResult?.tablePivot().map((row: any) => row["category_groups.name"]).filter(Boolean) || [];
 
   // Update global filters when date range changes

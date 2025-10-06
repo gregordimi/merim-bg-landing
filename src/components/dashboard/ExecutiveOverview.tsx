@@ -26,7 +26,7 @@ export default function ExecutiveOverview({ globalFilters }: ExecutiveOverviewPr
     }
     if (globalFilters.locations && globalFilters.locations.length > 0) {
       filters.push({
-        member: "stores.settlements.name_en",
+        member: "settlements.name_en",
         operator: "equals" as const,
         values: globalFilters.locations,
       });
@@ -103,7 +103,7 @@ export default function ExecutiveOverview({ globalFilters }: ExecutiveOverviewPr
               Minimum Price
             </p>
             <p className="text-3xl font-bold mt-2">
-              {statsLoading ? "..." : `${minPrice.toFixed(2)} лв`}
+              {statsLoading ? "..." : `${Number(minPrice || 0).toFixed(2)} лв`}
             </p>
           </CardContent>
         </Card>
@@ -114,7 +114,7 @@ export default function ExecutiveOverview({ globalFilters }: ExecutiveOverviewPr
               Median Price
             </p>
             <p className="text-3xl font-bold mt-2">
-              {statsLoading ? "..." : `${medianPrice.toFixed(2)} лв`}
+              {statsLoading ? "..." : `${Number(medianPrice || 0).toFixed(2)} лв`}
             </p>
           </CardContent>
         </Card>
@@ -125,7 +125,7 @@ export default function ExecutiveOverview({ globalFilters }: ExecutiveOverviewPr
               Maximum Price
             </p>
             <p className="text-3xl font-bold mt-2">
-              {statsLoading ? "..." : `${maxPrice.toFixed(2)} лв`}
+              {statsLoading ? "..." : `${Number(maxPrice || 0).toFixed(2)} лв`}
             </p>
           </CardContent>
         </Card>

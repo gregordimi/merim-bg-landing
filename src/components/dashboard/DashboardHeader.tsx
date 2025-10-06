@@ -31,7 +31,7 @@ export default function DashboardHeader({ globalFilters, setGlobalFilters }: Das
     }
     if (globalFilters.locations && globalFilters.locations.length > 0) {
       filters.push({
-        member: "stores.settlements.name_en",
+        member: "settlements.name_en",
         operator: "equals" as const,
         values: globalFilters.locations,
       });
@@ -78,11 +78,13 @@ export default function DashboardHeader({ globalFilters, setGlobalFilters }: Das
   };
 
   const formatCurrency = (value: number) => {
-    return `${value.toFixed(2)} лв`;
+    if (!value || isNaN(value)) return "0.00 лв";
+    return `${Number(value).toFixed(2)} лв`;
   };
 
   const formatPercentage = (value: number) => {
-    return `${value.toFixed(1)}%`;
+    if (!value || isNaN(value)) return "0.0%";
+    return `${Number(value * 100).toFixed(1)}%`;
   };
 
   return (

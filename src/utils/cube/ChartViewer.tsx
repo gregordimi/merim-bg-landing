@@ -75,7 +75,7 @@ export function ChartViewer(props: ChartViewerProps) {
       selectedRetailers.includes(row["retailers.name"])
     );
     const grouped = filtered.reduce((acc: any, row: any) => {
-      const date = row["prices.price_date.day"] || row["prices.price_date"];
+      const date = row["prices.price_date.day"] || row["prices.price_date"] || row["prices.price_date.week"];
       if (!acc[date]) acc[date] = { date };
       const retailer = row["retailers.name"];
       const value = formatValue(
@@ -90,10 +90,14 @@ export function ChartViewer(props: ChartViewerProps) {
   } else {
     const allKeys = new Set<string>();
     const grouped = pivot.reduce((acc: any, row: any) => {
-      const date = row["prices.price_date.day"] || row["prices.price_date"];
+      const date = row["prices.price_date.day"] || row["prices.price_date"] || row["prices.price_date.week"];
       if (!acc[date]) acc[date] = { date };
       const name =
-        row["retailers.name"] || row["category_groups.name"] || "value";
+        row["retailers.name"] || 
+        row["category_groups.name"] || 
+        row["settlements.name_en"] ||
+        row["settlements.municipality"] ||
+        "value";
       const value = formatValue(
         parseFloat(row["prices.averageRetailPrice"]) || 0,
         decimals

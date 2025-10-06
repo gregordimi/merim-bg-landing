@@ -26,7 +26,7 @@ export default function CategoryDeepDive({ globalFilters }: CategoryDeepDiveProp
     }
     if (globalFilters.locations && globalFilters.locations.length > 0) {
       filters.push({
-        member: "stores.settlements.name_en",
+        member: "settlements.name_en",
         operator: "equals" as const,
         values: globalFilters.locations,
       });

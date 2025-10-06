@@ -26,7 +26,7 @@ export default function GeographicalInsights({ globalFilters }: GeographicalInsi
     }
     if (globalFilters.locations && globalFilters.locations.length > 0) {
       filters.push({
-        member: "stores.settlements.name_en",
+        member: "settlements.name_en",
         operator: "equals" as const,
         values: globalFilters.locations,
       });
@@ -43,7 +43,7 @@ export default function GeographicalInsights({ globalFilters }: GeographicalInsi
 
   // Settlement-level pricing
   const { resultSet: settlementResult, isLoading: settlementLoading } = useCubeQuery({
-    dimensions: ["stores.settlements.name_en"],
+    dimensions: ["settlements.name_en"],
     measures: ["prices.averageRetailPrice"],
     timeDimensions: globalFilters.dateRange
       ? [{ dimension: "prices.price_date", dateRange: globalFilters.dateRange }]
@@ -55,7 +55,7 @@ export default function GeographicalInsights({ globalFilters }: GeographicalInsi
 
   // Municipality-level pricing
   const { resultSet: municipalityResult, isLoading: municipalityLoading } = useCubeQuery({
-    dimensions: ["stores.settlements.municipality"],
+    dimensions: ["settlements.municipality"],
     measures: ["prices.averageRetailPrice"],
     timeDimensions: globalFilters.dateRange
       ? [{ dimension: "prices.price_date", dateRange: globalFilters.dateRange }]
@@ -67,7 +67,7 @@ export default function GeographicalInsights({ globalFilters }: GeographicalInsi
 
   // Regional price trends over time
   const { resultSet: regionTrendResult, isLoading: trendLoading } = useCubeQuery({
-    dimensions: ["stores.settlements.municipality"],
+    dimensions: ["settlements.municipality"],
     measures: ["prices.averageRetailPrice"],
     timeDimensions: globalFilters.dateRange
       ? [
@@ -142,7 +142,7 @@ export default function GeographicalInsights({ globalFilters }: GeographicalInsi
                 chartType="bar"
                 resultSet={settlementResult}
                 pivotConfig={{
-                  x: ["stores.settlements.name_en"],
+                  x: ["settlements.name_en"],
                   y: ["measures"],
                   fillMissingDates: false,
                 }}
@@ -174,7 +174,7 @@ export default function GeographicalInsights({ globalFilters }: GeographicalInsi
                 chartType="bar"
                 resultSet={municipalityResult}
                 pivotConfig={{
-                  x: ["stores.settlements.municipality"],
+                  x: ["settlements.municipality"],
                   y: ["measures"],
                   fillMissingDates: false,
                 }}
