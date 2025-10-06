@@ -20,14 +20,13 @@ interface ChartProps {
 
 export function Chart({ config, chartType }: ChartProps) {
   const [selectedRetailers, setSelectedRetailers] = useState<string[]>([]);
-  
+
   // Use custom query if provided in config, otherwise use default
   const { retailers, isLoading } = useRetailerList(
     config.retailerQuery ? { query: config.retailerQuery } : undefined
   );
 
-  const showRetailerFilter =
-    config.enableRetailerFilter && retailers.length > 0;
+  const showRetailerFilter = config.enableRetailerFilter;
 
   return (
     <Card>
@@ -40,14 +39,18 @@ export function Chart({ config, chartType }: ChartProps) {
             )}
           </div>
           {showRetailerFilter && (
-            <div className="w-[400px]">
-              <MultiSelect
-                options={retailers}
-                selected={selectedRetailers}
-                onChange={setSelectedRetailers}
-                placeholder={isLoading ? "Loading..." : "All Retailers"}
-                className="w-full"
-              />
+            <div className="w-[300px]">
+              {isLoading ? (
+                <div className="h-10 bg-muted animate-pulse rounded-md" />
+              ) : retailers.length > 0 ? (
+                <MultiSelect
+                  options={retailers}
+                  selected={selectedRetailers}
+                  onChange={setSelectedRetailers}
+                  placeholder="All Retailers"
+                  className="w-full"
+                />
+              ) : null}
             </div>
           )}
         </div>

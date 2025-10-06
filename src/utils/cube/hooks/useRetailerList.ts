@@ -15,7 +15,10 @@ export function useRetailerList(options?: UseRetailerListOptions) {
   };
 
   const { resultSet, isLoading, error } = useCubeQuery(
-    options?.query || defaultQuery
+    options?.query || defaultQuery,
+    {
+      resetResultSetOnChange: false, // Cache retailer list
+    }
   );
 
   const retailers = useMemo(() => {
