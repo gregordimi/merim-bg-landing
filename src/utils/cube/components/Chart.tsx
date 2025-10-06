@@ -1,21 +1,28 @@
-import { memo, useState } from 'react';
-import { ChartViewer } from '../ChartViewer';
-import { QueryRenderer } from '../QueryRenderer';
-import { ChartType } from '../types';
-import { ChartConfig } from '../chartConfigs';
-import { useRetailerList } from '../hooks/useRetailerList';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from "react";
+import { ChartViewer } from "../ChartViewer";
+import { QueryRenderer } from "../QueryRenderer";
+import { ChartType } from "../types";
+import { ChartConfig } from "../chartConfigs";
+import { useRetailerList } from "../hooks/useRetailerList";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 interface ChartProps {
   config: ChartConfig;
   chartType: ChartType;
 }
 
-export const Chart = memo(function Chart({ config, chartType }: ChartProps) {
-  const [selectedRetailer, setSelectedRetailer] = useState<string>('');
+export function Chart({ config, chartType }: ChartProps) {
+  const [selectedRetailer, setSelectedRetailer] = useState<string>("");
   const { retailers } = useRetailerList();
 
-  const showRetailerFilter = config.enableRetailerFilter && retailers.length > 0;
+  const showRetailerFilter =
+    config.enableRetailerFilter && retailers.length > 0;
 
   return (
     <Card>
@@ -34,8 +41,10 @@ export const Chart = memo(function Chart({ config, chartType }: ChartProps) {
               onChange={(e) => setSelectedRetailer(e.target.value)}
             >
               <option value="">All Retailers</option>
-              {retailers.map(name => (
-                <option key={name} value={name}>{name}</option>
+              {retailers.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
               ))}
             </select>
           )}
@@ -45,6 +54,7 @@ export const Chart = memo(function Chart({ config, chartType }: ChartProps) {
         <QueryRenderer query={config.query} subscribe={false}>
           {({ resultSet }) => (
             <ChartViewer
+              chartId={config.id}
               chartType={chartType}
               resultSet={resultSet}
               pivotConfig={config.pivotConfig}
@@ -55,4 +65,4 @@ export const Chart = memo(function Chart({ config, chartType }: ChartProps) {
       </CardContent>
     </Card>
   );
-});
+}

@@ -1,4 +1,4 @@
-import { ReactNode, memo } from 'react';
+import { ReactNode } from 'react';
 import { useCubeQuery } from '@cubejs-client/react';
 import { Query, ResultSet } from '@cubejs-client/core';
 
@@ -10,7 +10,7 @@ interface QueryRendererProps {
   subscribe?: boolean;
 }
 
-export const QueryRenderer = memo(function QueryRenderer(props: QueryRendererProps) {
+export function QueryRenderer(props: QueryRendererProps) {
   const { children, query, subscribe } = props;
   const { resultSet, isLoading, error } = useCubeQuery(query ?? {}, { subscribe, skip: !query });
 
@@ -31,4 +31,4 @@ export const QueryRenderer = memo(function QueryRenderer(props: QueryRendererPro
   }
 
   return children?.({ resultSet }) || null;
-});
+}

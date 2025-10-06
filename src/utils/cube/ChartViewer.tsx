@@ -1,5 +1,5 @@
 import 'chart.js/auto';
-import { memo, useMemo } from 'react';
+import { useMemo } from 'react';
 import { Line, Bar, Pie, Doughnut } from 'react-chartjs-2';
 import { PivotConfig, ResultSet, Series } from '@cubejs-client/core';
 import { type ChartType } from './types';
@@ -9,9 +9,10 @@ interface ChartViewerProps {
   pivotConfig: PivotConfig;
   chartType: ChartType;
   selectedRetailer?: string;
+  chartId: string;
 }
 
-export const ChartViewer = memo(function ChartViewer(props: ChartViewerProps) {
+export function ChartViewer(props: ChartViewerProps) {
   const { resultSet, pivotConfig, chartType, selectedRetailer } = props;
 
   const chartData = useMemo(() => {
@@ -72,13 +73,19 @@ export const ChartViewer = memo(function ChartViewer(props: ChartViewerProps) {
     }
   }), []);
 
-  const ChartElement = useMemo(() => ({
-    area: Line,
-    bar: Bar,
-    doughnut: Doughnut,
-    line: Line,
-    pie: Pie
-  }[chartType as Exclude<ChartType, 'table'>]), [chartType]);
+  // Render different chart based on type - NO REUSE
+  if (chartType === 'line' || chartType === 'area') {
+    return <Line data={chartData} options={chartOptions} />;
+  }
+  if (chartType === 'bar') {
+    return <Bar data={chartData} options={chartOptions} />;
+  }
+  if (chartType === 'pie') {
+    return <Pie data={chartData} options={chartOptions} />;
+  }
+  if (chartType === 'doughnut') {
+    return <Doughnut data={chartData} options={chartOptions} />;
+  }
 
-  return <ChartElement data={chartData} options={chartOptions} />;
-});
+  return null;
+}
