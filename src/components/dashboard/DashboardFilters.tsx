@@ -2,7 +2,7 @@
  * Dashboard Filters Component
  *
  * Global filters that affect all dashboard visualizations:
- * - Date Range Selector
+ * - Date Range Selector (Last 3/7/30/90 days)
  * - Retailer Multi-Select
  * - Location Multi-Select
  * - Category Multi-Select
@@ -12,11 +12,14 @@ import { useState, useEffect } from "react";
 import { useCubeQuery } from "@cubejs-client/react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { MultiSelect } from "@/utils/cube/components/MultiSelect";
 import { X } from "lucide-react";
-import { format } from "date-fns";
 import { GlobalFilters } from "@/pages/DashboardPage";
+import { 
+  SimpleDateRangeSelector, 
+  DateRangePreset, 
+  getDateRangeFromPreset 
+} from "./SimpleDateRangeSelector";
 
 interface DashboardFiltersProps {
   globalFilters: GlobalFilters;
@@ -27,11 +30,8 @@ export default function DashboardFilters({
   globalFilters,
   setGlobalFilters,
 }: DashboardFiltersProps) {
-  // Default to October 2025
-  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({
-    from: new Date(2025, 9, 1), // October 1, 2025
-    to: new Date(2025, 9, 31), // October 31, 2025
-  });
+  // Default to Last 7 days
+  const [datePreset, setDatePreset] = useState<DateRangePreset>("last7days");
 
   // Fetch retailers - separate simple query
   const { resultSet: retailersResult } = useCubeQuery({
@@ -76,52 +76,26 @@ export default function DashboardFilters({
       .map((row: any) => row["category_groups.name"])
       .filter(Boolean) || [];
 
-  // Update global filters when date range changes
+  // Update global filters when date preset changes
   useEffect(() => {
-    if (dateRange.from && dateRange.to) {
-      setGlobalFilters({
-        ...globalFilters,
-        dateRange: [
-          format(dateRange.from, "yyyy-MM-dd"),
-          format(dateRange.to, "yyyy-MM-dd"),
-        ],
-      });
-    } else if (!dateRange.from && !dateRange.to) {
-      // Clear date range if both dates are cleared
-      setGlobalFilters({
-        ...globalFilters,
-        dateRange: undefined,
-      });
-    }
-  }, [dateRange.from, dateRange.to]);
+    const [start, end] = getDateRangeFromPreset(datePreset);
+    setGlobalFilters({
+      ...globalFilters,
+      dateRange: [start, end],
+    });
+  }, [datePreset]);
 
-  // Set default date range on mount
+  //  Sync local state when filters change externally (not needed for preset)
   useEffect(() => {
-    if (dateRange.from && dateRange.to && !globalFilters.dateRange) {
-      setGlobalFilters({
-        ...globalFilters,
-        dateRange: [
-          format(dateRange.from, "yyyy-MM-dd"),
-          format(dateRange.to, "yyyy-MM-dd"),
-        ],
-      });
-    }
-  }, []);
-
-  // Sync local dateRange with globalFilters when they change externally
-  useEffect(() => {
-    if (!globalFilters.dateRange && (dateRange.from || dateRange.to)) {
-      // If global filters are cleared, clear local state too
-      setDateRange({});
+    if (!globalFilters.dateRange) {
+      setDatePreset("last7days");
     }
   }, [globalFilters.dateRange]);
 
   const clearAllFilters = () => {
-    // Clear local state first
-    setDateRange({});
-    // Then clear global filters
+    setDatePreset("last7days");
     setGlobalFilters({
-      dateRange: undefined,
+      dateRange: getDateRangeFromPreset("last7days"),
       retailers: [],
       locations: [],
       categories: [],
@@ -129,7 +103,6 @@ export default function DashboardFilters({
   };
 
   const hasActiveFilters =
-    globalFilters.dateRange ||
     (globalFilters.retailers && globalFilters.retailers.length > 0) ||
     (globalFilters.locations && globalFilters.locations.length > 0) ||
     (globalFilters.categories && globalFilters.categories.length > 0);
@@ -158,10 +131,9 @@ export default function DashboardFilters({
           {/* Date Range Selector */}
           <div>
             <label className="text-xs font-medium mb-2 block">Date Range</label>
-            <DateRangePicker
-              dateRange={dateRange}
-              onDateRangeChange={setDateRange}
-              className="w-full"
+            <SimpleDateRangeSelector
+              value={datePreset}
+              onChange={setDatePreset}
             />
           </div>
 
