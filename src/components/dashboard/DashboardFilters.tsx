@@ -25,23 +25,27 @@ interface DashboardFiltersProps {
 }
 
 export default function DashboardFilters({ globalFilters, setGlobalFilters }: DashboardFiltersProps) {
-  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
+  // Default to October 2025
+  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({
+    from: new Date(2025, 9, 1), // October 1, 2025
+    to: new Date(2025, 9, 31),  // October 31, 2025
+  });
 
-  // Fetch retailers
+  // Fetch retailers - separate simple query
   const { resultSet: retailersResult } = useCubeQuery({
     dimensions: ["retailers.name"],
     measures: [],
     order: { "retailers.name": "asc" },
   });
 
-  // Fetch locations
+  // Fetch locations - query settlements that have stores
   const { resultSet: locationsResult } = useCubeQuery({
-    dimensions: ["settlements.name_en"],
+    dimensions: ["stores.settlements.name_bg"],
     measures: [],
-    order: { "settlements.name_en": "asc" },
+    order: { "stores.settlements.name_bg": "asc" },
   });
 
-  // Fetch categories
+  // Fetch categories - separate simple query
   const { resultSet: categoriesResult } = useCubeQuery({
     dimensions: ["category_groups.name"],
     measures: [],
@@ -49,7 +53,7 @@ export default function DashboardFilters({ globalFilters, setGlobalFilters }: Da
   });
 
   const retailers = retailersResult?.tablePivot().map((row: any) => row["retailers.name"]).filter(Boolean) || [];
-  const locations = locationsResult?.tablePivot().map((row: any) => row["settlements.name_en"]).filter(Boolean) || [];
+  const locations = locationsResult?.tablePivot().map((row: any) => row["stores.settlements.name_bg"]).filter(Boolean) || [];
   const categories = categoriesResult?.tablePivot().map((row: any) => row["category_groups.name"]).filter(Boolean) || [];
 
   // Update global filters when date range changes
@@ -64,6 +68,19 @@ export default function DashboardFilters({ globalFilters, setGlobalFilters }: Da
       });
     }
   }, [dateRange]);
+  
+  // Set default date range on mount
+  useEffect(() => {
+    if (dateRange.from && dateRange.to && !globalFilters.dateRange) {
+      setGlobalFilters({
+        ...globalFilters,
+        dateRange: [
+          format(dateRange.from, "yyyy-MM-dd"),
+          format(dateRange.to, "yyyy-MM-dd"),
+        ],
+      });
+    }
+  }, []);
 
   const clearAllFilters = () => {
     setGlobalFilters({

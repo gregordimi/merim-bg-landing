@@ -26,7 +26,7 @@ export default function CategoryDeepDive({ globalFilters }: CategoryDeepDiveProp
     }
     if (globalFilters.locations && globalFilters.locations.length > 0) {
       filters.push({
-        member: "settlements.name_en",
+        member: "stores.settlements.name_bg",
         operator: "equals" as const,
         values: globalFilters.locations,
       });
@@ -173,7 +173,7 @@ export default function CategoryDeepDive({ globalFilters }: CategoryDeepDiveProp
             ) : categoryDistResult ? (
               <ChartViewer
                 chartId="category-dist"
-                chartType="pie"
+                chartType="bar"
                 resultSet={categoryDistResult}
                 pivotConfig={{
                   x: ["category_groups.name"],

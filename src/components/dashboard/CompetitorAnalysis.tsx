@@ -26,7 +26,7 @@ export default function CompetitorAnalysis({ globalFilters }: CompetitorAnalysis
     }
     if (globalFilters.locations && globalFilters.locations.length > 0) {
       filters.push({
-        member: "settlements.name_en",
+        member: "stores.settlements.name_bg",
         operator: "equals" as const,
         values: globalFilters.locations,
       });
