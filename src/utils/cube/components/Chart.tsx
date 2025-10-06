@@ -4,6 +4,7 @@ import { QueryRenderer } from "../QueryRenderer";
 import { ChartType } from "../types";
 import { ChartConfig } from "../chartConfigs";
 import { useRetailerList } from "../hooks/useRetailerList";
+import { MultiSelect } from "./MultiSelect";
 import {
   Card,
   CardContent,
@@ -18,8 +19,12 @@ interface ChartProps {
 }
 
 export function Chart({ config, chartType }: ChartProps) {
-  const [selectedRetailer, setSelectedRetailer] = useState<string>("");
-  const { retailers } = useRetailerList();
+  const [selectedRetailers, setSelectedRetailers] = useState<string[]>([]);
+  
+  // Use custom query if provided in config, otherwise use default
+  const { retailers, isLoading } = useRetailerList(
+    config.retailerQuery ? { query: config.retailerQuery } : undefined
+  );
 
   const showRetailerFilter =
     config.enableRetailerFilter && retailers.length > 0;
@@ -27,7 +32,7 @@ export function Chart({ config, chartType }: ChartProps) {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             <CardTitle>{config.title}</CardTitle>
             {config.description && (
@@ -35,18 +40,15 @@ export function Chart({ config, chartType }: ChartProps) {
             )}
           </div>
           {showRetailerFilter && (
-            <select
-              className="px-3 py-2 border rounded-md bg-background text-sm"
-              value={selectedRetailer}
-              onChange={(e) => setSelectedRetailer(e.target.value)}
-            >
-              <option value="">All Retailers</option>
-              {retailers.map((name) => (
-                <option key={name} value={name}>
-                  {name}
-                </option>
-              ))}
-            </select>
+            <div className="w-[300px]">
+              <MultiSelect
+                options={retailers}
+                selected={selectedRetailers}
+                onChange={setSelectedRetailers}
+                placeholder={isLoading ? "Loading..." : "All Retailers"}
+                className="w-full"
+              />
+            </div>
           )}
         </div>
       </CardHeader>
@@ -58,7 +60,10 @@ export function Chart({ config, chartType }: ChartProps) {
               chartType={chartType}
               resultSet={resultSet}
               pivotConfig={config.pivotConfig}
-              selectedRetailer={selectedRetailer || undefined}
+              selectedRetailers={selectedRetailers}
+              decimals={config.decimals}
+              currency={config.currency}
+              dateFormat={config.dateFormat}
             />
           )}
         </QueryRenderer>

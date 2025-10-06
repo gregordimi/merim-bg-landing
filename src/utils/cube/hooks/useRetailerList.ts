@@ -1,13 +1,22 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useCubeQuery } from '@cubejs-client/react';
+import { Query } from '@cubejs-client/core';
 
-export function useRetailerList() {
-  const { resultSet, isLoading, error } = useCubeQuery({
+interface UseRetailerListOptions {
+  query?: Query;
+}
+
+export function useRetailerList(options?: UseRetailerListOptions) {
+  const defaultQuery: Query = {
     dimensions: ['retailers.name'],
     filters: [],
     timeDimensions: [],
     measures: []
-  });
+  };
+
+  const { resultSet, isLoading, error } = useCubeQuery(
+    options?.query || defaultQuery
+  );
 
   const retailers = useMemo(() => {
     if (!resultSet) return [];
