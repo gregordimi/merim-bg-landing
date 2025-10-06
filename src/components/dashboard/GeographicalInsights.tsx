@@ -7,8 +7,7 @@
 import { useCubeQuery } from "@cubejs-client/react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { GlobalFilters } from "@/pages/DashboardPage";
-import { ChartViewer } from "@/utils/cube/ChartViewer";
-import { ChartAreaSkeleton } from "@/utils/cube/components/ChartSkeleton";
+import IsolatedChart from "./IsolatedChart";
 
 interface GeographicalInsightsProps {
   globalFilters: GlobalFilters;
@@ -100,27 +99,14 @@ export default function GeographicalInsights({ globalFilters }: GeographicalInsi
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {trendLoading ? (
-            <ChartAreaSkeleton />
-          ) : regionTrendResult ? (
-            <ChartViewer
-              chartId="geo-trend"
-              chartType="line"
-              resultSet={regionTrendResult}
-              pivotConfig={{
-                x: ["prices.price_date.week"],
-                y: ["stores.settlements.municipality", "measures"],
-                fillMissingDates: true,
-              }}
-              decimals={2}
-              currency="лв"
-              dateFormat={{ month: "short", day: "numeric" }}
-            />
-          ) : (
-            <div className="text-center p-8 text-muted-foreground">
-              No data available
-            </div>
-          )}
+          <IsolatedChart
+            resultSet={regionTrendResult}
+            isLoading={trendLoading}
+            type="line"
+            title="Regional Price Trends"
+            description="Track how prices vary across different municipalities over time"
+            currency="лв"
+          />
         </CardContent>
       </Card>
 
@@ -134,26 +120,14 @@ export default function GeographicalInsights({ globalFilters }: GeographicalInsi
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {settlementLoading ? (
-              <ChartAreaSkeleton />
-            ) : settlementResult ? (
-              <ChartViewer
-                chartId="geo-settlement"
-                chartType="bar"
-                resultSet={settlementResult}
-                pivotConfig={{
-                  x: ["settlements.name_bg"],
-                  y: ["measures"],
-                  fillMissingDates: false,
-                }}
-                decimals={2}
-                currency="лв"
-              />
-            ) : (
-              <div className="text-center p-8 text-muted-foreground">
-                No data available
-              </div>
-            )}
+            <IsolatedChart
+              resultSet={settlementResult}
+              isLoading={settlementLoading}
+              type="bar"
+              title="Top 20 Settlements by Average Price"
+              description="Highest average prices by settlement"
+              currency="лв"
+            />
           </CardContent>
         </Card>
 
@@ -166,26 +140,14 @@ export default function GeographicalInsights({ globalFilters }: GeographicalInsi
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {municipalityLoading ? (
-              <ChartAreaSkeleton />
-            ) : municipalityResult ? (
-              <ChartViewer
-                chartId="geo-municipality"
-                chartType="bar"
-                resultSet={municipalityResult}
-                pivotConfig={{
-                  x: ["settlements.municipality"],
-                  y: ["measures"],
-                  fillMissingDates: false,
-                }}
-                decimals={2}
-                currency="лв"
-              />
-            ) : (
-              <div className="text-center p-8 text-muted-foreground">
-                No data available
-              </div>
-            )}
+            <IsolatedChart
+              resultSet={municipalityResult}
+              isLoading={municipalityLoading}
+              type="bar"
+              title="Top 15 Municipalities by Average Price"
+              description="Compare average prices across municipalities"
+              currency="лв"
+            />
           </CardContent>
         </Card>
       </div>
