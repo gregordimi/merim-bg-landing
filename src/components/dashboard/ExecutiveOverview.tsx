@@ -1,11 +1,17 @@
 /**
  * Executive Overview Tab
- * 
+ *
  * High-level summary of key performance indicators and market trends
  */
 
 import { useCubeQuery } from "@cubejs-client/react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { GlobalFilters } from "@/pages/DashboardPage";
 import { ChartViewer } from "@/utils/cube/ChartViewer";
 import { ChartAreaSkeleton } from "@/utils/cube/components/ChartSkeleton";
@@ -14,7 +20,9 @@ interface ExecutiveOverviewProps {
   globalFilters: GlobalFilters;
 }
 
-export default function ExecutiveOverview({ globalFilters }: ExecutiveOverviewProps) {
+export default function ExecutiveOverview({
+  globalFilters,
+}: ExecutiveOverviewProps) {
   const buildFilters = () => {
     const filters = [];
     if (globalFilters.retailers && globalFilters.retailers.length > 0) {
@@ -45,6 +53,7 @@ export default function ExecutiveOverview({ globalFilters }: ExecutiveOverviewPr
     ? [
         {
           dimension: "prices.price_date",
+          granularity: "day" as const,
           dateRange: globalFilters.dateRange,
         },
       ]
@@ -65,15 +74,29 @@ export default function ExecutiveOverview({ globalFilters }: ExecutiveOverviewPr
   });
 
   // Price distribution by category
-  const { resultSet: categoryResult, isLoading: categoryLoading } = useCubeQuery({
-    dimensions: ["category_groups.name"],
-    measures: ["prices.averageRetailPrice"],
-    timeDimensions: globalFilters.dateRange
-      ? [{ dimension: "prices.price_date", dateRange: globalFilters.dateRange }]
-      : [],
-    filters: buildFilters(),
-    order: { "prices.averageRetailPrice": "desc" },
-  });
+  const categoryTimeDimensions = globalFilters.dateRange
+    ? [
+        {
+          dimension: "prices.price_date",
+          dateRange: globalFilters.dateRange,
+        },
+      ]
+    : [
+        {
+          dimension: "prices.price_date",
+          dateRange: "Last 30 days" as const,
+        },
+      ];
+
+  const { resultSet: categoryResult, isLoading: categoryLoading } =
+    useCubeQuery({
+      dimensions: ["category_groups.name"],
+      measures: ["prices.averageRetailPrice"],
+      timeDimensions: categoryTimeDimensions,
+      filters: buildFilters(),
+      order: { "prices.averageRetailPrice": "desc" },
+      limit: 20, // Limit to top 20 categories
+    });
 
   // Min/Max/Median prices
   const { resultSet: statsResult, isLoading: statsLoading } = useCubeQuery({
@@ -89,9 +112,9 @@ export default function ExecutiveOverview({ globalFilters }: ExecutiveOverviewPr
   });
 
   const statsData = statsResult?.tablePivot()[0];
-  const minPrice = statsData?.["prices.minRetailPrice"] as number || 0;
-  const maxPrice = statsData?.["prices.maxRetailPrice"] as number || 0;
-  const medianPrice = statsData?.["prices.medianRetailPrice"] as number || 0;
+  const minPrice = (statsData?.["prices.minRetailPrice"] as number) || 0;
+  const maxPrice = (statsData?.["prices.maxRetailPrice"] as number) || 0;
+  const medianPrice = (statsData?.["prices.medianRetailPrice"] as number) || 0;
 
   return (
     <div className="space-y-6">
@@ -114,7 +137,9 @@ export default function ExecutiveOverview({ globalFilters }: ExecutiveOverviewPr
               Median Price
             </p>
             <p className="text-3xl font-bold mt-2">
-              {statsLoading ? "..." : `${Number(medianPrice || 0).toFixed(2)} лв`}
+              {statsLoading
+                ? "..."
+                : `${Number(medianPrice || 0).toFixed(2)} лв`}
             </p>
           </CardContent>
         </Card>
@@ -174,14 +199,14 @@ export default function ExecutiveOverview({ globalFilters }: ExecutiveOverviewPr
         <CardContent>
           {categoryLoading ? (
             <ChartAreaSkeleton />
-          ) : categoryResult ? (
+          ) : categoryResult && categoryResult.tablePivot().length > 0 ? (
             <ChartViewer
               chartId="executive-category"
               chartType="bar"
               resultSet={categoryResult}
               pivotConfig={{
                 x: ["category_groups.name"],
-                y: ["measures"],
+                y: ["prices.averageRetailPrice"],
                 fillMissingDates: false,
               }}
               decimals={2}
@@ -189,7 +214,10 @@ export default function ExecutiveOverview({ globalFilters }: ExecutiveOverviewPr
             />
           ) : (
             <div className="text-center p-8 text-muted-foreground">
-              No data available
+              {categoryResult ? 
+                `No data available (${categoryResult.tablePivot().length} rows)` : 
+                "No data available"
+              }
             </div>
           )}
         </CardContent>

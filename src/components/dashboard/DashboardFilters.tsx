@@ -1,6 +1,6 @@
 /**
  * Dashboard Filters Component
- * 
+ *
  * Global filters that affect all dashboard visualizations:
  * - Date Range Selector
  * - Retailer Multi-Select
@@ -12,10 +12,9 @@ import { useState, useEffect } from "react";
 import { useCubeQuery } from "@cubejs-client/react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { MultiSelect } from "@/utils/cube/components/MultiSelect";
-import { Calendar as CalendarIcon, X } from "lucide-react";
+import { X } from "lucide-react";
 import { format } from "date-fns";
 import { GlobalFilters } from "@/pages/DashboardPage";
 
@@ -24,11 +23,14 @@ interface DashboardFiltersProps {
   setGlobalFilters: (filters: GlobalFilters) => void;
 }
 
-export default function DashboardFilters({ globalFilters, setGlobalFilters }: DashboardFiltersProps) {
+export default function DashboardFilters({
+  globalFilters,
+  setGlobalFilters,
+}: DashboardFiltersProps) {
   // Default to October 2025
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({
     from: new Date(2025, 9, 1), // October 1, 2025
-    to: new Date(2025, 9, 31),  // October 31, 2025
+    to: new Date(2025, 9, 31), // October 31, 2025
   });
 
   // Fetch retailers - separate simple query
@@ -41,6 +43,12 @@ export default function DashboardFilters({ globalFilters, setGlobalFilters }: Da
   // Fetch locations - query settlements that have stores
   const { resultSet: locationsResult } = useCubeQuery({
     dimensions: ["settlements.name_bg"],
+    filters: [
+      {
+        member: "stores.settlement_ekatte",
+        operator: "set",
+      },
+    ],
     measures: [],
     order: { "settlements.name_bg": "asc" },
   });
@@ -52,9 +60,21 @@ export default function DashboardFilters({ globalFilters, setGlobalFilters }: Da
     order: { "category_groups.name": "asc" },
   });
 
-  const retailers = retailersResult?.tablePivot().map((row: any) => row["retailers.name"]).filter(Boolean) || [];
-  const locations = locationsResult?.tablePivot().map((row: any) => row["settlements.name_bg"]).filter(Boolean) || [];
-  const categories = categoriesResult?.tablePivot().map((row: any) => row["category_groups.name"]).filter(Boolean) || [];
+  const retailers =
+    retailersResult
+      ?.tablePivot()
+      .map((row: any) => row["retailers.name"])
+      .filter(Boolean) || [];
+  const locations =
+    locationsResult
+      ?.tablePivot()
+      .map((row: any) => row["settlements.name_bg"])
+      .filter(Boolean) || [];
+  const categories =
+    categoriesResult
+      ?.tablePivot()
+      .map((row: any) => row["category_groups.name"])
+      .filter(Boolean) || [];
 
   // Update global filters when date range changes
   useEffect(() => {
@@ -66,9 +86,15 @@ export default function DashboardFilters({ globalFilters, setGlobalFilters }: Da
           format(dateRange.to, "yyyy-MM-dd"),
         ],
       });
+    } else if (!dateRange.from && !dateRange.to) {
+      // Clear date range if both dates are cleared
+      setGlobalFilters({
+        ...globalFilters,
+        dateRange: undefined,
+      });
     }
-  }, [dateRange]);
-  
+  }, [dateRange.from, dateRange.to]);
+
   // Set default date range on mount
   useEffect(() => {
     if (dateRange.from && dateRange.to && !globalFilters.dateRange) {
@@ -82,18 +108,28 @@ export default function DashboardFilters({ globalFilters, setGlobalFilters }: Da
     }
   }, []);
 
+  // Sync local dateRange with globalFilters when they change externally
+  useEffect(() => {
+    if (!globalFilters.dateRange && (dateRange.from || dateRange.to)) {
+      // If global filters are cleared, clear local state too
+      setDateRange({});
+    }
+  }, [globalFilters.dateRange]);
+
   const clearAllFilters = () => {
+    // Clear local state first
+    setDateRange({});
+    // Then clear global filters
     setGlobalFilters({
       dateRange: undefined,
       retailers: [],
       locations: [],
       categories: [],
     });
-    setDateRange({});
   };
 
-  const hasActiveFilters = 
-    globalFilters.dateRange || 
+  const hasActiveFilters =
+    globalFilters.dateRange ||
     (globalFilters.retailers && globalFilters.retailers.length > 0) ||
     (globalFilters.locations && globalFilters.locations.length > 0) ||
     (globalFilters.categories && globalFilters.categories.length > 0);
@@ -122,35 +158,11 @@ export default function DashboardFilters({ globalFilters, setGlobalFilters }: Da
           {/* Date Range Selector */}
           <div>
             <label className="text-xs font-medium mb-2 block">Date Range</label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-left font-normal"
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {dateRange.from ? (
-                    dateRange.to ? (
-                      <>
-                        {format(dateRange.from, "MMM dd")} - {format(dateRange.to, "MMM dd, yyyy")}
-                      </>
-                    ) : (
-                      format(dateRange.from, "MMM dd, yyyy")
-                    )
-                  ) : (
-                    <span>Pick a date range</span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="range"
-                  selected={dateRange}
-                  onSelect={(range: any) => setDateRange(range || {})}
-                  numberOfMonths={2}
-                />
-              </PopoverContent>
-            </Popover>
+            <DateRangePicker
+              dateRange={dateRange}
+              onDateRangeChange={setDateRange}
+              className="w-full"
+            />
           </div>
 
           {/* Retailer Filter */}
