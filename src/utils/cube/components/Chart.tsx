@@ -40,7 +40,7 @@ export function Chart({ config, chartType }: ChartProps) {
             )}
           </div>
           {showRetailerFilter && (
-            <div className="w-[300px]">
+            <div className="w-[400px]">
               <MultiSelect
                 options={retailers}
                 selected={selectedRetailers}

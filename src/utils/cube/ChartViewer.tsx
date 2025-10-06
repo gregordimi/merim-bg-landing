@@ -109,9 +109,8 @@ export function ChartViewer(props: ChartViewerProps) {
           parseFloat(row["prices.averageRetailPrice"]) || 0,
           decimals
         );
-        if (value > 0) {
-          acc[date][retailer] = value;
-        }
+        // Store value even if 0 (null will be handled by Recharts)
+        acc[date][retailer] = value > 0 ? value : null;
         return acc;
       }, {});
 
@@ -121,6 +120,9 @@ export function ChartViewer(props: ChartViewerProps) {
       };
     }
 
+    // Collect all unique retailers/categories across all dates
+    const allKeys = new Set<string>();
+    
     const grouped = pivot.reduce((acc: any, row: any) => {
       const date = row["prices.price_date.day"] || row["prices.price_date"];
       if (!acc[date]) {
@@ -134,18 +136,19 @@ export function ChartViewer(props: ChartViewerProps) {
         decimals
       );
 
-      if (value > 0) {
-        acc[date][name] = value;
+      // Track all unique keys
+      if (name) {
+        allKeys.add(name);
       }
+
+      // Store value even if 0 (null will be handled by Recharts)
+      acc[date][name] = value > 0 ? value : null;
 
       return acc;
     }, {});
 
     const data = Object.values(grouped);
-    const keys =
-      data.length > 0
-        ? Object.keys(data[0] as object).filter((k) => k !== "date")
-        : [];
+    const keys = Array.from(allKeys).sort();
 
     return {
       chartData: data,
@@ -248,6 +251,8 @@ export function ChartViewer(props: ChartViewerProps) {
             stroke={COLORS[index % COLORS.length]}
             fill={chartType === "area" ? COLORS[index % COLORS.length] : "none"}
             fillOpacity={chartType === "area" ? 0.3 : 0}
+            connectNulls={true}
+            dot={false}
           />
         ))}
       </LineChart>
