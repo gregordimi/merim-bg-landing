@@ -31,7 +31,7 @@ export default function DashboardHeader({ globalFilters, setGlobalFilters }: Das
     }
     if (globalFilters.locations && globalFilters.locations.length > 0) {
       filters.push({
-        member: "stores.settlements.name_bg",
+        member: "settlements.name_bg",
         operator: "equals" as const,
         values: globalFilters.locations,
       });

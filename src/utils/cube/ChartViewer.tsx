@@ -95,11 +95,12 @@ export function ChartViewer(props: ChartViewerProps) {
       const name =
         row["retailers.name"] || 
         row["category_groups.name"] || 
+        row["settlements.name_bg"] ||
+        row["settlements.municipality"] ||
         row["stores.settlements.name_bg"] ||
         row["stores.settlements.name_en"] ||
         row["stores.settlements.municipality"] ||
         row["settlements.name_en"] ||
-        row["settlements.municipality"] ||
         "value";
       const value = formatValue(
         parseFloat(row["prices.averageRetailPrice"]) || 0,

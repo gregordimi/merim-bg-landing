@@ -40,9 +40,9 @@ export default function DashboardFilters({ globalFilters, setGlobalFilters }: Da
 
   // Fetch locations - query settlements that have stores
   const { resultSet: locationsResult } = useCubeQuery({
-    dimensions: ["stores.settlements.name_bg"],
+    dimensions: ["settlements.name_bg"],
     measures: [],
-    order: { "stores.settlements.name_bg": "asc" },
+    order: { "settlements.name_bg": "asc" },
   });
 
   // Fetch categories - separate simple query
@@ -53,7 +53,7 @@ export default function DashboardFilters({ globalFilters, setGlobalFilters }: Da
   });
 
   const retailers = retailersResult?.tablePivot().map((row: any) => row["retailers.name"]).filter(Boolean) || [];
-  const locations = locationsResult?.tablePivot().map((row: any) => row["stores.settlements.name_bg"]).filter(Boolean) || [];
+  const locations = locationsResult?.tablePivot().map((row: any) => row["settlements.name_bg"]).filter(Boolean) || [];
   const categories = categoriesResult?.tablePivot().map((row: any) => row["category_groups.name"]).filter(Boolean) || [];
 
   // Update global filters when date range changes
