@@ -13,7 +13,8 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { GlobalFilters } from "@/pages/DashboardPage";
-import IsolatedChart from "./IsolatedChart";
+import { ChartViewer } from "@/utils/cube/ChartViewer";
+import { ChartAreaSkeleton } from "@/utils/cube/components/ChartSkeleton";
 
 interface ExecutiveOverviewProps {
   globalFilters: GlobalFilters;
@@ -56,7 +57,13 @@ export default function ExecutiveOverview({
           dateRange: globalFilters.dateRange,
         },
       ]
-    : [];
+    : [
+        {
+          dimension: "prices.price_date",
+          granularity: "day" as const,
+          dateRange: "Last 30 days" as const,
+        },
+      ];
 
   // Price trend over time
   const { resultSet: trendResult, isLoading: trendLoading } = useCubeQuery({
@@ -74,7 +81,12 @@ export default function ExecutiveOverview({
           dateRange: globalFilters.dateRange,
         },
       ]
-    : [];
+    : [
+        {
+          dimension: "prices.price_date",
+          dateRange: "Last 30 days" as const,
+        },
+      ];
 
   const { resultSet: categoryResult, isLoading: categoryLoading } =
     useCubeQuery({
@@ -83,7 +95,7 @@ export default function ExecutiveOverview({
       timeDimensions: categoryTimeDimensions,
       filters: buildFilters(),
       order: { "prices.averageRetailPrice": "desc" },
-      limit: 20,
+      limit: 20, // Limit to top 20 categories
     });
 
   // Min/Max/Median prices
@@ -153,14 +165,26 @@ export default function ExecutiveOverview({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <IsolatedChart
-            resultSet={trendResult}
-            isLoading={trendLoading}
-            type="line"
-            title="Price Trends Over Time"
-            description="Track how retail and promotional prices change over time"
-            currency="лв"
-          />
+          {trendLoading ? (
+            <ChartAreaSkeleton />
+          ) : trendResult ? (
+            <ChartViewer
+              chartId="executive-trend"
+              chartType="line"
+              resultSet={trendResult}
+              pivotConfig={{
+                x: ["prices.price_date.day"],
+                y: ["measures"],
+                fillMissingDates: true,
+              }}
+              decimals={2}
+              currency="лв"
+            />
+          ) : (
+            <div className="text-center p-8 text-muted-foreground">
+              No data available
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -173,14 +197,29 @@ export default function ExecutiveOverview({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <IsolatedChart
-            resultSet={categoryResult}
-            isLoading={categoryLoading}
-            type="bar"
-            title="Average Price by Category"
-            description="Compare average prices across product categories"
-            currency="лв"
-          />
+          {categoryLoading ? (
+            <ChartAreaSkeleton />
+          ) : categoryResult && categoryResult.tablePivot().length > 0 ? (
+            <ChartViewer
+              chartId="executive-category"
+              chartType="bar"
+              resultSet={categoryResult}
+              pivotConfig={{
+                x: ["category_groups.name"],
+                y: ["prices.averageRetailPrice"],
+                fillMissingDates: false,
+              }}
+              decimals={2}
+              currency="лв"
+            />
+          ) : (
+            <div className="text-center p-8 text-muted-foreground">
+              {categoryResult ? 
+                `No data available (${categoryResult.tablePivot().length} rows)` : 
+                "No data available"
+              }
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
