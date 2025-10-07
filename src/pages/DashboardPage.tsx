@@ -26,10 +26,10 @@ interface AppConfig extends Record<string, unknown> {
 }
 
 export interface GlobalFilters {
-  dateRange?: [string, string];
-  retailers?: string[];
-  locations?: string[];
-  categories?: string[];
+  retailers: string[];
+  locations: string[];
+  categories: string[];
+  dateRange?: string[];
 }
 
 export default function DashboardPage() {
@@ -40,11 +40,24 @@ export default function DashboardPage() {
   });
 
   const [globalFilters, setGlobalFilters] = useState<GlobalFilters>({
-    dateRange: undefined,
     retailers: [],
     locations: [],
     categories: [],
+    dateRange: undefined,
   });
+
+  // CRITICAL: Memoize the filters object to prevent unnecessary re-renders
+  const stableFilters = useMemo(() => ({
+    retailers: globalFilters.retailers,
+    locations: globalFilters.locations,
+    categories: globalFilters.categories,
+    dateRange: globalFilters.dateRange,
+  }), [
+    globalFilters.retailers.join(','),
+    globalFilters.locations.join(','), 
+    globalFilters.categories.join(','),
+    (globalFilters.dateRange || []).join(','),
+  ]);
 
   const cubeApi = useMemo(() => {
     let transport = undefined;
@@ -82,19 +95,19 @@ export default function DashboardPage() {
             </TabsList>
 
             <TabsContent value="overview">
-              <ExecutiveOverview globalFilters={globalFilters} />
+              <ExecutiveOverview globalFilters={stableFilters} />
             </TabsContent>
 
             <TabsContent value="competitor">
-              <CompetitorAnalysis globalFilters={globalFilters} />
+              <CompetitorAnalysis globalFilters={stableFilters} />
             </TabsContent>
 
             <TabsContent value="category">
-              <CategoryDeepDive globalFilters={globalFilters} />
+              <CategoryDeepDive globalFilters={stableFilters} />
             </TabsContent>
 
             <TabsContent value="geographical">
-              <GeographicalInsights globalFilters={globalFilters} />
+              <GeographicalInsights globalFilters={stableFilters} />
             </TabsContent>
           </Tabs>
         </div>
