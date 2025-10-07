@@ -16,7 +16,10 @@ import {
 } from "@/components/ui/card";
 import { GlobalFilters } from "@/pages/DashboardPage";
 import { ChartViewer } from "@/utils/cube/ChartViewer";
-import { ChartAreaSkeleton } from "@/utils/cube/components/ChartSkeleton";
+import {
+  ChartAreaSkeleton,
+  CubeQueryWrapper,
+} from "@/utils/cube/components/ChartSkeleton";
 import {
   BarChart,
   Bar,
@@ -24,6 +27,7 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
+  Legend,
   ResponsiveContainer,
 } from "recharts";
 
@@ -110,7 +114,7 @@ export default function ExecutiveOverview({
   const categoryQuery = useMemo(
     () => ({
       dimensions: ["category_groups.name"],
-      measures: ["prices.averageRetailPrice"],
+      measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
       timeDimensions: globalFilters.dateRange
         ? [
             {
@@ -304,26 +308,26 @@ function TrendSection({ resultSet, isLoading, error, progress }: any) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {isLoading ? (
-          <ChartAreaSkeleton progress={progress} />
-        ) : resultSet ? (
-          <ChartViewer
-            chartId="executive-trend"
-            chartType="line"
-            resultSet={resultSet}
-            pivotConfig={{
-              x: ["prices.price_date.day"],
-              y: ["measures"],
-              fillMissingDates: true,
-            }}
-            decimals={2}
-            currency="лв"
-          />
-        ) : (
-          <div className="text-center p-8 text-muted-foreground">
-            No data available
-          </div>
-        )}
+        <CubeQueryWrapper
+          isLoading={isLoading}
+          error={error}
+          progress={progress}
+        >
+          {resultSet && (
+            <ChartViewer
+              chartId="executive-trend"
+              chartType="line"
+              resultSet={resultSet}
+              pivotConfig={{
+                x: ["prices.price_date.day"],
+                y: ["measures"],
+                fillMissingDates: true,
+              }}
+              decimals={2}
+              currency="лв"
+            />
+          )}
+        </CubeQueryWrapper>
       </CardContent>
     </Card>
   );
@@ -338,6 +342,7 @@ function CategorySection({ resultSet, isLoading, error, progress }: any) {
       category: row["category_groups.name"],
       // With castNumerics: true, this should already be a number
       price: Number(row["prices.averageRetailPrice"] || 0),
+      promo: Number(row["prices.averagePromoPrice"] || 0),
     }));
   }, [resultSet]);
 
@@ -359,44 +364,49 @@ function CategorySection({ resultSet, isLoading, error, progress }: any) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Average Price by Category</CardTitle>
+        <CardTitle>Average Retail & Promo Prices by Category</CardTitle>
         <CardDescription>
-          Compare average prices across product categories
+          Compare retail and promotional prices across product categories
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {isLoading ? (
-          <ChartAreaSkeleton progress={progress} />
-        ) : chartData.length > 0 ? (
-          <ResponsiveContainer width="100%" height={400}>
-            <BarChart
-              data={chartData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis
-                dataKey="category"
-                angle={-45}
-                textAnchor="end"
-                height={100}
-                interval={0}
-              />
-              <YAxis tickFormatter={(value) => `${value.toFixed(2)} лв`} />
-              <Tooltip
-                formatter={(value: number) => [
-                  `${value.toFixed(2)} лв`,
-                  "Average Price",
-                ]}
-                labelStyle={{ color: "#000" }}
-              />
-              <Bar dataKey="price" fill="#0088FE" />
-            </BarChart>
-          </ResponsiveContainer>
-        ) : (
-          <div className="text-center p-8 text-muted-foreground">
-            No data available
-          </div>
-        )}
+        <CubeQueryWrapper
+          isLoading={isLoading}
+          error={error}
+          progress={progress}
+        >
+          {chartData.length > 0 && (
+            <ResponsiveContainer width="100%" height={400}>
+              <BarChart
+                data={chartData}
+                margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="category"
+                  angle={-45}
+                  textAnchor="end"
+                  height={100}
+                  interval={0}
+                />
+                <YAxis tickFormatter={(value) => `${value.toFixed(2)} лв`} />
+                <Tooltip
+                  formatter={(value: number, name: string, props: any) => {
+                    const label =
+                      props.dataKey === "price"
+                        ? "Retail Price"
+                        : "Promo Price";
+                    return [`${value.toFixed(2)} лв`, label];
+                  }}
+                  labelStyle={{ color: "#000" }}
+                />
+                <Legend />
+                <Bar dataKey="price" fill="#0088FE" name="Retail Price" />
+                <Bar dataKey="promo" fill="#00C49F" name="Promo Price" />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </CubeQueryWrapper>
       </CardContent>
     </Card>
   );
