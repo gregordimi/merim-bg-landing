@@ -1,9 +1,18 @@
-import { useMemo, useState, useEffect } from 'react';
-import { GlobalFilters } from '@/pages/DashboardPage';
-import { useStableQuery } from '@/hooks/useStableQuery';
-import { buildFilters, buildTimeDimensions } from '@/utils/queryHelpers';
-import { ChartWrapper } from './ChartWrapper';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { useMemo, useState, useEffect } from "react";
+import { GlobalFilters } from "@/pages/DashboardPage";
+import { useStableQuery } from "@/hooks/useStableQuery";
+import { buildFilters, buildTimeDimensions } from "@/utils/queryHelpers";
+import { ChartWrapper } from "./ChartWrapper";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 interface MunicipalityChartProps {
   globalFilters: GlobalFilters;
@@ -26,12 +35,12 @@ export function MunicipalityChart({ globalFilters }: MunicipalityChartProps) {
       limit: 15,
     }),
     [
-      (globalFilters.retailers || []).join(','),
-      (globalFilters.locations || []).join(','),
-      (globalFilters.categories || []).join(','),
-      (globalFilters.dateRange || []).join(',')
+      (globalFilters.retailers || []).join(","),
+      (globalFilters.locations || []).join(","),
+      (globalFilters.categories || []).join(","),
+      (globalFilters.dateRange || []).join(","),
     ],
-    'municipality-chart'
+    "municipality-chart"
   );
 
   // Keep track of the last valid data to prevent showing empty charts
@@ -88,7 +97,8 @@ export function MunicipalityChart({ globalFilters }: MunicipalityChartProps) {
             <YAxis tickFormatter={(value) => `${value.toFixed(2)} лв`} />
             <Tooltip
               formatter={(value: number, name: string) => {
-                const label = name === "retailPrice" ? "Retail Price" : "Promo Price";
+                const label =
+                  name === "retailPrice" ? "Retail Price" : "Promo Price";
                 return [`${value.toFixed(2)} лв`, label];
               }}
               labelStyle={{ color: "#000" }}
