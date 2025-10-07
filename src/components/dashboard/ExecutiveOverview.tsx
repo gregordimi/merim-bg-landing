@@ -4,9 +4,9 @@
  * High-level summary of key performance indicators and market trends
  */
 
-import { QueryRenderer } from "@cubejs-client/react";
-import { useMemo, useContext } from "react";
-import { CubeContext } from "@cubejs-client/react";
+import { useCubeQuery } from "@cubejs-client/react";
+import { isQueryPresent } from "@cubejs-client/core";
+import { useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -34,8 +34,6 @@ interface ExecutiveOverviewProps {
 export default function ExecutiveOverview({
   globalFilters,
 }: ExecutiveOverviewProps) {
-  const { cubeApi } = useContext(CubeContext);
-
   // Build filters once and memoize them properly
   const filters = useMemo(() => {
     const filterArray = [];
@@ -133,55 +131,78 @@ export default function ExecutiveOverview({
     [globalFilters.dateRange, filters]
   );
 
+  // Use useCubeQuery with optimal options
+  const queryOptions = useMemo(
+    () => ({
+      castNumerics: true, // Auto-convert numbers - fixes .toFixed() errors
+      resetResultSetOnChange: false, // Prevent data from disappearing
+      subscribe: false, // Disable real-time for now to reduce load
+    }),
+    []
+  );
+
+  // Execute queries with skip logic to prevent incomplete queries
+  const {
+    resultSet: statsResult,
+    isLoading: statsLoading,
+    error: statsError,
+    progress: statsProgress,
+  } = useCubeQuery(statsQuery, {
+    ...queryOptions,
+    skip: !isQueryPresent(statsQuery),
+  });
+
+  const {
+    resultSet: trendResult,
+    isLoading: trendLoading,
+    error: trendError,
+    progress: trendProgress,
+  } = useCubeQuery(trendQuery, {
+    ...queryOptions,
+    skip: !isQueryPresent(trendQuery),
+  });
+
+  const {
+    resultSet: categoryResult,
+    isLoading: categoryLoading,
+    error: categoryError,
+    progress: categoryProgress,
+  } = useCubeQuery(categoryQuery, {
+    ...queryOptions,
+    skip: !isQueryPresent(categoryQuery),
+  });
+
   return (
     <div className="space-y-6">
       {/* Price Statistics Cards */}
-      <QueryRenderer
-        query={statsQuery}
-        cubeApi={cubeApi}
-        resetResultSetOnChange={false}
-        render={({ resultSet, loadingState, error }) => (
-          <StatsSection
-            resultSet={resultSet}
-            isLoading={loadingState.isLoading}
-            error={error}
-          />
-        )}
+      <StatsSection
+        resultSet={statsResult}
+        isLoading={statsLoading}
+        error={statsError}
+        progress={statsProgress}
       />
 
       {/* Price Trend Chart */}
-      <QueryRenderer
-        query={trendQuery}
-        cubeApi={cubeApi}
-        resetResultSetOnChange={false}
-        render={({ resultSet, loadingState, error }) => (
-          <TrendSection
-            resultSet={resultSet}
-            isLoading={loadingState.isLoading}
-            error={error}
-          />
-        )}
+      <TrendSection
+        resultSet={trendResult}
+        isLoading={trendLoading}
+        error={trendError}
+        progress={trendProgress}
       />
 
       {/* Category Distribution Chart */}
-      <QueryRenderer
-        query={categoryQuery}
-        cubeApi={cubeApi}
-        resetResultSetOnChange={false}
-        render={({ resultSet, loadingState, error }) => (
-          <CategorySection
-            resultSet={resultSet}
-            isLoading={loadingState.isLoading}
-            error={error}
-          />
-        )}
+      <CategorySection
+        resultSet={categoryResult}
+        isLoading={categoryLoading}
+        error={categoryError}
+        progress={categoryProgress}
       />
     </div>
   );
 }
 
 // Stats Section Component
-function StatsSection({ resultSet, isLoading, error }: any) {
+function StatsSection({ resultSet, isLoading, error, progress }: any) {
   if (error) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -204,23 +225,12 @@ function StatsSection({ resultSet, isLoading, error }: any) {
       return { minPrice: 0, maxPrice: 0, medianPrice: 0 };
 
     const data = pivot[0];
-    console.log("Stats raw data:", data);
 
-    const minPrice = data?.["prices.minRetailPrice"];
-    const maxPrice = data?.["prices.maxRetailPrice"];
-    const medianPrice = data?.["prices.medianRetailPrice"];
-
-    console.log("Raw values:", { minPrice, maxPrice, medianPrice });
-    console.log("Types:", {
-      minType: typeof minPrice,
-      maxType: typeof maxPrice,
-      medianType: typeof medianPrice,
-    });
-
+    // With castNumerics: true, these should already be numbers
     return {
-      minPrice: parseFloat(minPrice) || 0,
-      maxPrice: parseFloat(maxPrice) || 0,
-      medianPrice: parseFloat(medianPrice) || 0,
+      minPrice: data?.["prices.minRetailPrice"] || 0,
+      maxPrice: data?.["prices.maxRetailPrice"] || 0,
+      medianPrice: data?.["prices.medianRetailPrice"] || 0,
     };
   }, [resultSet]);
 
@@ -232,7 +242,9 @@ function StatsSection({ resultSet, isLoading, error }: any) {
             Minimum Price
           </p>
           <p className="text-3xl font-bold mt-2">
-            {isLoading ? "..." : `${statsData.minPrice.toFixed(2)} лв`}
+            {isLoading
+              ? progress?.stage?.stage || "Loading..."
+              : `${Number(statsData.minPrice).toFixed(2)} лв`}
           </p>
         </CardContent>
       </Card>
@@ -243,7 +255,9 @@ function StatsSection({ resultSet, isLoading, error }: any) {
             Median Price
           </p>
           <p className="text-3xl font-bold mt-2">
-            {isLoading ? "..." : `${statsData.medianPrice.toFixed(2)} лв`}
+            {isLoading
+              ? progress?.stage?.stage || "Loading..."
+              : `${Number(statsData.medianPrice).toFixed(2)} лв`}
           </p>
         </CardContent>
       </Card>
@@ -254,7 +268,9 @@ function StatsSection({ resultSet, isLoading, error }: any) {
             Maximum Price
           </p>
           <p className="text-3xl font-bold mt-2">
-            {isLoading ? "..." : `${statsData.maxPrice.toFixed(2)} лв`}
+            {isLoading
+              ? progress?.stage?.stage || "Loading..."
+              : `${Number(statsData.maxPrice).toFixed(2)} лв`}
           </p>
         </CardContent>
       </Card>
@@ -263,7 +279,7 @@ function StatsSection({ resultSet, isLoading, error }: any) {
 }
 
 // Trend Section Component
-function TrendSection({ resultSet, isLoading, error }: any) {
+function TrendSection({ resultSet, isLoading, error, progress }: any) {
   if (error) {
     return (
       <Card>
@@ -289,7 +305,7 @@ function TrendSection({ resultSet, isLoading, error }: any) {
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <ChartAreaSkeleton />
+          <ChartAreaSkeleton progress={progress} />
         ) : resultSet ? (
           <ChartViewer
             chartId="executive-trend"
@@ -314,13 +330,14 @@ function TrendSection({ resultSet, isLoading, error }: any) {
 }
 
 // Category Section Component
-function CategorySection({ resultSet, isLoading, error }: any) {
+function CategorySection({ resultSet, isLoading, error, progress }: any) {
   const chartData = useMemo(() => {
     if (!resultSet) return [];
 
     return resultSet.tablePivot().map((row: any) => ({
       category: row["category_groups.name"],
-      price: parseFloat(row["prices.averageRetailPrice"] || "0"),
+      // With castNumerics: true, this should already be a number
+      price: Number(row["prices.averageRetailPrice"] || 0),
     }));
   }, [resultSet]);
 
@@ -349,7 +366,7 @@ function CategorySection({ resultSet, isLoading, error }: any) {
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <ChartAreaSkeleton />
+          <ChartAreaSkeleton progress={progress} />
         ) : chartData.length > 0 ? (
           <ResponsiveContainer width="100%" height={400}>
             <BarChart
