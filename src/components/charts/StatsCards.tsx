@@ -43,7 +43,7 @@ export function StatsCards({ globalFilters }: StatsCardsProps) {
           <p className="text-sm font-medium text-muted-foreground">Minimum Price</p>
           <p className="text-3xl font-bold mt-2">
             {isLoading
-              ? progress?.stage?.stage || "Loading..."
+              ? "Loading..."
               : `${Number(statsData.minPrice).toFixed(2)} лв`}
           </p>
         </CardContent>
@@ -54,7 +54,7 @@ export function StatsCards({ globalFilters }: StatsCardsProps) {
           <p className="text-sm font-medium text-muted-foreground">Median Price</p>
           <p className="text-3xl font-bold mt-2">
             {isLoading
-              ? progress?.stage?.stage || "Loading..."
+              ? "Loading..."
               : `${Number(statsData.medianPrice).toFixed(2)} лв`}
           </p>
         </CardContent>
@@ -65,7 +65,7 @@ export function StatsCards({ globalFilters }: StatsCardsProps) {
           <p className="text-sm font-medium text-muted-foreground">Maximum Price</p>
           <p className="text-3xl font-bold mt-2">
             {isLoading
-              ? progress?.stage?.stage || "Loading..."
+              ? "Loading..."
               : `${Number(statsData.maxPrice).toFixed(2)} лв`}
           </p>
         </CardContent>
