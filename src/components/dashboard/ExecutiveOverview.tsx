@@ -145,7 +145,7 @@ export default function ExecutiveOverview({
     []
   );
 
-  // Execute queries with skip logic to prevent incomplete queries
+  // Execute queries with priority - stats first, then others
   const {
     resultSet: statsResult,
     isLoading: statsLoading,
@@ -156,6 +156,7 @@ export default function ExecutiveOverview({
     skip: !isQueryPresent(statsQuery),
   });
 
+  // Only run trend query after stats is done or has data
   const {
     resultSet: trendResult,
     isLoading: trendLoading,
@@ -163,9 +164,10 @@ export default function ExecutiveOverview({
     progress: trendProgress,
   } = useCubeQuery(trendQuery, {
     ...queryOptions,
-    skip: !isQueryPresent(trendQuery),
+    skip: !isQueryPresent(trendQuery) || (statsLoading && !statsResult),
   });
 
+  // Only run category query after trend is done or has data
   const {
     resultSet: categoryResult,
     isLoading: categoryLoading,
@@ -173,7 +175,7 @@ export default function ExecutiveOverview({
     progress: categoryProgress,
   } = useCubeQuery(categoryQuery, {
     ...queryOptions,
-    skip: !isQueryPresent(categoryQuery),
+    skip: !isQueryPresent(categoryQuery) || (trendLoading && !trendResult),
   });
 
   return (
