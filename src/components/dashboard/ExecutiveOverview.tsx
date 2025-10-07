@@ -38,7 +38,7 @@ interface ExecutiveOverviewProps {
 export default function ExecutiveOverview({
   globalFilters,
 }: ExecutiveOverviewProps) {
-  // Build filters once and memoize them properly
+  // FIXED: Simple stable filters - no JSON.stringify bullshit
   const filters = useMemo(() => {
     const filterArray = [];
     if (globalFilters.retailers && globalFilters.retailers.length > 0) {
@@ -62,14 +62,18 @@ export default function ExecutiveOverview({
         values: globalFilters.categories,
       });
     }
+    console.log("ExecutiveOverview filters changed:", filterArray);
+    console.log("globalFilters:", globalFilters);
+    console.log("Timestamp:", new Date().toISOString());
     return filterArray;
   }, [
-    globalFilters.retailers,
-    globalFilters.locations,
-    globalFilters.categories,
+    // Use string comparison to avoid object reference issues
+    (globalFilters.retailers || []).join(","),
+    (globalFilters.locations || []).join(","),
+    (globalFilters.categories || []).join(","),
   ]);
 
-  // Simple stats query - no time dimensions to keep it stable
+  // FIXED: Consistent stats query with stable filters
   const statsQuery = useMemo(
     () => ({
       measures: [
@@ -78,11 +82,25 @@ export default function ExecutiveOverview({
         "prices.medianRetailPrice",
       ],
       filters: filters,
+      // Add consistent date range as filter instead of timeDimension
+      timeDimensions: globalFilters.dateRange
+        ? [
+            {
+              dimension: "prices.price_date",
+              dateRange: globalFilters.dateRange,
+            },
+          ]
+        : [
+            {
+              dimension: "prices.price_date",
+              dateRange: "Last 30 days" as const,
+            },
+          ],
     }),
-    [filters]
+    [filters, (globalFilters.dateRange || []).join(",")]
   );
 
-  // Time dimensions for trend chart
+  // FIXED: Consistent time dimensions with proper default
   const timeDimensions = useMemo(() => {
     return globalFilters.dateRange
       ? [
@@ -99,8 +117,9 @@ export default function ExecutiveOverview({
             dateRange: "Last 30 days" as const,
           },
         ];
-  }, [globalFilters.dateRange]);
+  }, [(globalFilters.dateRange || []).join(",")]);
 
+  // FIXED: Consistent trend query with filters
   const trendQuery = useMemo(
     () => ({
       measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
@@ -111,6 +130,7 @@ export default function ExecutiveOverview({
     [timeDimensions, filters]
   );
 
+  // FIXED: Consistent category query with filters
   const categoryQuery = useMemo(
     () => ({
       dimensions: ["category_groups.name"],
@@ -132,7 +152,7 @@ export default function ExecutiveOverview({
       order: { "prices.averageRetailPrice": "desc" as const },
       limit: 20,
     }),
-    [globalFilters.dateRange, filters]
+    [(globalFilters.dateRange || []).join(","), filters]
   );
 
   // Use useCubeQuery with optimal options
@@ -342,7 +362,6 @@ function CategorySection({ resultSet, isLoading, error, progress }: any) {
 
     return resultSet.tablePivot().map((row: any) => ({
       category: row["category_groups.name"],
-      // With castNumerics: true, this should already be a number
       price: Number(row["prices.averageRetailPrice"] || 0),
       promo: Number(row["prices.averagePromoPrice"] || 0),
     }));

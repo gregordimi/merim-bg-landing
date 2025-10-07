@@ -40,7 +40,7 @@ interface GeographicalInsightsProps {
 export default function GeographicalInsights({
   globalFilters,
 }: GeographicalInsightsProps) {
-  // Build filters once and memoize them properly
+  // FIXED: Simple stable filters - no JSON.stringify bullshit
   const filters = useMemo(() => {
     const filterArray = [];
     if (globalFilters.retailers && globalFilters.retailers.length > 0) {
@@ -64,14 +64,18 @@ export default function GeographicalInsights({
         values: globalFilters.categories,
       });
     }
+    console.log('GeographicalInsights filters changed:', filterArray);
+    console.log('globalFilters:', globalFilters);
     return filterArray;
   }, [
-    globalFilters.retailers,
-    globalFilters.locations,
-    globalFilters.categories,
+    // Use string comparison to avoid object reference issues
+    (globalFilters.retailers || []).join(','),
+    (globalFilters.locations || []).join(','),
+    (globalFilters.categories || []).join(','),
   ]);
 
   // Memoize queries to prevent unnecessary re-execution
+  // FIXED: Consistent settlement query with filters
   const settlementQuery = useMemo(
     () => ({
       dimensions: ["settlements.name_bg"],
@@ -83,17 +87,23 @@ export default function GeographicalInsights({
               dateRange: globalFilters.dateRange,
             },
           ]
-        : [],
+        : [
+            {
+              dimension: "prices.price_date",
+              dateRange: "Last 30 days" as const,
+            },
+          ],
       filters: filters,
       order: { "prices.averageRetailPrice": "desc" as const },
       limit: 20,
     }),
-    [globalFilters.dateRange, filters]
+    [(globalFilters.dateRange || []).join(','), filters]
   );
 
+  // FIXED: Consistent municipality query with filters
   const municipalityQuery = useMemo(
     () => ({
-      dimensions: ["settlements.municipality"],
+      dimensions: ["municipality.name"],
       measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
       timeDimensions: globalFilters.dateRange
         ? [
@@ -102,15 +112,20 @@ export default function GeographicalInsights({
               dateRange: globalFilters.dateRange,
             },
           ]
-        : [],
+        : [
+            {
+              dimension: "prices.price_date",
+              dateRange: "Last 30 days" as const,
+            },
+          ],
       filters: filters,
       order: { "prices.averageRetailPrice": "desc" as const },
       limit: 15,
     }),
-    [globalFilters.dateRange, filters]
+    [(globalFilters.dateRange || []).join(','), filters]
   );
 
-  // Memoize time dimensions
+  // FIXED: Consistent time dimensions with proper default
   const timeDimensions = useMemo(() => {
     return globalFilters.dateRange
       ? [
@@ -127,11 +142,12 @@ export default function GeographicalInsights({
             dateRange: "Last 30 days" as const,
           },
         ];
-  }, [globalFilters.dateRange]);
+  }, [(globalFilters.dateRange || []).join(',')]);
 
+  // FIXED: Consistent region trend query with filters
   const regionTrendQuery = useMemo(
     () => ({
-      dimensions: ["settlements.municipality"],
+      dimensions: ["municipality.name"],
       measures: ["prices.averageRetailPrice"],
       timeDimensions: timeDimensions,
       filters: filters,
@@ -255,28 +271,28 @@ function RegionalTrendChart({ resultSet, isLoading, error, progress }: any) {
     const pivot = resultSet.tablePivot();
     console.log("Regional trend raw data:", pivot);
     console.log("Sample row:", pivot[0]);
-    
+
     const dataMap = new Map();
 
     // Group data by date
     pivot.forEach((row: any) => {
       const date = row["prices.price_date.day"] || row["prices.price_date"];
-      const municipality = row["settlements.municipality"];
+      const municipality = row["municipality.name"];
       const price = Number(row["prices.averageRetailPrice"] || 0);
 
       if (!dataMap.has(date)) {
         dataMap.set(date, { date });
       }
-      
+
       const dateEntry = dataMap.get(date);
       dateEntry[municipality] = price > 0 ? price : null;
     });
 
     // Convert to array and sort by date
-    const result = Array.from(dataMap.values()).sort((a, b) => 
-      new Date(a.date).getTime() - new Date(b.date).getTime()
+    const result = Array.from(dataMap.values()).sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     );
-    
+
     console.log("Final chart data:", result);
     console.log("Number of date points:", result.length);
     return result;
@@ -288,8 +304,8 @@ function RegionalTrendChart({ resultSet, isLoading, error, progress }: any) {
     const pivot = resultSet.tablePivot();
     const municipalitySet = new Set();
     pivot.forEach((row: any) => {
-      if (row["settlements.municipality"]) {
-        municipalitySet.add(row["settlements.municipality"]);
+      if (row["municipality.name"]) {
+        municipalitySet.add(row["municipality.name"]);
       }
     });
     const result = Array.from(municipalitySet);
@@ -298,16 +314,22 @@ function RegionalTrendChart({ resultSet, isLoading, error, progress }: any) {
   }, [resultSet]);
 
   const COLORS = [
-    "#0088FE", "#00C49F", "#FFBB28", "#FF8042", 
-    "#8884d8", "#82ca9d", "#ffc658", "#ff7c7c"
+    "#0088FE",
+    "#00C49F",
+    "#FFBB28",
+    "#FF8042",
+    "#8884d8",
+    "#82ca9d",
+    "#ffc658",
+    "#ff7c7c",
   ];
 
   const formatDate = (dateStr: string) => {
     try {
       const date = new Date(dateStr);
-      return date.toLocaleDateString("en-US", { 
-        month: "short", 
-        day: "numeric" 
+      return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
       });
     } catch {
       return dateStr;
@@ -315,11 +337,7 @@ function RegionalTrendChart({ resultSet, isLoading, error, progress }: any) {
   };
 
   return (
-    <CubeQueryWrapper 
-      isLoading={isLoading} 
-      error={error} 
-      progress={progress}
-    >
+    <CubeQueryWrapper isLoading={isLoading} error={error} progress={progress}>
       {chartData.length > 0 && municipalities.length > 0 && (
         <ResponsiveContainer width="100%" height={400}>
           <LineChart
@@ -327,15 +345,12 @@ function RegionalTrendChart({ resultSet, isLoading, error, progress }: any) {
             margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
           >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey="date"
-              tickFormatter={formatDate}
-            />
+            <XAxis dataKey="date" tickFormatter={formatDate} />
             <YAxis tickFormatter={(value) => `${value.toFixed(2)} лв`} />
             <Tooltip
               formatter={(value: number, name: string) => [
                 `${Number(value).toFixed(2)} лв`,
-                name
+                name,
               ]}
               labelFormatter={(date) => formatDate(date)}
               labelStyle={{ color: "#000" }}
@@ -414,7 +429,7 @@ function MunicipalityChart({ resultSet, isLoading, error, progress }: any) {
     if (!resultSet) return [];
 
     return resultSet.tablePivot().map((row: any) => ({
-      municipality: row["settlements.municipality"],
+      municipality: row["municipality.name"],
       retailPrice: Number(row["prices.averageRetailPrice"] || 0),
       promoPrice: Number(row["prices.averagePromoPrice"] || 0),
     }));
