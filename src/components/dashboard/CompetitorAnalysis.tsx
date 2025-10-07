@@ -1,16 +1,25 @@
 /**
  * Competitor Analysis Tab
- * 
+ *
  * A focused view for direct comparison of retailers' pricing strategies
  */
 
 import { useCubeQuery } from "@cubejs-client/react";
 import { isQueryPresent } from "@cubejs-client/core";
 import { useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { GlobalFilters } from "@/pages/DashboardPage";
 import { ChartViewer } from "@/utils/cube/ChartViewer";
-import { ChartAreaSkeleton, CubeQueryWrapper } from "@/utils/cube/components/ChartSkeleton";
+import {
+  ChartAreaSkeleton,
+  CubeQueryWrapper,
+} from "@/utils/cube/components/ChartSkeleton";
 import {
   BarChart,
   Bar,
@@ -28,7 +37,9 @@ interface CompetitorAnalysisProps {
   globalFilters: GlobalFilters;
 }
 
-export default function CompetitorAnalysis({ globalFilters }: CompetitorAnalysisProps) {
+export default function CompetitorAnalysis({
+  globalFilters,
+}: CompetitorAnalysisProps) {
   // Build filters once and memoize them properly
   const filters = useMemo(() => {
     const filterArray = [];
@@ -109,7 +120,12 @@ export default function CompetitorAnalysis({ globalFilters }: CompetitorAnalysis
       dimensions: ["retailers.name"],
       measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
       timeDimensions: globalFilters.dateRange
-        ? [{ dimension: "prices.price_date", dateRange: globalFilters.dateRange }]
+        ? [
+            {
+              dimension: "prices.price_date",
+              dateRange: globalFilters.dateRange,
+            },
+          ]
         : [],
       filters: filters,
       order: { "prices.averageRetailPrice": "desc" as const },
@@ -122,7 +138,12 @@ export default function CompetitorAnalysis({ globalFilters }: CompetitorAnalysis
       dimensions: ["retailers.name"],
       measures: ["prices.averageDiscountPercentage"],
       timeDimensions: globalFilters.dateRange
-        ? [{ dimension: "prices.price_date", dateRange: globalFilters.dateRange }]
+        ? [
+            {
+              dimension: "prices.price_date",
+              dateRange: globalFilters.dateRange,
+            },
+          ]
         : [],
       filters: filters,
       order: { "prices.averageDiscountPercentage": "desc" as const },
@@ -159,7 +180,8 @@ export default function CompetitorAnalysis({ globalFilters }: CompetitorAnalysis
     progress: avgProgress,
   } = useCubeQuery(avgPriceQuery, {
     ...queryOptions,
-    skip: !isQueryPresent(avgPriceQuery) || (trendLoading && !retailerTrendResult),
+    skip:
+      !isQueryPresent(avgPriceQuery) || (trendLoading && !retailerTrendResult),
   });
 
   // Only run discount query after avg price is done or has data
@@ -239,8 +261,8 @@ function RetailerTrendChart({ resultSet, isLoading, error, progress }: any) {
     if (!resultSet) return [];
 
     const pivot = resultSet.tablePivot();
-    console.log('Trend chart raw data:', pivot);
-    
+    console.log("Trend chart raw data:", pivot);
+
     const dataMap = new Map();
 
     // Group data by date
@@ -249,22 +271,22 @@ function RetailerTrendChart({ resultSet, isLoading, error, progress }: any) {
       const retailer = row["retailers.name"];
       const price = Number(row["prices.averageRetailPrice"] || 0);
 
-      console.log('Processing row:', { date, retailer, price });
+      console.log("Processing row:", { date, retailer, price });
 
       if (!dataMap.has(date)) {
         dataMap.set(date, { date });
       }
-      
+
       const dateEntry = dataMap.get(date);
       dateEntry[retailer] = price > 0 ? price : null; // Use null for missing data
     });
 
     // Convert to array and sort by date
-    const result = Array.from(dataMap.values()).sort((a, b) => 
-      new Date(a.date).getTime() - new Date(b.date).getTime()
+    const result = Array.from(dataMap.values()).sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     );
-    
-    console.log('Processed chart data:', result);
+
+    console.log("Processed chart data:", result);
     return result;
   }, [resultSet]);
 
@@ -279,21 +301,27 @@ function RetailerTrendChart({ resultSet, isLoading, error, progress }: any) {
       }
     });
     const result = Array.from(retailerSet);
-    console.log('Unique retailers:', result);
+    console.log("Unique retailers:", result);
     return result;
   }, [resultSet]);
 
   const COLORS = [
-    "#0088FE", "#00C49F", "#FFBB28", "#FF8042", 
-    "#8884d8", "#82ca9d", "#ffc658", "#ff7c7c"
+    "#0088FE",
+    "#00C49F",
+    "#FFBB28",
+    "#FF8042",
+    "#8884d8",
+    "#82ca9d",
+    "#ffc658",
+    "#ff7c7c",
   ];
 
   const formatDate = (dateStr: string) => {
     try {
       const date = new Date(dateStr);
-      return date.toLocaleDateString("en-US", { 
-        month: "short", 
-        day: "numeric" 
+      return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
       });
     } catch {
       return dateStr;
@@ -301,11 +329,7 @@ function RetailerTrendChart({ resultSet, isLoading, error, progress }: any) {
   };
 
   return (
-    <CubeQueryWrapper 
-      isLoading={isLoading} 
-      error={error} 
-      progress={progress}
-    >
+    <CubeQueryWrapper isLoading={isLoading} error={error} progress={progress}>
       {chartData.length > 0 && retailers.length > 0 && (
         <ResponsiveContainer width="100%" height={400}>
           <LineChart
@@ -313,15 +337,12 @@ function RetailerTrendChart({ resultSet, isLoading, error, progress }: any) {
             margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
           >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey="date"
-              tickFormatter={formatDate}
-            />
+            <XAxis dataKey="date" tickFormatter={formatDate} />
             <YAxis tickFormatter={(value) => `${value.toFixed(2)} лв`} />
             <Tooltip
               formatter={(value: number, name: string) => [
                 `${Number(value).toFixed(2)} лв`,
-                name
+                name,
               ]}
               labelFormatter={(date) => formatDate(date)}
               labelStyle={{ color: "#000" }}
@@ -358,11 +379,7 @@ function RetailerPriceChart({ resultSet, isLoading, error, progress }: any) {
   }, [resultSet]);
 
   return (
-    <CubeQueryWrapper 
-      isLoading={isLoading} 
-      error={error} 
-      progress={progress}
-    >
+    <CubeQueryWrapper isLoading={isLoading} error={error} progress={progress}>
       {chartData.length > 0 && (
         <ResponsiveContainer width="100%" height={400}>
           <BarChart
@@ -380,7 +397,10 @@ function RetailerPriceChart({ resultSet, isLoading, error, progress }: any) {
             <YAxis tickFormatter={(value) => `${value.toFixed(2)} лв`} />
             <Tooltip
               formatter={(value: number, name: string, props: any) => {
-                const label = props.dataKey === "retailPrice" ? "Retail Price" : "Promo Price";
+                const label =
+                  props.dataKey === "retailPrice"
+                    ? "Retail Price"
+                    : "Promo Price";
                 return [`${value.toFixed(2)} лв`, label];
               }}
               labelStyle={{ color: "#000" }}
@@ -407,11 +427,7 @@ function DiscountChart({ resultSet, isLoading, error, progress }: any) {
   }, [resultSet]);
 
   return (
-    <CubeQueryWrapper 
-      isLoading={isLoading} 
-      error={error} 
-      progress={progress}
-    >
+    <CubeQueryWrapper isLoading={isLoading} error={error} progress={progress}>
       {chartData.length > 0 && (
         <ResponsiveContainer width="100%" height={400}>
           <BarChart
@@ -428,7 +444,10 @@ function DiscountChart({ resultSet, isLoading, error, progress }: any) {
             />
             <YAxis tickFormatter={(value) => `${value.toFixed(1)}%`} />
             <Tooltip
-              formatter={(value: number) => [`${value.toFixed(1)}%`, "Discount Rate"]}
+              formatter={(value: number) => [
+                `${value.toFixed(1)}%`,
+                "Discount Rate",
+              ]}
               labelStyle={{ color: "#000" }}
             />
             <Bar dataKey="discount" fill="#FF8042" />
