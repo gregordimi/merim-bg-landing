@@ -6,6 +6,8 @@ import FullscreenLayout from "@/layouts/FullscreenLayout";
 import HomePage from "@/pages/HomePage";
 import Charts from "@/utils/cube/App";
 import DashboardPage from "@/pages/DashboardPage";
+import ChartDebugPage from "@/pages/ChartDebugPage";
+import ChartListPage from "@/pages/ChartListPage";
 
 // Lazy load pages that aren't immediately needed
 const AboutPage = lazy(() => import("@/pages/AboutPage"));
@@ -44,6 +46,8 @@ function App() {
               <Route index element={<Charts />} />
               <Route path="category" element={<Charts />} />
               <Route path="dashboard" element={<DashboardPage />} />
+              <Route path="debug" element={<ChartDebugPage />} />
+              <Route path="list" element={<ChartListPage />} />
             </Route>
           </Routes>
         </Suspense>

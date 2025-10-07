@@ -5,19 +5,19 @@ import { buildFilters, buildTimeDimensionsWithGranularity } from '@/utils/queryH
 import { ChartWrapper } from './ChartWrapper';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
-interface RegionalTrendChartProps {
+interface RetailerTrendChartProps {
   globalFilters: GlobalFilters;
 }
 
 interface ChartDataPoint {
   date: string;
-  [municipality: string]: any;
+  [retailer: string]: any;
 }
 
-export function RegionalTrendChart({ globalFilters }: RegionalTrendChartProps) {
+export function RetailerTrendChart({ globalFilters }: RetailerTrendChartProps) {
   const { resultSet, isLoading, error, progress } = useStableQuery(
     () => ({
-      dimensions: ["municipality.name"],
+      dimensions: ["retailers.name"],
       measures: ["prices.averageRetailPrice"],
       timeDimensions: buildTimeDimensionsWithGranularity(globalFilters.dateRange, 'day'),
       filters: buildFilters(globalFilters),
@@ -29,12 +29,12 @@ export function RegionalTrendChart({ globalFilters }: RegionalTrendChartProps) {
       (globalFilters.categories || []).join(','),
       (globalFilters.dateRange || []).join(',')
     ],
-    'regional-trend-chart'
+    'retailer-trend-chart'
   );
 
   // Keep track of the last valid data to prevent showing empty charts
   const [lastValidData, setLastValidData] = useState<ChartDataPoint[]>([]);
-  const [lastValidMunicipalities, setLastValidMunicipalities] = useState<string[]>([]);
+  const [lastValidRetailers, setLastValidRetailers] = useState<string[]>([]);
   const [hasEverLoaded, setHasEverLoaded] = useState(false);
 
   const chartData = useMemo(() => {
@@ -48,7 +48,7 @@ export function RegionalTrendChart({ globalFilters }: RegionalTrendChartProps) {
     // Group data by date
     pivot.forEach((row: any) => {
       const date = row["prices.price_date.day"] || row["prices.price_date"];
-      const municipality = row["municipality.name"];
+      const retailer = row["retailers.name"];
       const price = Number(row["prices.averageRetailPrice"] || 0);
 
       if (!dataMap.has(date)) {
@@ -56,7 +56,7 @@ export function RegionalTrendChart({ globalFilters }: RegionalTrendChartProps) {
       }
       
       const dateEntry = dataMap.get(date);
-      dateEntry[municipality] = price > 0 ? price : null;
+      dateEntry[retailer] = price > 0 ? price : null;
     });
 
     // Convert to array and sort by date
@@ -65,33 +65,33 @@ export function RegionalTrendChart({ globalFilters }: RegionalTrendChartProps) {
     );
   }, [resultSet]);
 
-  // Get unique municipalities for line colors
-  const municipalities = useMemo(() => {
+  // Get unique retailers for line colors
+  const retailers = useMemo(() => {
     if (!resultSet) return null;
     const pivot = resultSet.tablePivot();
     if (!pivot || pivot.length === 0) return null;
 
-    const municipalitySet = new Set();
+    const retailerSet = new Set();
     pivot.forEach((row: any) => {
-      if (row["municipality.name"]) {
-        municipalitySet.add(row["municipality.name"]);
+      if (row["retailers.name"]) {
+        retailerSet.add(row["retailers.name"]);
       }
     });
-    return Array.from(municipalitySet) as string[];
+    return Array.from(retailerSet) as string[];
   }, [resultSet]);
 
   // Update last valid data when we get new data
   useEffect(() => {
-    if (chartData && chartData.length > 0 && municipalities && municipalities.length > 0 && !isLoading) {
+    if (chartData && chartData.length > 0 && retailers && retailers.length > 0 && !isLoading) {
       setLastValidData(chartData);
-      setLastValidMunicipalities(municipalities);
+      setLastValidRetailers(retailers);
       setHasEverLoaded(true);
     }
-  }, [chartData, municipalities, isLoading]);
+  }, [chartData, retailers, isLoading]);
 
   // Determine what data to display
   const displayData = chartData || lastValidData;
-  const displayMunicipalities = municipalities || lastValidMunicipalities;
+  const displayRetailers = retailers || lastValidRetailers;
   const shouldShowLoading = isLoading && !hasEverLoaded;
 
   const COLORS = [
@@ -113,13 +113,13 @@ export function RegionalTrendChart({ globalFilters }: RegionalTrendChartProps) {
 
   return (
     <ChartWrapper
-      title="Regional Price Trends"
-      description="Track how prices vary across different municipalities over time"
+      title="Retailer Price Trends"
+      description="Compare how different retailers' prices change over time"
       isLoading={shouldShowLoading}
       error={error}
       progress={progress}
     >
-      {displayData && displayData.length > 0 && displayMunicipalities && displayMunicipalities.length > 0 ? (
+      {displayData && displayData.length > 0 && displayRetailers && displayRetailers.length > 0 ? (
         <ResponsiveContainer width="100%" height={400}>
           <LineChart
             data={displayData}
@@ -137,11 +137,11 @@ export function RegionalTrendChart({ globalFilters }: RegionalTrendChartProps) {
               labelStyle={{ color: "#000" }}
             />
             <Legend />
-            {displayMunicipalities.map((municipality, index) => (
+            {displayRetailers.map((retailer, index) => (
               <Line
-                key={String(municipality)}
+                key={String(retailer)}
                 type="monotone"
-                dataKey={String(municipality)}
+                dataKey={String(retailer)}
                 stroke={COLORS[index % COLORS.length]}
                 strokeWidth={2}
                 dot={{ r: 4 }}

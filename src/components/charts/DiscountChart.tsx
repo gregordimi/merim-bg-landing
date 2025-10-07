@@ -3,27 +3,25 @@ import { GlobalFilters } from '@/pages/DashboardPage';
 import { useStableQuery } from '@/hooks/useStableQuery';
 import { buildFilters, buildTimeDimensions } from '@/utils/queryHelpers';
 import { ChartWrapper } from './ChartWrapper';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-interface SettlementChartProps {
+interface DiscountChartProps {
   globalFilters: GlobalFilters;
 }
 
 interface ChartDataPoint {
-  settlement: string;
-  retailPrice: number;
-  promoPrice: number;
+  retailer: string;
+  discount: number;
 }
 
-export function SettlementChart({ globalFilters }: SettlementChartProps) {
+export function DiscountChart({ globalFilters }: DiscountChartProps) {
   const { resultSet, isLoading, error, progress } = useStableQuery(
     () => ({
-      dimensions: ["settlements.name_bg"],
-      measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+      dimensions: ["retailers.name"],
+      measures: ["prices.averageDiscountPercentage"],
       timeDimensions: buildTimeDimensions(globalFilters.dateRange),
       filters: buildFilters(globalFilters),
-      order: { "prices.averageRetailPrice": "desc" as const },
-      limit: 20,
+      order: { "prices.averageDiscountPercentage": "desc" as const },
     }),
     [
       (globalFilters.retailers || []).join(','),
@@ -31,7 +29,7 @@ export function SettlementChart({ globalFilters }: SettlementChartProps) {
       (globalFilters.categories || []).join(','),
       (globalFilters.dateRange || []).join(',')
     ],
-    'settlement-chart'
+    'discount-chart'
   );
 
   // Keep track of the last valid data to prevent showing empty charts
@@ -45,9 +43,8 @@ export function SettlementChart({ globalFilters }: SettlementChartProps) {
     if (!pivot || pivot.length === 0) return null;
 
     return pivot.map((row: any) => ({
-      settlement: row["settlements.name_bg"],
-      retailPrice: Number(row["prices.averageRetailPrice"] || 0),
-      promoPrice: Number(row["prices.averagePromoPrice"] || 0),
+      retailer: row["retailers.name"],
+      discount: Number(row["prices.averageDiscountPercentage"] || 0),
     }));
   }, [resultSet]);
 
@@ -65,8 +62,8 @@ export function SettlementChart({ globalFilters }: SettlementChartProps) {
 
   return (
     <ChartWrapper
-      title="Top 20 Settlements - Retail vs Promo"
-      description="Compare retail and promotional prices by settlement"
+      title="Discount Rates by Retailer"
+      description="See which retailers offer the best discounts"
       isLoading={shouldShowLoading}
       error={error}
       progress={progress}
@@ -75,27 +72,25 @@ export function SettlementChart({ globalFilters }: SettlementChartProps) {
         <ResponsiveContainer width="100%" height={400}>
           <BarChart
             data={displayData}
-            margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
+            margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
           >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
-              dataKey="settlement"
+              dataKey="retailer"
               angle={-45}
               textAnchor="end"
-              height={120}
+              height={100}
               interval={0}
             />
-            <YAxis tickFormatter={(value) => `${value.toFixed(2)} лв`} />
+            <YAxis tickFormatter={(value) => `${value.toFixed(1)}%`} />
             <Tooltip
-              formatter={(value: number, name: string) => {
-                const label = name === "retailPrice" ? "Retail Price" : "Promo Price";
-                return [`${value.toFixed(2)} лв`, label];
-              }}
+              formatter={(value: number) => [
+                `${value.toFixed(1)}%`,
+                "Discount Rate"
+              ]}
               labelStyle={{ color: "#000" }}
             />
-            <Legend />
-            <Bar dataKey="retailPrice" fill="#0088FE" name="Retail Price" />
-            <Bar dataKey="promoPrice" fill="#00C49F" name="Promo Price" />
+            <Bar dataKey="discount" fill="#FF8042" />
           </BarChart>
         </ResponsiveContainer>
       ) : !shouldShowLoading ? (

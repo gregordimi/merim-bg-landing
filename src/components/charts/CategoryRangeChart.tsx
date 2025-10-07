@@ -5,25 +5,29 @@ import { buildFilters, buildTimeDimensions } from '@/utils/queryHelpers';
 import { ChartWrapper } from './ChartWrapper';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
-interface SettlementChartProps {
+interface CategoryRangeChartProps {
   globalFilters: GlobalFilters;
 }
 
 interface ChartDataPoint {
-  settlement: string;
-  retailPrice: number;
-  promoPrice: number;
+  category: string;
+  average: number;
+  minimum: number;
+  maximum: number;
 }
 
-export function SettlementChart({ globalFilters }: SettlementChartProps) {
+export function CategoryRangeChart({ globalFilters }: CategoryRangeChartProps) {
   const { resultSet, isLoading, error, progress } = useStableQuery(
     () => ({
-      dimensions: ["settlements.name_bg"],
-      measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+      dimensions: ["category_groups.name"],
+      measures: [
+        "prices.averageRetailPrice",
+        "prices.minRetailPrice",
+        "prices.maxRetailPrice",
+      ],
       timeDimensions: buildTimeDimensions(globalFilters.dateRange),
       filters: buildFilters(globalFilters),
       order: { "prices.averageRetailPrice": "desc" as const },
-      limit: 20,
     }),
     [
       (globalFilters.retailers || []).join(','),
@@ -31,7 +35,7 @@ export function SettlementChart({ globalFilters }: SettlementChartProps) {
       (globalFilters.categories || []).join(','),
       (globalFilters.dateRange || []).join(',')
     ],
-    'settlement-chart'
+    'category-range-chart'
   );
 
   // Keep track of the last valid data to prevent showing empty charts
@@ -45,9 +49,10 @@ export function SettlementChart({ globalFilters }: SettlementChartProps) {
     if (!pivot || pivot.length === 0) return null;
 
     return pivot.map((row: any) => ({
-      settlement: row["settlements.name_bg"],
-      retailPrice: Number(row["prices.averageRetailPrice"] || 0),
-      promoPrice: Number(row["prices.averagePromoPrice"] || 0),
+      category: row["category_groups.name"],
+      average: Number(row["prices.averageRetailPrice"] || 0),
+      minimum: Number(row["prices.minRetailPrice"] || 0),
+      maximum: Number(row["prices.maxRetailPrice"] || 0),
     }));
   }, [resultSet]);
 
@@ -65,8 +70,8 @@ export function SettlementChart({ globalFilters }: SettlementChartProps) {
 
   return (
     <ChartWrapper
-      title="Top 20 Settlements - Retail vs Promo"
-      description="Compare retail and promotional prices by settlement"
+      title="Price Range by Category"
+      description="Min, average, and max prices for each category"
       isLoading={shouldShowLoading}
       error={error}
       progress={progress}
@@ -75,27 +80,31 @@ export function SettlementChart({ globalFilters }: SettlementChartProps) {
         <ResponsiveContainer width="100%" height={400}>
           <BarChart
             data={displayData}
-            margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
+            margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
           >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
-              dataKey="settlement"
+              dataKey="category"
               angle={-45}
               textAnchor="end"
-              height={120}
+              height={100}
               interval={0}
             />
             <YAxis tickFormatter={(value) => `${value.toFixed(2)} лв`} />
             <Tooltip
               formatter={(value: number, name: string) => {
-                const label = name === "retailPrice" ? "Retail Price" : "Promo Price";
+                let label = "Price";
+                if (name === "minimum") label = "Min Price";
+                else if (name === "average") label = "Avg Price";
+                else if (name === "maximum") label = "Max Price";
                 return [`${value.toFixed(2)} лв`, label];
               }}
               labelStyle={{ color: "#000" }}
             />
             <Legend />
-            <Bar dataKey="retailPrice" fill="#0088FE" name="Retail Price" />
-            <Bar dataKey="promoPrice" fill="#00C49F" name="Promo Price" />
+            <Bar dataKey="minimum" fill="#82ca9d" name="Min Price" />
+            <Bar dataKey="average" fill="#0088FE" name="Avg Price" />
+            <Bar dataKey="maximum" fill="#FF8042" name="Max Price" />
           </BarChart>
         </ResponsiveContainer>
       ) : !shouldShowLoading ? (

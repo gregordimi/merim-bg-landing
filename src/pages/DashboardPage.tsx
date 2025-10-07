@@ -14,6 +14,7 @@ import WebSocketTransport from "@cubejs-client/ws-transport";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { extractHashConfig } from "@/utils/cube/config";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import { DebugNavigation } from "@/components/debug/DebugNavigation";
 import ExecutiveOverview from "@/components/dashboard/ExecutiveOverview";
 import CompetitorAnalysis from "@/components/dashboard/CompetitorAnalysis";
 import CategoryDeepDive from "@/components/dashboard/CategoryDeepDive";
@@ -64,11 +65,17 @@ export default function DashboardPage() {
     if (useWebSockets) {
       transport = new WebSocketTransport({ authorization: apiToken, apiUrl });
     }
-    return cube(apiToken, { apiUrl, transport });
+    return cube(apiToken, { 
+      apiUrl, 
+      transport,
+      // Explicitly disable debug mode
+      debug: false,
+    });
   }, [apiToken, apiUrl, useWebSockets]);
 
   return (
     <div className="min-h-screen bg-background">
+      <DebugNavigation />
       <CubeProvider cubeApi={cubeApi}>
         {/* Global Header with KPIs and Filters */}
         <DashboardHeader 

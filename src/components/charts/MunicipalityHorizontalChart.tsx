@@ -5,25 +5,25 @@ import { buildFilters, buildTimeDimensions } from '@/utils/queryHelpers';
 import { ChartWrapper } from './ChartWrapper';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
-interface SettlementChartProps {
+interface MunicipalityHorizontalChartProps {
   globalFilters: GlobalFilters;
 }
 
 interface ChartDataPoint {
-  settlement: string;
+  municipality: string;
   retailPrice: number;
   promoPrice: number;
 }
 
-export function SettlementChart({ globalFilters }: SettlementChartProps) {
+export function MunicipalityHorizontalChart({ globalFilters }: MunicipalityHorizontalChartProps) {
   const { resultSet, isLoading, error, progress } = useStableQuery(
     () => ({
-      dimensions: ["settlements.name_bg"],
+      dimensions: ["municipality.name"],
       measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
       timeDimensions: buildTimeDimensions(globalFilters.dateRange),
       filters: buildFilters(globalFilters),
       order: { "prices.averageRetailPrice": "desc" as const },
-      limit: 20,
+      limit: 15,
     }),
     [
       (globalFilters.retailers || []).join(','),
@@ -31,7 +31,7 @@ export function SettlementChart({ globalFilters }: SettlementChartProps) {
       (globalFilters.categories || []).join(','),
       (globalFilters.dateRange || []).join(',')
     ],
-    'settlement-chart'
+    'municipality-horizontal-chart'
   );
 
   // Keep track of the last valid data to prevent showing empty charts
@@ -45,7 +45,7 @@ export function SettlementChart({ globalFilters }: SettlementChartProps) {
     if (!pivot || pivot.length === 0) return null;
 
     return pivot.map((row: any) => ({
-      settlement: row["settlements.name_bg"],
+      municipality: row["municipality.name"],
       retailPrice: Number(row["prices.averageRetailPrice"] || 0),
       promoPrice: Number(row["prices.averagePromoPrice"] || 0),
     }));
@@ -65,41 +65,46 @@ export function SettlementChart({ globalFilters }: SettlementChartProps) {
 
   return (
     <ChartWrapper
-      title="Top 20 Settlements - Retail vs Promo"
-      description="Compare retail and promotional prices by settlement"
+      title="Top 15 Municipalities - Horizontal View"
+      description="Compare retail and promotional prices across municipalities (horizontal bars)"
       isLoading={shouldShowLoading}
       error={error}
       progress={progress}
     >
       {displayData && displayData.length > 0 ? (
-        <ResponsiveContainer width="100%" height={400}>
+        <ResponsiveContainer width="100%" height={500}>
           <BarChart
             data={displayData}
-            margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
+            layout="vertical"
+            margin={{ top: 20, right: 80, left: 150, bottom: 20 }}
           >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey="settlement"
-              angle={-45}
-              textAnchor="end"
-              height={120}
-              interval={0}
+            <XAxis 
+              type="number" 
+              tickFormatter={(value) => `${Number(value).toFixed(2)} лв`} 
             />
-            <YAxis tickFormatter={(value) => `${value.toFixed(2)} лв`} />
+            <YAxis 
+              type="category" 
+              dataKey="municipality" 
+              width={130}
+              tick={{ fontSize: 12 }}
+              tickLine={false}
+              axisLine={false}
+            />
             <Tooltip
               formatter={(value: number, name: string) => {
                 const label = name === "retailPrice" ? "Retail Price" : "Promo Price";
-                return [`${value.toFixed(2)} лв`, label];
+                return [`${Number(value).toFixed(2)} лв`, label];
               }}
               labelStyle={{ color: "#000" }}
             />
             <Legend />
-            <Bar dataKey="retailPrice" fill="#0088FE" name="Retail Price" />
-            <Bar dataKey="promoPrice" fill="#00C49F" name="Promo Price" />
+            <Bar dataKey="retailPrice" fill="#0088FE" name="Retail Price" radius={[0, 4, 4, 0]} />
+            <Bar dataKey="promoPrice" fill="#00C49F" name="Promo Price" radius={[0, 4, 4, 0]} />
           </BarChart>
         </ResponsiveContainer>
       ) : !shouldShowLoading ? (
-        <div className="w-full h-[400px] flex items-center justify-center text-muted-foreground">
+        <div className="w-full h-[500px] flex items-center justify-center text-muted-foreground">
           No data available for the selected filters
         </div>
       ) : null}
