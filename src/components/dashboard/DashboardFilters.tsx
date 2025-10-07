@@ -12,10 +12,10 @@ import { useState, useEffect } from "react";
 import { useCubeQuery } from "@cubejs-client/react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DateRangePicker } from "@/components/ui/date-range-picker";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MultiSelect } from "@/utils/cube/components/MultiSelect";
 import { X } from "lucide-react";
-import { format } from "date-fns";
+import { format, subDays, subMonths } from "date-fns";
 import { GlobalFilters } from "@/pages/DashboardPage";
 
 interface DashboardFiltersProps {
@@ -23,15 +23,38 @@ interface DashboardFiltersProps {
   setGlobalFilters: (filters: GlobalFilters) => void;
 }
 
+type DateRangePreset = "last3days" | "last7days" | "last30days" | "last3months";
+
+const getDateRangeFromPreset = (preset: DateRangePreset): [string, string] => {
+  const today = new Date();
+  let startDate: Date;
+
+  switch (preset) {
+    case "last3days":
+      startDate = subDays(today, 3);
+      break;
+    case "last7days":
+      startDate = subDays(today, 7);
+      break;
+    case "last30days":
+      startDate = subDays(today, 30);
+      break;
+    case "last3months":
+      startDate = subMonths(today, 3);
+      break;
+    default:
+      startDate = subDays(today, 7);
+  }
+
+  return [format(startDate, "yyyy-MM-dd"), format(today, "yyyy-MM-dd")];
+};
+
 export default function DashboardFilters({
   globalFilters,
   setGlobalFilters,
 }: DashboardFiltersProps) {
-  // Default to October 2025
-  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({
-    from: new Date(2025, 9, 1), // October 1, 2025
-    to: new Date(2025, 9, 31), // October 31, 2025
-  });
+  // Default to Last 7 days
+  const [datePreset, setDatePreset] = useState<DateRangePreset>("last7days");
 
   // Fetch retailers - separate simple query
   const { resultSet: retailersResult } = useCubeQuery({
@@ -76,52 +99,30 @@ export default function DashboardFilters({
       .map((row: any) => row["category_groups.name"])
       .filter(Boolean) || [];
 
-  // Update global filters when date range changes
+  // Update global filters when date preset changes
   useEffect(() => {
-    if (dateRange.from && dateRange.to) {
-      setGlobalFilters({
-        ...globalFilters,
-        dateRange: [
-          format(dateRange.from, "yyyy-MM-dd"),
-          format(dateRange.to, "yyyy-MM-dd"),
-        ],
-      });
-    } else if (!dateRange.from && !dateRange.to) {
-      // Clear date range if both dates are cleared
-      setGlobalFilters({
-        ...globalFilters,
-        dateRange: undefined,
-      });
-    }
-  }, [dateRange.from, dateRange.to]);
+    const [start, end] = getDateRangeFromPreset(datePreset);
+    setGlobalFilters({
+      ...globalFilters,
+      dateRange: [start, end],
+    });
+  }, [datePreset]);
 
   // Set default date range on mount
   useEffect(() => {
-    if (dateRange.from && dateRange.to && !globalFilters.dateRange) {
+    if (!globalFilters.dateRange) {
+      const [start, end] = getDateRangeFromPreset("last7days");
       setGlobalFilters({
         ...globalFilters,
-        dateRange: [
-          format(dateRange.from, "yyyy-MM-dd"),
-          format(dateRange.to, "yyyy-MM-dd"),
-        ],
+        dateRange: [start, end],
       });
     }
   }, []);
 
-  // Sync local dateRange with globalFilters when they change externally
-  useEffect(() => {
-    if (!globalFilters.dateRange && (dateRange.from || dateRange.to)) {
-      // If global filters are cleared, clear local state too
-      setDateRange({});
-    }
-  }, [globalFilters.dateRange]);
-
   const clearAllFilters = () => {
-    // Clear local state first
-    setDateRange({});
-    // Then clear global filters
+    setDatePreset("last7days");
     setGlobalFilters({
-      dateRange: undefined,
+      dateRange: getDateRangeFromPreset("last7days"),
       retailers: [],
       locations: [],
       categories: [],
@@ -158,11 +159,17 @@ export default function DashboardFilters({
           {/* Date Range Selector */}
           <div>
             <label className="text-xs font-medium mb-2 block">Date Range</label>
-            <DateRangePicker
-              dateRange={dateRange}
-              onDateRangeChange={setDateRange}
-              className="w-full"
-            />
+            <Select value={datePreset} onValueChange={(value: DateRangePreset) => setDatePreset(value)}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select date range" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="last3days">Last 3 days</SelectItem>
+                <SelectItem value="last7days">Last 7 days</SelectItem>
+                <SelectItem value="last30days">Last 30 days</SelectItem>
+                <SelectItem value="last3months">Last 3 months</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Retailer Filter */}

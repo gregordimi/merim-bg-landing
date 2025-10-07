@@ -15,6 +15,15 @@ import {
 import { GlobalFilters } from "@/pages/DashboardPage";
 import { ChartViewer } from "@/utils/cube/ChartViewer";
 import { ChartAreaSkeleton } from "@/utils/cube/components/ChartSkeleton";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 interface ExecutiveOverviewProps {
   globalFilters: GlobalFilters;
@@ -200,28 +209,67 @@ export default function ExecutiveOverview({
           {categoryLoading ? (
             <ChartAreaSkeleton />
           ) : categoryResult && categoryResult.tablePivot().length > 0 ? (
-            <ChartViewer
-              chartId="executive-category"
-              chartType="bar"
-              resultSet={categoryResult}
-              pivotConfig={{
-                x: ["category_groups.name"],
-                y: ["prices.averageRetailPrice"],
-                fillMissingDates: false,
-              }}
+            <CategoryBarChart
+              data={categoryResult.tablePivot()}
               decimals={2}
               currency="лв"
             />
           ) : (
             <div className="text-center p-8 text-muted-foreground">
-              {categoryResult ? 
-                `No data available (${categoryResult.tablePivot().length} rows)` : 
-                "No data available"
-              }
+              {categoryResult
+                ? `No data available (${
+                    categoryResult.tablePivot().length
+                  } rows)`
+                : "No data available"}
             </div>
           )}
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+// Custom component for category bar chart
+function CategoryBarChart({
+  data,
+  decimals = 2,
+  currency = "лв",
+}: {
+  data: any[];
+  decimals?: number;
+  currency?: string;
+}) {
+  const chartData = data.map((row) => ({
+    category: row["category_groups.name"],
+    price: Number(
+      parseFloat(row["prices.averageRetailPrice"] || "0").toFixed(decimals)
+    ),
+  }));
+
+  return (
+    <ResponsiveContainer width="100%" height={400}>
+      <BarChart
+        data={chartData}
+        margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+      >
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis
+          dataKey="category"
+          angle={-45}
+          textAnchor="end"
+          height={100}
+          interval={0}
+        />
+        <YAxis tickFormatter={(value) => `${value} ${currency}`} />
+        <Tooltip
+          formatter={(value: number) => [
+            `${value} ${currency}`,
+            "Average Price",
+          ]}
+          labelStyle={{ color: "#000" }}
+        />
+        <Bar dataKey="price" fill="#0088FE" />
+      </BarChart>
+    </ResponsiveContainer>
   );
 }
