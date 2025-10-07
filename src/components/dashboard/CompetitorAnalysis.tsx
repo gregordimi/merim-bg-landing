@@ -7,7 +7,8 @@
 import { useCubeQuery } from "@cubejs-client/react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { GlobalFilters } from "@/pages/DashboardPage";
-import IsolatedChart from "./IsolatedChart";
+import { ChartViewer } from "@/utils/cube/ChartViewer";
+import { ChartAreaSkeleton } from "@/utils/cube/components/ChartSkeleton";
 
 interface CompetitorAnalysisProps {
   globalFilters: GlobalFilters;
@@ -97,14 +98,26 @@ export default function CompetitorAnalysis({ globalFilters }: CompetitorAnalysis
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <IsolatedChart
-            resultSet={retailerTrendResult}
-            isLoading={trendLoading}
-            type="line"
-            title="Retailer Price Trends"
-            description="Compare how different retailers' prices change over time"
-            currency="лв"
-          />
+          {trendLoading ? (
+            <ChartAreaSkeleton />
+          ) : retailerTrendResult ? (
+            <ChartViewer
+              chartId="competitor-trend"
+              chartType="line"
+              resultSet={retailerTrendResult}
+              pivotConfig={{
+                x: ["prices.price_date.day"],
+                y: ["retailers.name", "measures"],
+                fillMissingDates: true,
+              }}
+              decimals={2}
+              currency="лв"
+            />
+          ) : (
+            <div className="text-center p-8 text-muted-foreground">
+              No data available
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -118,14 +131,26 @@ export default function CompetitorAnalysis({ globalFilters }: CompetitorAnalysis
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <IsolatedChart
-              resultSet={avgPriceResult}
-              isLoading={avgLoading}
-              type="bar"
-              title="Average Price by Retailer"
-              description="Compare retail vs promotional prices across retailers"
-              currency="лв"
-            />
+            {avgLoading ? (
+              <ChartAreaSkeleton />
+            ) : avgPriceResult ? (
+              <ChartViewer
+                chartId="competitor-avg"
+                chartType="bar"
+                resultSet={avgPriceResult}
+                pivotConfig={{
+                  x: ["retailers.name"],
+                  y: ["measures"],
+                  fillMissingDates: false,
+                }}
+                decimals={2}
+                currency="лв"
+              />
+            ) : (
+              <div className="text-center p-8 text-muted-foreground">
+                No data available
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -137,14 +162,26 @@ export default function CompetitorAnalysis({ globalFilters }: CompetitorAnalysis
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <IsolatedChart
-              resultSet={discountResult}
-              isLoading={discountLoading}
-              type="bar"
-              title="Discount Rates by Retailer"
-              description="See which retailers offer the best discounts"
-              currency="%"
-            />
+            {discountLoading ? (
+              <ChartAreaSkeleton />
+            ) : discountResult ? (
+              <ChartViewer
+                chartId="competitor-discount"
+                chartType="bar"
+                resultSet={discountResult}
+                pivotConfig={{
+                  x: ["retailers.name"],
+                  y: ["measures"],
+                  fillMissingDates: false,
+                }}
+                decimals={1}
+                currency="%"
+              />
+            ) : (
+              <div className="text-center p-8 text-muted-foreground">
+                No data available
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

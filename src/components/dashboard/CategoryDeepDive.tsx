@@ -7,7 +7,8 @@
 import { useCubeQuery } from "@cubejs-client/react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { GlobalFilters } from "@/pages/DashboardPage";
-import IsolatedChart from "./IsolatedChart";
+import { ChartViewer } from "@/utils/cube/ChartViewer";
+import { ChartAreaSkeleton } from "@/utils/cube/components/ChartSkeleton";
 
 interface CategoryDeepDiveProps {
   globalFilters: GlobalFilters;
@@ -102,14 +103,26 @@ export default function CategoryDeepDive({ globalFilters }: CategoryDeepDiveProp
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <IsolatedChart
-            resultSet={categoryTrendResult}
-            isLoading={trendLoading}
-            type="line"
-            title="Category Price Trends"
-            description="Track how prices change across different product categories over time"
-            currency="лв"
-          />
+          {trendLoading ? (
+            <ChartAreaSkeleton />
+          ) : categoryTrendResult ? (
+            <ChartViewer
+              chartId="category-trend"
+              chartType="line"
+              resultSet={categoryTrendResult}
+              pivotConfig={{
+                x: ["prices.price_date.day"],
+                y: ["category_groups.name", "measures"],
+                fillMissingDates: true,
+              }}
+              decimals={2}
+              currency="лв"
+            />
+          ) : (
+            <div className="text-center p-8 text-muted-foreground">
+              No data available
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -123,14 +136,26 @@ export default function CategoryDeepDive({ globalFilters }: CategoryDeepDiveProp
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <IsolatedChart
-              resultSet={categoryCompareResult}
-              isLoading={compareLoading}
-              type="bar"
-              title="Price Range by Category"
-              description="Min, average, and max prices for each category"
-              currency="лв"
-            />
+            {compareLoading ? (
+              <ChartAreaSkeleton />
+            ) : categoryCompareResult ? (
+              <ChartViewer
+                chartId="category-compare"
+                chartType="bar"
+                resultSet={categoryCompareResult}
+                pivotConfig={{
+                  x: ["category_groups.name"],
+                  y: ["measures"],
+                  fillMissingDates: false,
+                }}
+                decimals={2}
+                currency="лв"
+              />
+            ) : (
+              <div className="text-center p-8 text-muted-foreground">
+                No data available
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -143,14 +168,26 @@ export default function CategoryDeepDive({ globalFilters }: CategoryDeepDiveProp
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <IsolatedChart
-              resultSet={categoryDistResult}
-              isLoading={distLoading}
-              type="bar"
-              title="Top 10 Categories by Price"
-              description="Category distribution by average price"
-              currency="лв"
-            />
+            {distLoading ? (
+              <ChartAreaSkeleton />
+            ) : categoryDistResult ? (
+              <ChartViewer
+                chartId="category-dist"
+                chartType="bar"
+                resultSet={categoryDistResult}
+                pivotConfig={{
+                  x: ["category_groups.name"],
+                  y: ["measures"],
+                  fillMissingDates: false,
+                }}
+                decimals={2}
+                currency="лв"
+              />
+            ) : (
+              <div className="text-center p-8 text-muted-foreground">
+                No data available
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
