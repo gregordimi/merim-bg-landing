@@ -1,8 +1,17 @@
-import { useMemo, useState, useEffect } from 'react';
-import { GlobalFilters, buildOptimizedQuery } from '@/utils/cube/filterUtils';
-import { useStableQuery } from '@/hooks/useStableQuery';
-import { ChartWrapper } from './ChartWrapper';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { useMemo, useState, useEffect } from "react";
+import { GlobalFilters, buildOptimizedQuery } from "@/utils/cube/filterUtils";
+import { useStableQuery } from "@/hooks/useStableQuery";
+import { ChartWrapper } from "./ChartWrapper";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 interface RetailerTrendChartProps {
   globalFilters: GlobalFilters;
@@ -13,21 +22,37 @@ interface ChartDataPoint {
   [retailer: string]: any;
 }
 
-export function RetailerTrendChart({ globalFilters }: RetailerTrendChartProps) {
+export function RetailerTrendChartPromo({
+  globalFilters,
+}: RetailerTrendChartProps) {
   const { resultSet, isLoading, error, progress } = useStableQuery(
-    () => buildOptimizedQuery(
-      ["prices.averageRetailPrice"],
-      globalFilters,
-      ["prices.retailer_name"] // Always include retailers dimension
-    ),
+    () => {
+      // For RetailerTrendChartPromo, we need to ensure retailer dimension is always included
+      // even when retailers are filtered, to show breakdown by retailer
+      const query = buildOptimizedQuery(
+        ["prices.averagePromoPrice"],
+        globalFilters,
+        [] // Don't pass additional dimensions here
+      );
+
+      // Force include retailer dimension for this chart
+      if (!query.dimensions) {
+        query.dimensions = [];
+      }
+      if (!query.dimensions.includes("prices.retailer_name")) {
+        query.dimensions.push("prices.retailer_name");
+      }
+
+      return query;
+    },
     [
-      (globalFilters.retailers || []).join(','),
-      (globalFilters.settlements || []).join(','),
-      (globalFilters.municipalities || []).join(','),
-      (globalFilters.categories || []).join(','),
-      (globalFilters.dateRange || []).join(',')
+      (globalFilters.retailers || []).join(","),
+      (globalFilters.settlements || []).join(","),
+      (globalFilters.municipalities || []).join(","),
+      (globalFilters.categories || []).join(","),
+      (globalFilters.dateRange || []).join(","),
     ],
-    'retailer-trend-chart'
+    "retailer-trend-promo-chart"
   );
 
   // Keep track of the last valid data to prevent showing empty charts
@@ -47,19 +72,21 @@ export function RetailerTrendChart({ globalFilters }: RetailerTrendChartProps) {
     pivot.forEach((row: any) => {
       const date = row["prices.price_date.day"] || row["prices.price_date"];
       const retailer = row["prices.retailer_name"];
-      const price = Number(row["prices.averageRetailPrice"] || 0);
+      const promo = Number(row["prices.averagePromoPrice"] || 0);
+
+      if (!date || !retailer) return; // Skip rows without date or retailer
 
       if (!dataMap.has(date)) {
         dataMap.set(date, { date });
       }
-      
+
       const dateEntry = dataMap.get(date);
-      dateEntry[retailer] = price > 0 ? price : null;
+      dateEntry[retailer] = promo > 0 ? promo : null;
     });
 
     // Convert to array and sort by date
-    return Array.from(dataMap.values()).sort((a, b) => 
-      new Date(a.date).getTime() - new Date(b.date).getTime()
+    return Array.from(dataMap.values()).sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     );
   }, [resultSet]);
 
@@ -80,12 +107,27 @@ export function RetailerTrendChart({ globalFilters }: RetailerTrendChartProps) {
 
   // Update last valid data when we get new data
   useEffect(() => {
-    if (chartData && chartData.length > 0 && retailers && retailers.length > 0 && !isLoading) {
+    if (
+      chartData &&
+      chartData.length > 0 &&
+      retailers &&
+      retailers.length > 0 &&
+      !isLoading
+    ) {
+      console.log("RetailerTrendChartPromo: Updated chart data", {
+        dataLength: chartData.length,
+        retailers: retailers,
+        sampleData: chartData.slice(0, 3),
+      });
       setLastValidData(chartData);
       setLastValidRetailers(retailers);
       setHasEverLoaded(true);
     }
-  }, [chartData, retailers, isLoading]);
+    // If loading finished but no data, and we've never loaded, mark as loaded
+    if (!isLoading && (!chartData || !retailers) && !hasEverLoaded) {
+      setHasEverLoaded(true);
+    }
+  }, [chartData, retailers, isLoading, hasEverLoaded]);
 
   // Determine what data to display
   const displayData = chartData || lastValidData;
@@ -93,16 +135,30 @@ export function RetailerTrendChart({ globalFilters }: RetailerTrendChartProps) {
   const shouldShowLoading = isLoading && !hasEverLoaded;
 
   const COLORS = [
-    "#0088FE", "#00C49F", "#FFBB28", "#FF8042", 
-    "#8884d8", "#82ca9d", "#ffc658", "#ff7c7c"
+    "#0088FE",
+    "#00C49F",
+    "#FFBB28",
+    "#FF8042",
+    "#8884d8",
+    "#82ca9d",
+    "#ffc658",
+    "#ff7c7c",
+    "#8dd1e1",
+    "#d084d0",
+    "#ffb347",
+    "#87ceeb",
+    "#dda0dd",
+    "#98fb98",
+    "#f0e68c",
+    "#ff6347",
   ];
 
   const formatDate = (dateStr: string) => {
     try {
       const date = new Date(dateStr);
-      return date.toLocaleDateString("en-US", { 
-        month: "short", 
-        day: "numeric" 
+      return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
       });
     } catch {
       return dateStr;
@@ -111,13 +167,16 @@ export function RetailerTrendChart({ globalFilters }: RetailerTrendChartProps) {
 
   return (
     <ChartWrapper
-      title="Retailer Price Trends"
-      description="Compare how different retailers' prices change over time"
+      title="Retailer Promo Price Trends"
+      description="Compare how different retailers' promotional prices change over time"
       isLoading={shouldShowLoading}
       error={error}
       progress={progress}
     >
-      {displayData && displayData.length > 0 && displayRetailers && displayRetailers.length > 0 ? (
+      {displayData &&
+      displayData.length > 0 &&
+      displayRetailers &&
+      displayRetailers.length > 0 ? (
         <ResponsiveContainer width="100%" height={400}>
           <LineChart
             data={displayData}
@@ -127,10 +186,12 @@ export function RetailerTrendChart({ globalFilters }: RetailerTrendChartProps) {
             <XAxis dataKey="date" tickFormatter={formatDate} />
             <YAxis tickFormatter={(value) => `${value.toFixed(2)} лв`} />
             <Tooltip
-              formatter={(value: number, name: string) => [
-                `${Number(value).toFixed(2)} лв`,
-                name
-              ]}
+              formatter={(value: number, name: string) => {
+                if (value === null || value === undefined) {
+                  return ["No promo data", name];
+                }
+                return [`${Number(value).toFixed(2)} лв`, name];
+              }}
               labelFormatter={(date) => formatDate(date)}
               labelStyle={{ color: "#000" }}
             />

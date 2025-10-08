@@ -15,11 +15,25 @@ interface ChartDataPoint {
 
 export function DiscountChart({ globalFilters }: DiscountChartProps) {
   const { resultSet, isLoading, error, progress } = useStableQuery(
-    () => buildOptimizedQuery(
-      ["prices.averageDiscountPercentage"],
-      globalFilters,
-      ["prices.retailer_name"] // Always include retailers dimension
-    ),
+    () => {
+      // For DiscountChart, we need to ensure retailer dimension is always included
+      // even when retailers are filtered, to show breakdown by retailer
+      const query = buildOptimizedQuery(
+        ["prices.averageDiscountPercentage"],
+        globalFilters,
+        [] // Don't pass additional dimensions here
+      );
+      
+      // Force include retailer dimension for this chart
+      if (!query.dimensions) {
+        query.dimensions = [];
+      }
+      if (!query.dimensions.includes("prices.retailer_name")) {
+        query.dimensions.push("prices.retailer_name");
+      }
+      
+      return query;
+    },
     [
       (globalFilters.retailers || []).join(','),
       (globalFilters.settlements || []).join(','),
@@ -40,10 +54,29 @@ export function DiscountChart({ globalFilters }: DiscountChartProps) {
     const pivot = resultSet.tablePivot();
     if (!pivot || pivot.length === 0) return null;
 
-    return pivot
-      .map((row: any) => ({
-        retailer: row["prices.retailer_name"],
-        discount: Number(row["prices.averageDiscountPercentage"] || 0),
+    // Group by retailer to handle any potential duplicates
+    const retailerMap = new Map<string, { discount: number; count: number }>();
+    
+    pivot.forEach((row: any) => {
+      const retailer = row["prices.retailer_name"];
+      const discount = Number(row["prices.averageDiscountPercentage"] || 0);
+      
+      if (!retailer) return; // Skip rows without retailer
+      
+      if (retailerMap.has(retailer)) {
+        // If duplicate, average the values
+        const existing = retailerMap.get(retailer)!;
+        existing.discount = (existing.discount * existing.count + discount) / (existing.count + 1);
+        existing.count += 1;
+      } else {
+        retailerMap.set(retailer, { discount, count: 1 });
+      }
+    });
+
+    return Array.from(retailerMap.entries())
+      .map(([retailer, data]) => ({
+        retailer,
+        discount: data.discount,
       }))
       .sort((a, b) => b.discount - a.discount); // Sort by discount descending
   }, [resultSet]);
@@ -51,10 +84,19 @@ export function DiscountChart({ globalFilters }: DiscountChartProps) {
   // Update last valid data when we get new data
   useEffect(() => {
     if (chartData && chartData.length > 0 && !isLoading) {
+      console.log('DiscountChart: Updated chart data', {
+        dataLength: chartData.length,
+        retailers: chartData.map(d => d.retailer),
+        sampleData: chartData.slice(0, 3)
+      });
       setLastValidData(chartData);
       setHasEverLoaded(true);
     }
-  }, [chartData, isLoading]);
+    // If loading finished but no data, and we've never loaded, mark as loaded
+    if (!isLoading && !chartData && !hasEverLoaded) {
+      setHasEverLoaded(true);
+    }
+  }, [chartData, isLoading, hasEverLoaded]);
 
   // Determine what data to display
   const displayData = chartData || lastValidData;

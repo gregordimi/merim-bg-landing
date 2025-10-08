@@ -29,7 +29,8 @@ import { MunicipalityChart } from "@/components/charts/MunicipalityChart";
 import { SettlementHorizontalChart } from "@/components/charts/SettlementHorizontalChart";
 import { MunicipalityHorizontalChart } from "@/components/charts/MunicipalityHorizontalChart";
 import { PreAggregationTest } from "@/components/debug/PreAggregationTest";
-import { RetailerTrendChart } from "@/components/charts/RetailerTrendChart";
+import { RetailerTrendChartPrice } from "@/components/charts/RetailerTrendChartPrice";
+import { RetailerTrendChartPromo } from "@/components/charts/RetailerTrendChartPromo";
 import { RetailerPriceChart } from "@/components/charts/RetailerPriceChart";
 import { DiscountChart } from "@/components/charts/DiscountChart";
 import { CategoryTrendChart } from "@/components/charts/CategoryTrendChart";
@@ -108,11 +109,18 @@ const AVAILABLE_CHARTS: ChartInfo[] = [
   
   // Competitor Analysis
   {
-    id: 'retailer-trend',
-    name: 'Retailer Price Trends',
+    id: 'retailer-trend-price',
+    name: 'Retailer Price Trends - Price',
     description: 'Compare how different retailers\' prices change over time',
     icon: '🆚',
-    component: RetailerTrendChart,
+    component: RetailerTrendChartPrice,
+  },
+    {
+    id: 'retailer-trend-primo',
+    name: 'Retailer Price Trends - Promo',
+    description: 'Compare how different retailers\' promo change over time',
+    icon: '🆚',
+    component: RetailerTrendChartPromo,
   },
   {
     id: 'retailer-price',

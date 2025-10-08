@@ -5,7 +5,7 @@
  * - Global header with KPIs and filters
  * - Four analytical tabs: Executive Overview, Competitor Analysis, Category Deep Dive, Geographical Insights
  * - Dynamic filtering across all visualizations
- * 
+ *
  * PERFORMANCE OPTIMIZATION:
  * - Uses custom tab navigation instead of shadcn Tabs to prevent mounting all tab content
  * - Only the active tab's component is rendered, preventing unnecessary queries
@@ -33,7 +33,7 @@ interface AppConfig extends Record<string, unknown> {
 }
 
 // Tab configuration
-type TabValue = 'overview' | 'competitor' | 'category' | 'geographical';
+type TabValue = "overview" | "competitor" | "category" | "geographical";
 
 interface TabConfig {
   value: TabValue;
@@ -44,27 +44,27 @@ interface TabConfig {
 
 const DASHBOARD_TABS: TabConfig[] = [
   {
-    value: 'overview',
-    label: 'Executive Overview',
-    icon: '📈',
+    value: "overview",
+    label: "Executive Overview",
+    icon: "📈",
     component: ExecutiveOverview,
   },
   {
-    value: 'competitor',
-    label: 'Competitor Analysis',
-    icon: '🆚',
+    value: "competitor",
+    label: "Competitor Analysis",
+    icon: "🆚",
     component: CompetitorAnalysis,
   },
   {
-    value: 'category',
-    label: 'Category Deep Dive',
-    icon: '🛒',
+    value: "category",
+    label: "Category Deep Dive",
+    icon: "🛒",
     component: CategoryDeepDive,
   },
   {
-    value: 'geographical',
-    label: 'Geographical Insights',
-    icon: '🗺️',
+    value: "geographical",
+    label: "Geographical Insights",
+    icon: "🗺️",
     component: GeographicalInsights,
   },
 ];
@@ -87,7 +87,7 @@ export default function DashboardPage() {
   });
 
   // Manual tab state instead of using shadcn Tabs
-  const [activeTab, setActiveTab] = useState<TabValue>('overview');
+  const [activeTab, setActiveTab] = useState<TabValue>("overview");
 
   // CRITICAL: Memoize the filters object to prevent unnecessary re-renders
   const stableFilters = useMemo(
@@ -119,7 +119,7 @@ export default function DashboardPage() {
   }, [apiToken, apiUrl, useWebSockets]);
 
   // Get the active tab component
-  const activeTabConfig = DASHBOARD_TABS.find(tab => tab.value === activeTab);
+  const activeTabConfig = DASHBOARD_TABS.find((tab) => tab.value === activeTab);
   const ActiveTabComponent = activeTabConfig?.component;
 
   return (
@@ -156,7 +156,9 @@ export default function DashboardPage() {
 
           {/* Active Tab Content - Only render the selected tab */}
           <div className="flex-1 outline-none">
-            {ActiveTabComponent && <ActiveTabComponent globalFilters={stableFilters} />}
+            {ActiveTabComponent && (
+              <ActiveTabComponent globalFilters={stableFilters} />
+            )}
           </div>
         </div>
       </CubeProvider>

@@ -16,11 +16,25 @@ interface ChartDataPoint {
 
 export function CategoryChart({ globalFilters }: CategoryChartProps) {
   const { resultSet, isLoading, error, progress } = useStableQuery(
-    () => buildOptimizedQuery(
-      ["prices.averageRetailPrice", "prices.averagePromoPrice"],
-      globalFilters,
-      ["prices.category_group_name"] // Always include categories dimension
-    ),
+    () => {
+      // For CategoryChart, we need to ensure category dimension is always included
+      // even when categories are filtered, to show breakdown by category
+      const query = buildOptimizedQuery(
+        ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+        globalFilters,
+        [] // Don't pass additional dimensions here
+      );
+      
+      // Force include category dimension for this chart
+      if (!query.dimensions) {
+        query.dimensions = [];
+      }
+      if (!query.dimensions.includes("prices.category_group_name")) {
+        query.dimensions.push("prices.category_group_name");
+      }
+      
+      return query;
+    },
     [
       (globalFilters.retailers || []).join(','),
       (globalFilters.settlements || []).join(','),
@@ -41,11 +55,32 @@ export function CategoryChart({ globalFilters }: CategoryChartProps) {
     const pivot = resultSet.tablePivot();
     if (!pivot || pivot.length === 0) return null;
 
-    return pivot
-      .map((row: any) => ({
-        category: row["prices.category_group_name"],
-        retailPrice: Number(row["prices.averageRetailPrice"] || 0),
-        promoPrice: Number(row["prices.averagePromoPrice"] || 0),
+    // Group by category to handle any potential duplicates
+    const categoryMap = new Map<string, { retailPrice: number; promoPrice: number; count: number }>();
+    
+    pivot.forEach((row: any) => {
+      const category = row["prices.category_group_name"];
+      const retailPrice = Number(row["prices.averageRetailPrice"] || 0);
+      const promoPrice = Number(row["prices.averagePromoPrice"] || 0);
+      
+      if (!category) return; // Skip rows without category
+      
+      if (categoryMap.has(category)) {
+        // If duplicate, average the values
+        const existing = categoryMap.get(category)!;
+        existing.retailPrice = (existing.retailPrice * existing.count + retailPrice) / (existing.count + 1);
+        existing.promoPrice = (existing.promoPrice * existing.count + promoPrice) / (existing.count + 1);
+        existing.count += 1;
+      } else {
+        categoryMap.set(category, { retailPrice, promoPrice, count: 1 });
+      }
+    });
+
+    return Array.from(categoryMap.entries())
+      .map(([category, data]) => ({
+        category,
+        retailPrice: data.retailPrice,
+        promoPrice: data.promoPrice,
       }))
       .sort((a, b) => b.retailPrice - a.retailPrice) // Sort by retail price descending
       .slice(0, 20); // Limit to top 20
@@ -54,6 +89,11 @@ export function CategoryChart({ globalFilters }: CategoryChartProps) {
   // Update last valid data when we get new data
   useEffect(() => {
     if (chartData && chartData.length > 0 && !isLoading) {
+      console.log('CategoryChart: Updated chart data', {
+        dataLength: chartData.length,
+        categories: chartData.map(d => d.category),
+        sampleData: chartData.slice(0, 3)
+      });
       setLastValidData(chartData);
       setHasEverLoaded(true);
     }
