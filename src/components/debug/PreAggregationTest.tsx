@@ -322,6 +322,529 @@ const TEST_QUERIES = {
       filters: [],
     },
   },
+
+  // ========================================
+  // FILTERED QUERIES (Testing filter combinations)
+  // ========================================
+  filter_retailer_only: {
+    name: "🔍 Filter: Retailer Only",
+    query: {
+      dimensions: ["prices.retailer_name"], // Include filtered dimension!
+      measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+      timeDimensions: [
+        {
+          dimension: "prices.price_date",
+          granularity: "day",
+          dateRange: "Last 30 days",
+        },
+      ],
+      filters: [
+        {
+          member: "prices.retailer_name",
+          operator: "equals",
+          values: ["Kaufland"],
+        },
+      ],
+    },
+  },
+  filter_location_only: {
+    name: "🔍 Filter: Location Only",
+    query: {
+      dimensions: ["prices.settlement_name"], // Include filtered dimension!
+      measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+      timeDimensions: [
+        {
+          dimension: "prices.price_date",
+          granularity: "day",
+          dateRange: "Last 30 days",
+        },
+      ],
+      filters: [
+        {
+          member: "prices.settlement_name",
+          operator: "equals",
+          values: ["София"],
+        },
+      ],
+    },
+  },
+  filter_category_only: {
+    name: "🔍 Filter: Category Only",
+    query: {
+      dimensions: ["prices.category_group_name"], // Include filtered dimension!
+      measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+      timeDimensions: [
+        {
+          dimension: "prices.price_date",
+          granularity: "day",
+          dateRange: "Last 30 days",
+        },
+      ],
+      filters: [
+        {
+          member: "prices.category_group_name",
+          operator: "equals",
+          values: ["Месо и месни продукти"],
+        },
+      ],
+    },
+  },
+  filter_retailer_category: {
+    name: "🔍 Filter: Retailer + Category",
+    query: {
+      dimensions: ["prices.retailer_name", "prices.category_group_name"], // Include both filtered dimensions!
+      measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+      timeDimensions: [
+        {
+          dimension: "prices.price_date",
+          granularity: "day",
+          dateRange: "Last 30 days",
+        },
+      ],
+      filters: [
+        {
+          member: "prices.retailer_name",
+          operator: "equals",
+          values: ["Kaufland"],
+        },
+        {
+          member: "prices.category_group_name",
+          operator: "equals",
+          values: ["Месо и месни продукти"],
+        },
+      ],
+    },
+  },
+  filter_all_three: {
+    name: "🔍 Filter: All Three (Retailer + Location + Category)",
+    query: {
+      dimensions: ["prices.retailer_name", "prices.settlement_name", "prices.category_group_name"], // Include all filtered dimensions!
+      measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+      timeDimensions: [
+        {
+          dimension: "prices.price_date",
+          granularity: "day",
+          dateRange: "Last 30 days",
+        },
+      ],
+      filters: [
+        {
+          member: "prices.retailer_name",
+          operator: "equals",
+          values: ["Kaufland"],
+        },
+        {
+          member: "prices.settlement_name",
+          operator: "equals",
+          values: ["София"],
+        },
+        {
+          member: "prices.category_group_name",
+          operator: "equals",
+          values: ["Месо и месни продукти"],
+        },
+      ],
+    },
+  },
+  filter_time_only: {
+    name: "🔍 Filter: Time Only (No Other Filters)",
+    query: {
+      dimensions: [], // No dimensions - just time filter
+      measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+      timeDimensions: [
+        {
+          dimension: "prices.price_date",
+          granularity: "day",
+          dateRange: "Last 7 days", // Different time range
+        },
+      ],
+      filters: [], // No filters
+    },
+  },
+
+  // ========================================
+  // TIME FILTER VARIATIONS (Testing different date ranges)
+  // ========================================
+  time_last_7_days: {
+    name: "⏰ Time: Last 7 Days",
+    query: {
+      dimensions: [],
+      measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+      timeDimensions: [
+        {
+          dimension: "prices.price_date",
+          granularity: "day",
+          dateRange: "Last 7 days",
+        },
+      ],
+      filters: [],
+    },
+  },
+  time_last_30_days: {
+    name: "⏰ Time: Last 30 Days",
+    query: {
+      dimensions: [],
+      measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+      timeDimensions: [
+        {
+          dimension: "prices.price_date",
+          granularity: "day",
+          dateRange: "Last 30 days",
+        },
+      ],
+      filters: [],
+    },
+  },
+  time_last_90_days: {
+    name: "⏰ Time: Last 90 Days",
+    query: {
+      dimensions: [],
+      measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+      timeDimensions: [
+        {
+          dimension: "prices.price_date",
+          granularity: "day",
+          dateRange: "Last 90 days",
+        },
+      ],
+      filters: [],
+    },
+  },
+  time_this_month: {
+    name: "⏰ Time: This Month",
+    query: {
+      dimensions: [],
+      measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+      timeDimensions: [
+        {
+          dimension: "prices.price_date",
+          granularity: "day",
+          dateRange: "This month",
+        },
+      ],
+      filters: [],
+    },
+  },
+  time_custom_range: {
+    name: "⏰ Time: Custom Range",
+    query: {
+      dimensions: [],
+      measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+      timeDimensions: [
+        {
+          dimension: "prices.price_date",
+          granularity: "day",
+          dateRange: ["2024-10-01", "2024-10-07"],
+        },
+      ],
+      filters: [],
+    },
+  },
+
+  // ========================================
+  // ALL 4 FILTERS COMBINATIONS
+  // ========================================
+  all_four_filters_basic: {
+    name: "🎯 All 4 Filters: Basic Combination",
+    query: {
+      dimensions: ["prices.retailer_name", "prices.settlement_name", "prices.category_group_name"],
+      measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+      timeDimensions: [
+        {
+          dimension: "prices.price_date",
+          granularity: "day",
+          dateRange: "Last 30 days", // Time filter
+        },
+      ],
+      filters: [
+        {
+          member: "prices.retailer_name",
+          operator: "equals",
+          values: ["Kaufland"],
+        },
+        {
+          member: "prices.settlement_name",
+          operator: "equals",
+          values: ["София"],
+        },
+        {
+          member: "prices.category_group_name",
+          operator: "equals",
+          values: ["Месо и месни продукти"],
+        },
+      ],
+    },
+  },
+  all_four_filters_multiple_values: {
+    name: "🎯 All 4 Filters: Multiple Values",
+    query: {
+      dimensions: ["prices.retailer_name", "prices.settlement_name", "prices.category_group_name"],
+      measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+      timeDimensions: [
+        {
+          dimension: "prices.price_date",
+          granularity: "day",
+          dateRange: "Last 7 days", // Different time range
+        },
+      ],
+      filters: [
+        {
+          member: "prices.retailer_name",
+          operator: "equals",
+          values: ["Kaufland", "Billa"], // Multiple retailers
+        },
+        {
+          member: "prices.settlement_name",
+          operator: "equals",
+          values: ["София", "Пловдив"], // Multiple locations
+        },
+        {
+          member: "prices.category_group_name",
+          operator: "equals",
+          values: ["Месо и месни продукти", "Млечни продукти"], // Multiple categories
+        },
+      ],
+    },
+  },
+  all_four_filters_custom_time: {
+    name: "🎯 All 4 Filters: Custom Time Range",
+    query: {
+      dimensions: ["prices.retailer_name", "prices.settlement_name", "prices.category_group_name"],
+      measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+      timeDimensions: [
+        {
+          dimension: "prices.price_date",
+          granularity: "day",
+          dateRange: ["2024-10-01", "2024-10-15"], // Custom time range
+        },
+      ],
+      filters: [
+        {
+          member: "prices.retailer_name",
+          operator: "equals",
+          values: ["Lidl"],
+        },
+        {
+          member: "prices.settlement_name",
+          operator: "equals",
+          values: ["Варна"],
+        },
+        {
+          member: "prices.category_group_name",
+          operator: "equals",
+          values: ["Хлебни и тестени изделия"],
+        },
+      ],
+    },
+  },
+
+  // ========================================
+  // PARTIAL FILTER COMBINATIONS (3 out of 4)
+  // ========================================
+  three_filters_no_retailer: {
+    name: "🔍 3 Filters: Location + Category + Time (No Retailer)",
+    query: {
+      dimensions: ["prices.settlement_name", "prices.category_group_name"],
+      measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+      timeDimensions: [
+        {
+          dimension: "prices.price_date",
+          granularity: "day",
+          dateRange: "Last 30 days",
+        },
+      ],
+      filters: [
+        {
+          member: "prices.settlement_name",
+          operator: "equals",
+          values: ["София"],
+        },
+        {
+          member: "prices.category_group_name",
+          operator: "equals",
+          values: ["Месо и месни продукти"],
+        },
+      ],
+    },
+  },
+  three_filters_no_location: {
+    name: "🔍 3 Filters: Retailer + Category + Time (No Location)",
+    query: {
+      dimensions: ["prices.retailer_name", "prices.category_group_name"],
+      measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+      timeDimensions: [
+        {
+          dimension: "prices.price_date",
+          granularity: "day",
+          dateRange: "Last 30 days",
+        },
+      ],
+      filters: [
+        {
+          member: "prices.retailer_name",
+          operator: "equals",
+          values: ["Kaufland"],
+        },
+        {
+          member: "prices.category_group_name",
+          operator: "equals",
+          values: ["Месо и месни продукти"],
+        },
+      ],
+    },
+  },
+  three_filters_no_category: {
+    name: "🔍 3 Filters: Retailer + Location + Time (No Category)",
+    query: {
+      dimensions: ["prices.retailer_name", "prices.settlement_name"],
+      measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+      timeDimensions: [
+        {
+          dimension: "prices.price_date",
+          granularity: "day",
+          dateRange: "Last 30 days",
+        },
+      ],
+      filters: [
+        {
+          member: "prices.retailer_name",
+          operator: "equals",
+          values: ["Kaufland"],
+        },
+        {
+          member: "prices.settlement_name",
+          operator: "equals",
+          values: ["София"],
+        },
+      ],
+    },
+  },
+  three_filters_no_time: {
+    name: "🔍 3 Filters: Retailer + Location + Category (No Time)",
+    query: {
+      dimensions: ["prices.retailer_name", "prices.settlement_name", "prices.category_group_name"],
+      measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+      // No timeDimensions - testing without time filter
+      filters: [
+        {
+          member: "prices.retailer_name",
+          operator: "equals",
+          values: ["Kaufland"],
+        },
+        {
+          member: "prices.settlement_name",
+          operator: "equals",
+          values: ["София"],
+        },
+        {
+          member: "prices.category_group_name",
+          operator: "equals",
+          values: ["Месо и месни продукти"],
+        },
+      ],
+    },
+  },
+
+  // ========================================
+  // FILTER VALUE QUERIES (For populating dropdowns)
+  // ========================================
+  filter_values_retailers: {
+    name: "📋 Filter Values: Retailers List (Direct)",
+    query: {
+      dimensions: ["retailers.name"],
+      measures: [],
+      // No timeDimensions - we want ALL retailers, not just recent ones
+      filters: [],
+      order: {
+        "retailers.name": "asc",
+      },
+    },
+  },
+  filter_values_settlements: {
+    name: "📋 Filter Values: Settlements List (Only with Stores)",
+    query: {
+      dimensions: ["stores.settlement_name"],
+      measures: [],
+      // No timeDimensions - we want ALL settlements that have stores
+      filters: [],
+      order: {
+        "stores.settlement_name": "asc",
+      },
+    },
+  },
+  filter_values_municipalities: {
+    name: "📋 Filter Values: Municipalities List (Only with Stores)",
+    query: {
+      dimensions: ["stores.municipality_name"],
+      measures: [],
+      // No timeDimensions - we want ALL municipalities that have stores
+      filters: [],
+      order: {
+        "stores.municipality_name": "asc",
+      },
+    },
+  },
+  filter_municipality_only: {
+    name: "🔍 Filter: Municipality Only",
+    query: {
+      dimensions: ["prices.municipality_name"], // Include filtered dimension!
+      measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+      timeDimensions: [
+        {
+          dimension: "prices.price_date",
+          granularity: "day",
+          dateRange: "Last 30 days",
+        },
+      ],
+      filters: [
+        {
+          member: "prices.municipality_name",
+          operator: "equals",
+          values: ["София-град"],
+        },
+      ],
+    },
+  },
+  filter_values_categories: {
+    name: "📋 Filter Values: Categories List (Direct)",
+    query: {
+      dimensions: ["category_groups.name"],
+      measures: [],
+      // No timeDimensions - we want ALL categories, not just recent ones
+      filters: [],
+      order: {
+        "category_groups.name": "asc",
+      },
+    },
+  },
+  filter_values_categories_slow: {
+    name: "📋 Filter Values: Categories List (Slow - via prices)",
+    query: {
+      dimensions: ["prices.category_group_name"],
+      measures: [],
+      // No timeDimensions - we want ALL categories, not just recent ones
+      filters: [],
+      order: {
+        "prices.category_group_name": "asc",
+      },
+    },
+  },
+  filter_values_all_combined: {
+    name: "📋 Filter Values: All Filter Options",
+    query: {
+      dimensions: [
+        "prices.retailer_name",
+        "prices.settlement_name", 
+        "prices.category_group_name"
+      ],
+      measures: [],
+      // No timeDimensions - we want ALL possible combinations
+      filters: [],
+      order: {
+        "prices.retailer_name": "asc",
+      },
+    },
+  },
 };
 
 export function PreAggregationTest() {
@@ -480,6 +1003,158 @@ export function PreAggregationTest() {
                   ))}
               </div>
             </div>
+
+            {/* Basic Filter Testing Section */}
+            <div>
+              <h3 className="text-lg font-semibold mb-3">🔍 Basic Filter Testing</h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Test individual filter types. Key rule: <strong>filtered dimensions must be included in query dimensions!</strong>
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {Object.entries(TEST_QUERIES)
+                  .filter(([key]) => key.startsWith('filter_') && !key.includes('all_four') && !key.includes('three_filters'))
+                  .map(([key, test]) => (
+                    <Button
+                      key={key}
+                      variant={selectedTest === key ? "default" : "outline"}
+                      onClick={() => handleTest(key)}
+                      className="h-auto p-3 text-left justify-start"
+                    >
+                      <div className="w-full">
+                        <div className="font-semibold text-sm">{test.name}</div>
+                        <div className="text-xs opacity-70 truncate">
+                          Filters: {test.query.filters?.length || 0} | Dims: {test.query.dimensions?.length || 0}
+                        </div>
+                      </div>
+                    </Button>
+                  ))}
+              </div>
+            </div>
+
+            {/* Time Filter Testing Section */}
+            <div>
+              <h3 className="text-lg font-semibold mb-3">⏰ Time Filter Testing</h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Test different time ranges. <strong>All should match the same pre-aggregation</strong> (same granularity = same pre-agg).
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {Object.entries(TEST_QUERIES)
+                  .filter(([key]) => key.startsWith('time_'))
+                  .map(([key, test]) => (
+                    <Button
+                      key={key}
+                      variant={selectedTest === key ? "default" : "outline"}
+                      onClick={() => handleTest(key)}
+                      className="h-auto p-3 text-left justify-start"
+                    >
+                      <div className="w-full">
+                        <div className="font-semibold text-sm">{test.name}</div>
+                        <div className="text-xs opacity-70 truncate">
+                          Range: {Array.isArray(test.query.timeDimensions?.[0]?.dateRange) 
+                            ? test.query.timeDimensions[0].dateRange.join(' to ')
+                            : test.query.timeDimensions?.[0]?.dateRange || 'N/A'}
+                        </div>
+                      </div>
+                    </Button>
+                  ))}
+              </div>
+            </div>
+
+            {/* All 4 Filters Section */}
+            <div>
+              <h3 className="text-lg font-semibold mb-3">🎯 All 4 Filters (Retailer + Location + Category + Time)</h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Test all filter types together. Should match <strong>universal_filtered</strong> pre-aggregation.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {Object.entries(TEST_QUERIES)
+                  .filter(([key]) => key.includes('all_four'))
+                  .map(([key, test]) => (
+                    <Button
+                      key={key}
+                      variant={selectedTest === key ? "default" : "outline"}
+                      onClick={() => handleTest(key)}
+                      className="h-auto p-3 text-left justify-start"
+                    >
+                      <div className="w-full">
+                        <div className="font-semibold text-sm">{test.name}</div>
+                        <div className="text-xs opacity-70 truncate">
+                          All filters active | Dims: {test.query.dimensions?.length || 0}
+                        </div>
+                      </div>
+                    </Button>
+                  ))}
+              </div>
+            </div>
+
+            {/* 3 out of 4 Filters Section */}
+            <div>
+              <h3 className="text-lg font-semibold mb-3">🔍 Partial Filter Combinations (3 out of 4)</h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Test combinations with one filter type missing. Should match specific combination pre-aggregations.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {Object.entries(TEST_QUERIES)
+                  .filter(([key]) => key.includes('three_filters'))
+                  .map(([key, test]) => (
+                    <Button
+                      key={key}
+                      variant={selectedTest === key ? "default" : "outline"}
+                      onClick={() => handleTest(key)}
+                      className="h-auto p-3 text-left justify-start"
+                    >
+                      <div className="w-full">
+                        <div className="font-semibold text-sm">{test.name}</div>
+                        <div className="text-xs opacity-70 truncate">
+                          Filters: {test.query.filters?.length || 0} | Time: {test.query.timeDimensions ? 'Yes' : 'No'}
+                        </div>
+                      </div>
+                    </Button>
+                  ))}
+              </div>
+            </div>
+
+            {/* Filter Values Section */}
+            <div>
+              <h3 className="text-lg font-semibold mb-3">📋 Filter Value Queries (Dropdown Population)</h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Test queries that populate filter dropdowns. <strong>Critical for dashboard load performance!</strong> 
+                Compare direct queries (fast) vs subqueries (slow).
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {Object.entries(TEST_QUERIES)
+                  .filter(([key]) => key.startsWith('filter_values'))
+                  .map(([key, test]) => (
+                    <Button
+                      key={key}
+                      variant={selectedTest === key ? "default" : "outline"}
+                      onClick={() => handleTest(key)}
+                      className={`h-auto p-3 text-left justify-start ${
+                        key.includes('slow') ? 'border-red-200 hover:border-red-300' : 'border-green-200 hover:border-green-300'
+                      }`}
+                    >
+                      <div className="w-full">
+                        <div className="font-semibold text-sm flex items-center gap-2">
+                          {key.includes('slow') ? '🐌' : '🚀'}
+                          {test.name}
+                        </div>
+                        <div className="text-xs opacity-70 truncate">
+                          {key.includes('slow') ? 'Subquery (slow)' : 'Direct query (fast)'}
+                        </div>
+                      </div>
+                    </Button>
+                  ))}
+              </div>
+              
+              <div className="mt-4 p-3 bg-blue-50 rounded-lg text-sm">
+                <div className="font-semibold text-blue-800 mb-2">💡 Performance Tip</div>
+                <div className="text-blue-700">
+                  <strong>Direct queries</strong> (🚀) should be &lt; 1 second. 
+                  <strong>Subqueries</strong> (🐌) can take 1+ minutes. 
+                  Always use direct queries for dropdown population!
+                </div>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -593,6 +1268,44 @@ export function PreAggregationTest() {
               <div><strong>Category Charts:</strong> → category_chart_match, price_by_category</div>
               <div><strong>Settlement Charts:</strong> → price_by_settlement, settlement_rollup</div>
               <div><strong>Municipality Charts:</strong> → price_by_municipality, municipality_rollup</div>
+              
+              <div className="pt-2 border-t">
+                <strong>🔍 Basic Filters:</strong>
+              </div>
+              <div><strong>Retailer Only:</strong> → retailer_only_filtered</div>
+              <div><strong>Settlement Only:</strong> → settlement_only_filtered</div>
+              <div><strong>Municipality Only:</strong> → municipality_only_filtered</div>
+              <div><strong>Category Only:</strong> → category_only_filtered</div>
+              <div><strong>Retailer + Category:</strong> → retailer_category_filtered</div>
+              <div><strong>Location + Category:</strong> → location_category_filtered</div>
+              <div><strong>Retailer + Location:</strong> → retailer_location_filtered</div>
+              
+              <div className="pt-2 border-t">
+                <strong>⏰ Time Filters:</strong>
+              </div>
+              <div><strong>All Time Ranges:</strong> → time_only_filtered (same pre-agg for all ranges!)</div>
+              
+              <div className="pt-2 border-t">
+                <strong>🎯 All 4 Filters:</strong>
+              </div>
+              <div><strong>All Combinations:</strong> → universal_filtered</div>
+              
+              <div className="pt-2 border-t">
+                <strong>🔍 3 out of 4 Filters:</strong>
+              </div>
+              <div><strong>No Retailer:</strong> → location_category_filtered</div>
+              <div><strong>No Location:</strong> → retailer_category_filtered</div>
+              <div><strong>No Category:</strong> → retailer_location_filtered</div>
+              <div><strong>No Time:</strong> → no_time_all_filters</div>
+              
+              <div className="pt-2 border-t">
+                <strong>📋 Filter Value Queries:</strong>
+              </div>
+              <div><strong>🚀 Direct Retailers:</strong> → retailer_names (stores cube)</div>
+              <div><strong>🚀 Direct Settlements:</strong> → settlement_names (stores cube)</div>
+              <div><strong>🚀 Direct Municipalities:</strong> → municipality_names (stores cube)</div>
+              <div><strong>🚀 Direct Categories:</strong> → category_group_names (category_groups cube)</div>
+              <div><strong>🐌 Via Prices:</strong> → (expensive subqueries - avoid!)</div>
             </div>
           </div>
           

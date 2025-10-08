@@ -1,40 +1,57 @@
 cube(`stores`, {
   sql_table: `public.stores`,
   
-  data_source: `default`,
-  
   joins: {
-    retailers: {
-      sql: `${CUBE}.retailer_id = ${retailers}.id`,
-      relationship: `many_to_one`
-    },
-    
     settlements: {
-      sql: `${CUBE}.settlement_ekatte = ${settlements}.ekatte`,
-      relationship: `many_to_one`
+      relationship: `many_to_one`,
+      sql: `${CUBE}.settlement_ekatte = ${settlements}.ekatte`
+    },
+    municipality: {
+      relationship: `many_to_one`,
+      sql: `${CUBE}.settlement_ekatte = ${settlements}.ekatte AND ${settlements}.municipality = ${municipality}.code`
+    },
+    retailers: {
+      relationship: `many_to_one`,
+      sql: `${CUBE}.retailer_id = ${retailers}.id`
     }
   },
   
   dimensions: {
     original_id: {
       sql: `original_id`,
-      type: `string`,
+      type: `number`,
       primary_key: true
     },
-    
-    address: {
-      sql: `address`,
+    name: {
+      sql: `name`,
       type: `string`
     },
-    
+    retailer_id: {
+      sql: `retailer_id`,
+      type: `number`
+    },
     settlement_ekatte: {
       sql: `settlement_ekatte`,
       type: `string`
     },
     
-    retailer_id: {
-      sql: `retailer_id`,
-      type: `string`
+    // Direct settlement and municipality names for filter dropdowns
+    settlement_name: {
+      sql: `${settlements.name_bg}`,
+      type: `string`,
+      title: `Settlement Name`
+    },
+    
+    municipality_name: {
+      sql: `${municipality.name}`,
+      type: `string`, 
+      title: `Municipality Name`
+    },
+    
+    retailer_name: {
+      sql: `${retailers.name}`,
+      type: `string`,
+      title: `Retailer Name`
     }
   },
   
@@ -45,7 +62,30 @@ cube(`stores`, {
   },
   
   pre_aggregations: {
-    // Pre-aggregation definitions go here.
-    // Learn more in the documentation: https://cube.dev/docs/caching/pre-aggregations/getting-started
+    // Filter value pre-aggregations for dropdowns
+    settlement_names: {
+      dimensions: [settlement_name],
+      refreshKey: {every: '6 hours'},
+      // Returns only settlements that have stores
+    },
+    
+    municipality_names: {
+      dimensions: [municipality_name],
+      refreshKey: {every: '6 hours'},
+      // Returns only municipalities that have stores
+    },
+    
+    retailer_names: {
+      dimensions: [retailer_name],
+      refreshKey: {every: '6 hours'},
+      // Returns only retailers that have stores
+    },
+    
+    // Combined for complex filtering
+    all_store_locations: {
+      dimensions: [settlement_name, municipality_name, retailer_name],
+      refreshKey: {every: '6 hours'},
+      // All location combinations that have stores
+    }
   }
 });
