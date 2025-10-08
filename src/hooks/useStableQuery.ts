@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { useCubeQuery } from '@cubejs-client/react';
 
 // Global cache to prevent duplicate queries across all components
@@ -8,6 +8,9 @@ let queryBuildCount = 0;
 export function useStableQuery(queryBuilder: () => any, dependencies: any[], componentId?: string) {
   // Create a single stable string from all dependencies, including component ID to prevent cache collisions
   const stableKey = `${componentId || 'unknown'}:${dependencies.join('|')}`;
+  
+  // Track query timeout
+  const [isTimedOut, setIsTimedOut] = useState(false);
   
   // Only rebuild query when the stable key actually changes
   const query = useMemo(() => {
@@ -32,13 +35,33 @@ export function useStableQuery(queryBuilder: () => any, dependencies: any[], com
     subscribe: false,
   });
   
+  // Set up timeout to prevent stuck loading states (30 seconds)
+  useEffect(() => {
+    if (result.isLoading) {
+      setIsTimedOut(false);
+      const timeout = setTimeout(() => {
+        if (result.isLoading) {
+          console.error(`⏰ Query timeout for key: "${stableKey}"`);
+          setIsTimedOut(true);
+        }
+      }, 30000); // 30 second timeout
+      
+      return () => clearTimeout(timeout);
+    }
+  }, [result.isLoading, stableKey]);
+  
   // Debug the actual query result
   console.log('🔍 Query result:', {
     isLoading: result.isLoading,
     error: result.error,
+    isTimedOut,
     resultSet: result.resultSet ? 'HAS_DATA' : 'NO_DATA',
     progress: result.progress
   });
   
-  return result;
+  return {
+    ...result,
+    isLoading: result.isLoading && !isTimedOut,
+    error: result.error || (isTimedOut ? new Error('Query timeout - taking too long') : undefined),
+  };
 }

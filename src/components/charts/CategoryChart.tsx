@@ -57,7 +57,11 @@ export function CategoryChart({ globalFilters }: CategoryChartProps) {
       setLastValidData(chartData);
       setHasEverLoaded(true);
     }
-  }, [chartData, isLoading]);
+    // If loading finished but no data, and we've never loaded, mark as loaded
+    if (!isLoading && !chartData && !hasEverLoaded) {
+      setHasEverLoaded(true);
+    }
+  }, [chartData, isLoading, hasEverLoaded]);
 
   // Determine what data to display
   const displayData = chartData || lastValidData;

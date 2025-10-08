@@ -43,17 +43,21 @@ export function StatsCards({ globalFilters }: StatsCardsProps) {
     if (!pivot || pivot.length === 0) return null;
 
     const data = pivot[0];
-    const newData = {
-      minPrice: Number(data?.["prices.minRetailPrice"] || 0),
-      maxPrice: Number(data?.["prices.maxRetailPrice"] || 0),
-    };
+    const minPrice = Number(data?.["prices.minRetailPrice"] || 0);
+    const maxPrice = Number(data?.["prices.maxRetailPrice"] || 0);
+    
+    // If both are 0, treat as no data
+    if (minPrice === 0 && maxPrice === 0) return null;
 
-    return newData;
+    return {
+      minPrice,
+      maxPrice,
+    };
   }, [resultSet]);
 
   // Update last valid data when we get new data
   useEffect(() => {
-    if (statsData && !isLoading) {
+    if (statsData && statsData.minPrice > 0 && statsData.maxPrice > 0 && !isLoading) {
       setLastValidData(statsData);
       setHasEverLoaded(true);
     }
@@ -62,6 +66,9 @@ export function StatsCards({ globalFilters }: StatsCardsProps) {
   // Determine what data to display
   const displayData = statsData || lastValidData;
   const shouldShowLoading = isLoading && !hasEverLoaded;
+  
+  // Show error state or no data state appropriately
+  const hasData = displayData && displayData.minPrice > 0 && displayData.maxPrice > 0;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -71,7 +78,9 @@ export function StatsCards({ globalFilters }: StatsCardsProps) {
           <p className="text-3xl font-bold mt-2">
             {shouldShowLoading
               ? "Loading..."
-              : displayData
+              : error
+              ? "Error loading"
+              : hasData
               ? `${Number(displayData.minPrice).toFixed(2)} лв`
               : "No data"}
           </p>
@@ -84,7 +93,9 @@ export function StatsCards({ globalFilters }: StatsCardsProps) {
           <p className="text-3xl font-bold mt-2">
             {shouldShowLoading
               ? "Loading..."
-              : displayData
+              : error
+              ? "Error loading"
+              : hasData
               ? `${Number(displayData.maxPrice).toFixed(2)} лв`
               : "No data"}
           </p>
