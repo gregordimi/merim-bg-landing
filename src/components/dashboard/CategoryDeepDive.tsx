@@ -29,33 +29,33 @@ interface CategoryDeepDiveProps {
 }
 
 export default function CategoryDeepDive({ globalFilters }: CategoryDeepDiveProps) {
-  // Build filters once and memoize them properly
+  // Build filters once and memoize them properly - use flattened dimensions
   const filters = useMemo(() => {
     const filterArray = [];
     if (globalFilters.retailers && globalFilters.retailers.length > 0) {
       filterArray.push({
-        member: "retailers.name",
+        member: "prices.retailer_name",
         operator: "equals" as const,
         values: globalFilters.retailers,
       });
     }
     if (globalFilters.settlements && globalFilters.settlements.length > 0) {
       filterArray.push({
-        member: "settlements.name_bg",
+        member: "prices.settlement_name",
         operator: "equals" as const,
         values: globalFilters.settlements,
       });
     }
     if (globalFilters.municipalities && globalFilters.municipalities.length > 0) {
       filterArray.push({
-        member: "municipality.name",
+        member: "prices.municipality_name",
         operator: "equals" as const,
         values: globalFilters.municipalities,
       });
     }
     if (globalFilters.categories && globalFilters.categories.length > 0) {
       filterArray.push({
-        member: "category_groups.name",
+        member: "prices.category_group_name",
         operator: "equals" as const,
         values: globalFilters.categories,
       });

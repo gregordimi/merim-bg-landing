@@ -99,20 +99,43 @@ export function buildDimensions(globalFilters: GlobalFilters): string[] {
 
 /**
  * Build a complete query that will match pre-aggregations
+ * NOTE: Don't include a dimension if it's already being filtered
  */
 export function buildOptimizedQuery(
   measures: string[],
   globalFilters: GlobalFilters,
   additionalDimensions: string[] = []
 ): Query {
-  const dimensions = [
-    ...buildDimensions(globalFilters), // Include filtered dimensions
-    ...additionalDimensions, // Include any additional dimensions
+  const filteredDimensions = buildDimensions(globalFilters);
+  
+  // Only add additional dimensions if they're not already filtered
+  const finalDimensions = [
+    ...filteredDimensions,
+    ...additionalDimensions.filter(dim => {
+      // Don't include category dimension if categories are filtered
+      if (dim === "prices.category_group_name" && globalFilters.categories?.length > 0) {
+        return false;
+      }
+      // Don't include retailer dimension if retailers are filtered
+      if (dim === "prices.retailer_name" && globalFilters.retailers?.length > 0) {
+        return false;
+      }
+      // Don't include settlement dimension if settlements are filtered
+      if (dim === "prices.settlement_name" && globalFilters.settlements?.length > 0) {
+        return false;
+      }
+      // Don't include municipality dimension if municipalities are filtered
+      if (dim === "prices.municipality_name" && globalFilters.municipalities?.length > 0) {
+        return false;
+      }
+      // If not filtered, include this dimension
+      return !filteredDimensions.includes(dim);
+    }),
   ];
 
   return {
     measures,
-    dimensions: [...new Set(dimensions)], // Remove duplicates
+    dimensions: [...new Set(finalDimensions)], // Remove duplicates
     timeDimensions: buildTimeDimensions(globalFilters.dateRange),
     filters: buildFilters(globalFilters),
     order: {

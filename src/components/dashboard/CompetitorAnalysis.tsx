@@ -40,33 +40,33 @@ interface CompetitorAnalysisProps {
 export default function CompetitorAnalysis({
   globalFilters,
 }: CompetitorAnalysisProps) {
-  // Build filters once and memoize them properly
+  // Build filters once and memoize them properly - use flattened dimensions
   const filters = useMemo(() => {
     const filterArray = [];
     if (globalFilters.retailers && globalFilters.retailers.length > 0) {
       filterArray.push({
-        member: "retailers.name",
+        member: "prices.retailer_name",
         operator: "equals" as const,
         values: globalFilters.retailers,
       });
     }
     if (globalFilters.settlements && globalFilters.settlements.length > 0) {
       filterArray.push({
-        member: "settlements.name_bg",
+        member: "prices.settlement_name",
         operator: "equals" as const,
         values: globalFilters.settlements,
       });
     }
     if (globalFilters.municipalities && globalFilters.municipalities.length > 0) {
       filterArray.push({
-        member: "municipality.name",
+        member: "prices.municipality_name",
         operator: "equals" as const,
         values: globalFilters.municipalities,
       });
     }
     if (globalFilters.categories && globalFilters.categories.length > 0) {
       filterArray.push({
-        member: "category_groups.name",
+        member: "prices.category_group_name",
         operator: "equals" as const,
         values: globalFilters.categories,
       });
@@ -100,7 +100,7 @@ export default function CompetitorAnalysis({
   // Memoize queries to prevent unnecessary re-execution
   const retailerTrendQuery = useMemo(
     () => ({
-      dimensions: ["retailers.name"],
+      dimensions: ["prices.retailer_name"],
       measures: ["prices.averageRetailPrice"],
       timeDimensions: globalFilters.dateRange
         ? [
@@ -125,12 +125,13 @@ export default function CompetitorAnalysis({
 
   const avgPriceQuery = useMemo(
     () => ({
-      dimensions: ["retailers.name"],
+      dimensions: ["prices.retailer_name"],
       measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
       timeDimensions: globalFilters.dateRange
         ? [
             {
               dimension: "prices.price_date",
+              granularity: "day" as const,
               dateRange: globalFilters.dateRange,
             },
           ]
@@ -143,12 +144,13 @@ export default function CompetitorAnalysis({
 
   const discountQuery = useMemo(
     () => ({
-      dimensions: ["retailers.name"],
+      dimensions: ["prices.retailer_name"],
       measures: ["prices.averageDiscountPercentage"],
       timeDimensions: globalFilters.dateRange
         ? [
             {
               dimension: "prices.price_date",
+              granularity: "day" as const,
               dateRange: globalFilters.dateRange,
             },
           ]
@@ -276,7 +278,7 @@ function RetailerTrendChart({ resultSet, isLoading, error, progress }: any) {
     // Group data by date
     pivot.forEach((row: any) => {
       const date = row["prices.price_date.day"] || row["prices.price_date"];
-      const retailer = row["retailers.name"];
+      const retailer = row["prices.retailer_name"];
       const price = Number(row["prices.averageRetailPrice"] || 0);
 
       console.log("Processing row:", { date, retailer, price });
@@ -304,8 +306,8 @@ function RetailerTrendChart({ resultSet, isLoading, error, progress }: any) {
     const pivot = resultSet.tablePivot();
     const retailerSet = new Set();
     pivot.forEach((row: any) => {
-      if (row["retailers.name"]) {
-        retailerSet.add(row["retailers.name"]);
+      if (row["prices.retailer_name"]) {
+        retailerSet.add(row["prices.retailer_name"]);
       }
     });
     const result = Array.from(retailerSet);
@@ -380,7 +382,7 @@ function RetailerPriceChart({ resultSet, isLoading, error, progress }: any) {
     if (!resultSet) return [];
 
     return resultSet.tablePivot().map((row: any) => ({
-      retailer: row["retailers.name"],
+      retailer: row["prices.retailer_name"],
       retailPrice: Number(row["prices.averageRetailPrice"] || 0),
       promoPrice: Number(row["prices.averagePromoPrice"] || 0),
     }));
@@ -429,7 +431,7 @@ function DiscountChart({ resultSet, isLoading, error, progress }: any) {
     if (!resultSet) return [];
 
     return resultSet.tablePivot().map((row: any) => ({
-      retailer: row["retailers.name"],
+      retailer: row["prices.retailer_name"],
       discount: Number(row["prices.averageDiscountPercentage"] || 0),
     }));
   }, [resultSet]);

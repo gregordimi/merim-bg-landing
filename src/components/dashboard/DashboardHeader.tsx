@@ -19,33 +19,33 @@ interface DashboardHeaderProps {
 }
 
 export default function DashboardHeader({ globalFilters, setGlobalFilters }: DashboardHeaderProps) {
-  // Build the query with global filters
+  // Build the query with global filters - use flattened dimensions from prices cube
   const buildFilters = () => {
     const filters = [];
     if (globalFilters.retailers && globalFilters.retailers.length > 0) {
       filters.push({
-        member: "retailers.name",
+        member: "prices.retailer_name",
         operator: "equals" as const,
         values: globalFilters.retailers,
       });
     }
     if (globalFilters.settlements && globalFilters.settlements.length > 0) {
       filters.push({
-        member: "settlements.name_bg",
+        member: "prices.settlement_name",
         operator: "equals" as const,
         values: globalFilters.settlements,
       });
     }
     if (globalFilters.municipalities && globalFilters.municipalities.length > 0) {
       filters.push({
-        member: "municipality.name",
+        member: "prices.municipality_name",
         operator: "equals" as const,
         values: globalFilters.municipalities,
       });
     }
     if (globalFilters.categories && globalFilters.categories.length > 0) {
       filters.push({
-        member: "category_groups.name",
+        member: "prices.category_group_name",
         operator: "equals" as const,
         values: globalFilters.categories,
       });
@@ -53,7 +53,7 @@ export default function DashboardHeader({ globalFilters, setGlobalFilters }: Das
     return filters;
   };
 
-  // Query for KPIs
+  // Query for KPIs - use consistent field names with other queries
   const { resultSet: kpiResultSet, isLoading } = useCubeQuery({
     measures: [
       "prices.averageRetailPrice",
@@ -64,11 +64,16 @@ export default function DashboardHeader({ globalFilters, setGlobalFilters }: Das
       ? [
           {
             dimension: "prices.price_date",
+            granularity: "day" as const,
             dateRange: globalFilters.dateRange,
           },
         ]
       : [],
     filters: buildFilters(),
+  }, {
+    castNumerics: true,
+    resetResultSetOnChange: false,
+    subscribe: false,
   });
 
   const kpiData = kpiResultSet?.tablePivot()[0];
