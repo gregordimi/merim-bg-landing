@@ -6,6 +6,7 @@ import FullscreenLayout from "@/layouts/FullscreenLayout";
 import HomePage from "@/pages/HomePage";
 import Charts from "@/utils/cube/App";
 import DashboardPage from "@/pages/DashboardPage";
+import DashboardSidebarPage from "@/pages/DashboardSidebarPage";
 import ChartDebugPage from "@/pages/ChartDebugPage";
 import ChartListPage from "@/pages/ChartListPage";
 
@@ -48,6 +49,12 @@ function App() {
               <Route path="dashboard" element={<DashboardPage />} />
               <Route path="debug" element={<ChartDebugPage />} />
               <Route path="list" element={<ChartListPage />} />
+            </Route>
+
+            {/* New dashboard sidebar route - fullscreen */}
+            <Route path="/dashboard-sidebar" element={<FullscreenLayout />}>
+              <Route index element={<DashboardSidebarPage />} />
+              <Route path=":chartId" element={<DashboardSidebarPage />} />
             </Route>
           </Routes>
         </Suspense>
