@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { MultiSelect } from "@/utils/cube/components/MultiSelect";
 import { X } from "lucide-react";
 import { format, subDays, subMonths } from "date-fns";
-import { GlobalFilters } from "@/pages/DashboardPage";
+import { GlobalFilters } from "@/utils/cube/filterUtils";
 
 interface DashboardFiltersProps {
   globalFilters: GlobalFilters;
@@ -63,8 +63,8 @@ export default function DashboardFilters({
     order: { "retailers.name": "asc" },
   });
 
-  // Fetch locations - query settlements that have stores
-  const { resultSet: locationsResult } = useCubeQuery({
+  // Fetch settlements - query settlements that have stores
+  const { resultSet: settlementsResult } = useCubeQuery({
     dimensions: ["settlements.name_bg"],
     filters: [
       {
@@ -74,6 +74,13 @@ export default function DashboardFilters({
     ],
     measures: [],
     order: { "settlements.name_bg": "asc" },
+  });
+
+  // Fetch municipalities - query municipalities that have stores
+  const { resultSet: municipalitiesResult } = useCubeQuery({
+    dimensions: ["municipality.name"],
+    measures: [],
+    order: { "municipality.name": "asc" },
   });
 
   // Fetch categories - separate simple query
@@ -88,10 +95,15 @@ export default function DashboardFilters({
       ?.tablePivot()
       .map((row: any) => row["retailers.name"])
       .filter(Boolean) || [];
-  const locations =
-    locationsResult
+  const settlements =
+    settlementsResult
       ?.tablePivot()
       .map((row: any) => row["settlements.name_bg"])
+      .filter(Boolean) || [];
+  const municipalities =
+    municipalitiesResult
+      ?.tablePivot()
+      .map((row: any) => row["municipality.name"])
       .filter(Boolean) || [];
   const categories =
     categoriesResult
@@ -124,7 +136,8 @@ export default function DashboardFilters({
     setGlobalFilters({
       dateRange: getDateRangeFromPreset("last7days"),
       retailers: [],
-      locations: [],
+      settlements: [],
+      municipalities: [],
       categories: [],
     });
   };
@@ -132,7 +145,8 @@ export default function DashboardFilters({
   const hasActiveFilters =
     globalFilters.dateRange ||
     (globalFilters.retailers && globalFilters.retailers.length > 0) ||
-    (globalFilters.locations && globalFilters.locations.length > 0) ||
+    (globalFilters.settlements && globalFilters.settlements.length > 0) ||
+    (globalFilters.municipalities && globalFilters.municipalities.length > 0) ||
     (globalFilters.categories && globalFilters.categories.length > 0);
 
   return (
@@ -155,7 +169,7 @@ export default function DashboardFilters({
           )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {/* Date Range Selector */}
           <div>
             <label className="text-xs font-medium mb-2 block">Date Range</label>
@@ -186,16 +200,30 @@ export default function DashboardFilters({
             />
           </div>
 
-          {/* Location Filter */}
+          {/* Settlement Filter */}
           <div>
-            <label className="text-xs font-medium mb-2 block">Location</label>
+            <label className="text-xs font-medium mb-2 block">Settlement</label>
             <MultiSelect
-              options={locations}
-              selected={globalFilters.locations || []}
+              options={settlements}
+              selected={globalFilters.settlements || []}
               onChange={(selected) =>
-                setGlobalFilters({ ...globalFilters, locations: selected })
+                setGlobalFilters({ ...globalFilters, settlements: selected })
               }
-              placeholder="All Locations"
+              placeholder="All Settlements"
+              className="w-full"
+            />
+          </div>
+
+          {/* Municipality Filter */}
+          <div>
+            <label className="text-xs font-medium mb-2 block">Municipality</label>
+            <MultiSelect
+              options={municipalities}
+              selected={globalFilters.municipalities || []}
+              onChange={(selected) =>
+                setGlobalFilters({ ...globalFilters, municipalities: selected })
+              }
+              placeholder="All Municipalities"
               className="w-full"
             />
           </div>
