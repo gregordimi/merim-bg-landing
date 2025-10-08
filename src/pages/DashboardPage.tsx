@@ -5,13 +5,17 @@
  * - Global header with KPIs and filters
  * - Four analytical tabs: Executive Overview, Competitor Analysis, Category Deep Dive, Geographical Insights
  * - Dynamic filtering across all visualizations
+ * 
+ * PERFORMANCE OPTIMIZATION:
+ * - Uses custom tab navigation instead of shadcn Tabs to prevent mounting all tab content
+ * - Only the active tab's component is rendered, preventing unnecessary queries
+ * - Filter changes only trigger re-renders for the currently visible charts
  */
 
 import { useState, useMemo } from "react";
 import cube from "@cubejs-client/core";
 import { CubeProvider } from "@cubejs-client/react";
 import WebSocketTransport from "@cubejs-client/ws-transport";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { extractHashConfig } from "@/utils/cube/config";
 import { GlobalFilters } from "@/utils/cube/filterUtils";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
@@ -20,12 +24,50 @@ import ExecutiveOverview from "@/components/dashboard/ExecutiveOverview";
 import CompetitorAnalysis from "@/components/dashboard/CompetitorAnalysis";
 import CategoryDeepDive from "@/components/dashboard/CategoryDeepDive";
 import GeographicalInsights from "@/components/dashboard/GeographicalInsights";
+import { cn } from "@/lib/utils";
 
 interface AppConfig extends Record<string, unknown> {
   apiUrl: string;
   apiToken: string;
   useWebSockets?: boolean;
 }
+
+// Tab configuration
+type TabValue = 'overview' | 'competitor' | 'category' | 'geographical';
+
+interface TabConfig {
+  value: TabValue;
+  label: string;
+  icon: string;
+  component: React.ComponentType<{ globalFilters: GlobalFilters }>;
+}
+
+const DASHBOARD_TABS: TabConfig[] = [
+  {
+    value: 'overview',
+    label: 'Executive Overview',
+    icon: '📈',
+    component: ExecutiveOverview,
+  },
+  {
+    value: 'competitor',
+    label: 'Competitor Analysis',
+    icon: '🆚',
+    component: CompetitorAnalysis,
+  },
+  {
+    value: 'category',
+    label: 'Category Deep Dive',
+    icon: '🛒',
+    component: CategoryDeepDive,
+  },
+  {
+    value: 'geographical',
+    label: 'Geographical Insights',
+    icon: '🗺️',
+    component: GeographicalInsights,
+  },
+];
 
 // GlobalFilters interface is now imported from filterUtils
 
@@ -43,6 +85,9 @@ export default function DashboardPage() {
     categories: [],
     dateRange: undefined,
   });
+
+  // Manual tab state instead of using shadcn Tabs
+  const [activeTab, setActiveTab] = useState<TabValue>('overview');
 
   // CRITICAL: Memoize the filters object to prevent unnecessary re-renders
   const stableFilters = useMemo(
@@ -73,6 +118,10 @@ export default function DashboardPage() {
     });
   }, [apiToken, apiUrl, useWebSockets]);
 
+  // Get the active tab component
+  const activeTabConfig = DASHBOARD_TABS.find(tab => tab.value === activeTab);
+  const ActiveTabComponent = activeTabConfig?.component;
+
   return (
     <div className="min-h-screen bg-background">
       <DebugNavigation />
@@ -83,36 +132,32 @@ export default function DashboardPage() {
           setGlobalFilters={setGlobalFilters}
         />
 
-        {/* Main Dashboard Content with Tabs */}
+        {/* Main Dashboard Content with Custom Tab Navigation */}
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 mb-8">
-              <TabsTrigger value="overview">📈 Executive Overview</TabsTrigger>
-              <TabsTrigger value="competitor">
-                🆚 Competitor Analysis
-              </TabsTrigger>
-              <TabsTrigger value="category">🛒 Category Deep Dive</TabsTrigger>
-              <TabsTrigger value="geographical">
-                🗺️ Geographical Insights
-              </TabsTrigger>
-            </TabsList>
+          {/* Custom Tab Navigation */}
+          <div className="w-full mb-8">
+            <div className="bg-muted text-muted-foreground inline-flex h-9 w-fit items-center justify-center rounded-lg p-[3px] grid grid-cols-2 lg:grid-cols-4">
+              {DASHBOARD_TABS.map((tab) => (
+                <button
+                  key={tab.value}
+                  onClick={() => setActiveTab(tab.value)}
+                  className={cn(
+                    "inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-2 py-1 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] disabled:pointer-events-none disabled:opacity-50",
+                    activeTab === tab.value
+                      ? "bg-background dark:text-foreground shadow-sm dark:border-input dark:bg-input/30"
+                      : "text-foreground dark:text-muted-foreground"
+                  )}
+                >
+                  {tab.icon} {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
 
-            <TabsContent value="overview">
-              <ExecutiveOverview globalFilters={stableFilters} />
-            </TabsContent>
-
-            <TabsContent value="competitor">
-              <CompetitorAnalysis globalFilters={stableFilters} />
-            </TabsContent>
-
-            <TabsContent value="category">
-              <CategoryDeepDive globalFilters={stableFilters} />
-            </TabsContent>
-
-            <TabsContent value="geographical">
-              <GeographicalInsights globalFilters={stableFilters} />
-            </TabsContent>
-          </Tabs>
+          {/* Active Tab Content - Only render the selected tab */}
+          <div className="flex-1 outline-none">
+            {ActiveTabComponent && <ActiveTabComponent globalFilters={stableFilters} />}
+          </div>
         </div>
       </CubeProvider>
     </div>
