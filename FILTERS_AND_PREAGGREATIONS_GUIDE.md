@@ -152,7 +152,7 @@ const query = {
 dateRange: "Last 7 days"    ✅
 dateRange: "Last 30 days"   ✅  
 dateRange: "Last 90 days"   ✅
-dateRange: ["2024-01-01", "2024-01-31"]  ✅
+dateRange: ["2025-01-01", "2025-01-31"]  ✅
 
 // But this won't match (different granularity)
 granularity: "week"  ❌ (if pre-agg uses 'day')

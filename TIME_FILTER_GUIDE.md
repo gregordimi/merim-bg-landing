@@ -54,7 +54,7 @@ dateRange: "Last 30 days"
 dateRange: "Last 90 days"
 dateRange: "This month"
 dateRange: "This year"
-dateRange: ["2024-01-01", "2024-01-31"]  // Custom range
+dateRange: ["2025-01-01", "2025-01-31"]  // Custom range
 ```
 
 ## 🔍 Time Filter Matching Rules
@@ -84,7 +84,7 @@ dateRange: ["2024-01-01", "2024-01-31"]  // Custom range
 Query1: { timeDimensions: [{ dimension: "prices.price_date", granularity: "day", dateRange: "Last 7 days" }] }   ✅
 Query2: { timeDimensions: [{ dimension: "prices.price_date", granularity: "day", dateRange: "Last 30 days" }] }  ✅
 Query3: { timeDimensions: [{ dimension: "prices.price_date", granularity: "day", dateRange: "Last 90 days" }] }  ✅
-Query4: { timeDimensions: [{ dimension: "prices.price_date", granularity: "day", dateRange: ["2024-01-01", "2024-12-31"] }] } ✅
+Query4: { timeDimensions: [{ dimension: "prices.price_date", granularity: "day", dateRange: ["2025-01-01", "2025-12-31"] }] } ✅
 ```
 
 ### Example 2: Granularity Matters
@@ -173,7 +173,7 @@ const DATE_RANGES = {
   thisMonth: "This month",
   lastMonth: "Last month",
   thisYear: "This year",
-  custom: ["2024-01-01", "2024-01-31"]
+  custom: ["2025-01-01", "2025-01-31"]
 };
 ```
 

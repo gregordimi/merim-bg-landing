@@ -117,7 +117,7 @@ export default function ChartDebugPage() {
           settlements: [],
           municipalities: [],
           categories: [],
-          dateRange: ['2024-10-01', '2024-10-07'],
+          dateRange: ['2025-10-01', '2025-10-07'],
         });
         break;
       case 'filtered':
@@ -126,7 +126,7 @@ export default function ChartDebugPage() {
           settlements: ['София'],
           municipalities: [],
           categories: ['Месо и месни продукти'],
-          dateRange: ['2024-10-01', '2024-10-07'],
+          dateRange: ['2025-10-01', '2025-10-07'],
         });
         break;
       default:
@@ -207,7 +207,7 @@ export default function ChartDebugPage() {
                     <Label htmlFor="dateRange">Date Range</Label>
                     <Input
                       id="dateRange"
-                      placeholder="2024-10-01,2024-10-07"
+                      placeholder="2025-10-01,2025-10-07"
                       value={(globalFilters.dateRange || []).join(',')}
                       onChange={(e) => setGlobalFilters(prev => ({
                         ...prev,

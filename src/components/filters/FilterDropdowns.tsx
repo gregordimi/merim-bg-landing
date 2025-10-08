@@ -136,7 +136,7 @@ export function FilterDropdowns({ globalFilters, onFiltersChange }: FilterDropdo
           settlements: [],
           municipalities: [],
           categories: [],
-          dateRange: ['2024-10-01', '2024-10-07'],
+          dateRange: ['2025-10-01', '2025-10-07'],
         });
         break;
       case 'filtered':
@@ -145,7 +145,7 @@ export function FilterDropdowns({ globalFilters, onFiltersChange }: FilterDropdo
           settlements: ['София'],
           municipalities: ['София-град'],
           categories: ['Месо и месни продукти'],
-          dateRange: ['2024-10-01', '2024-10-07'],
+          dateRange: ['2025-10-01', '2025-10-07'],
         });
         break;
       default:

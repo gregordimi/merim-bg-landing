@@ -534,7 +534,7 @@ const TEST_QUERIES = {
         {
           dimension: "prices.price_date",
           granularity: "day",
-          dateRange: ["2024-10-01", "2024-10-07"],
+          dateRange: ["2025-10-01", "2025-10-07"],
         },
       ],
       filters: [],
@@ -615,7 +615,7 @@ const TEST_QUERIES = {
         {
           dimension: "prices.price_date",
           granularity: "day",
-          dateRange: ["2024-10-01", "2024-10-15"], // Custom time range
+          dateRange: ["2025-10-01", "2025-10-15"], // Custom time range
         },
       ],
       filters: [

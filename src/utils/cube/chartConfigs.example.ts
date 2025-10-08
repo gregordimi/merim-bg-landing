@@ -183,5 +183,5 @@ export const yearOverYear: ChartConfig = {
  * - 'Last month'
  * - 'Last quarter'
  * - 'Last year'
- * - Custom: ['2024-01-01', '2024-12-31']
+ * - Custom: ['2025-01-01', '2025-12-31']
  */

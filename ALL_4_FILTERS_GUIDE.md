@@ -128,7 +128,7 @@ Query1: { timeDimensions: [{ dimension: "prices.price_date", granularity: "day",
 Query2: { timeDimensions: [{ dimension: "prices.price_date", granularity: "day", dateRange: "Last 30 days" }] }
 Query3: { timeDimensions: [{ dimension: "prices.price_date", granularity: "day", dateRange: "Last 90 days" }] }
 Query4: { timeDimensions: [{ dimension: "prices.price_date", granularity: "day", dateRange: "This month" }] }
-Query5: { timeDimensions: [{ dimension: "prices.price_date", granularity: "day", dateRange: ["2024-01-01", "2024-12-31"] }] }
+Query5: { timeDimensions: [{ dimension: "prices.price_date", granularity: "day", dateRange: ["2025-01-01", "2025-12-31"] }] }
 ```
 
 ### Performance Implications
