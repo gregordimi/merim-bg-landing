@@ -29,6 +29,7 @@ import { SettlementChart } from "@/components/charts/SettlementChart";
 import { MunicipalityChart } from "@/components/charts/MunicipalityChart";
 import { SettlementHorizontalChart } from "@/components/charts/SettlementHorizontalChart";
 import { MunicipalityHorizontalChart } from "@/components/charts/MunicipalityHorizontalChart";
+import { PreAggregationTest } from "@/components/debug/PreAggregationTest";
 import { RetailerTrendChart } from "@/components/charts/RetailerTrendChart";
 import { RetailerPriceChart } from "@/components/charts/RetailerPriceChart";
 import { DiscountChart } from "@/components/charts/DiscountChart";
@@ -50,6 +51,15 @@ interface ChartInfo {
 }
 
 const AVAILABLE_CHARTS: ChartInfo[] = [
+  // Debug Tools
+  {
+    id: 'pre-agg-test',
+    name: 'Pre-Aggregation Test',
+    description: 'Test pre-aggregation matching and performance',
+    icon: '🧪',
+    component: () => <PreAggregationTest />,
+  },
+  
   // Executive Overview
   {
     id: 'stats',

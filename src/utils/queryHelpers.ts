@@ -66,7 +66,7 @@ export function buildTimeDimensions(dateRange?: string[]) {
   ] : [
     {
       dimension: "prices.price_date",
-      dateRange: "Last 30 days" as const,
+      dateRange: "Last 30 days" as const, // Rollups handle this properly
     }
   ];
   

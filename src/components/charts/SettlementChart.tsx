@@ -22,8 +22,7 @@ export function SettlementChart({ globalFilters }: SettlementChartProps) {
       measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
       timeDimensions: buildTimeDimensions(globalFilters.dateRange),
       filters: buildFilters(globalFilters),
-      order: { "prices.averageRetailPrice": "desc" as const },
-      limit: 20,
+      // ✅ Removed order and limit to hit cache
     }),
     [
       (globalFilters.retailers || []).join(','),
@@ -44,11 +43,14 @@ export function SettlementChart({ globalFilters }: SettlementChartProps) {
     const pivot = resultSet.tablePivot();
     if (!pivot || pivot.length === 0) return null;
 
-    return pivot.map((row: any) => ({
-      settlement: row["settlements.name_bg"],
-      retailPrice: Number(row["prices.averageRetailPrice"] || 0),
-      promoPrice: Number(row["prices.averagePromoPrice"] || 0),
-    }));
+    return pivot
+      .map((row: any) => ({
+        settlement: row["settlements.name_bg"],
+        retailPrice: Number(row["prices.averageRetailPrice"] || 0),
+        promoPrice: Number(row["prices.averagePromoPrice"] || 0),
+      }))
+      .sort((a, b) => b.retailPrice - a.retailPrice) // ✅ Sort by retail price descending
+      .slice(0, 20); // ✅ Limit to top 20
   }, [resultSet]);
 
   // Update last valid data when we get new data

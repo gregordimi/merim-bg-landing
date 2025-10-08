@@ -31,8 +31,7 @@ export function MunicipalityChart({ globalFilters }: MunicipalityChartProps) {
       measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
       timeDimensions: buildTimeDimensions(globalFilters.dateRange),
       filters: buildFilters(globalFilters),
-      order: { "prices.averageRetailPrice": "desc" as const },
-      limit: 15,
+      // ✅ Removed order and limit to hit cache
     }),
     [
       (globalFilters.retailers || []).join(","),
@@ -53,11 +52,14 @@ export function MunicipalityChart({ globalFilters }: MunicipalityChartProps) {
     const pivot = resultSet.tablePivot();
     if (!pivot || pivot.length === 0) return null;
 
-    return pivot.map((row: any) => ({
-      municipality: row["municipality.name"],
-      retailPrice: Number(row["prices.averageRetailPrice"] || 0),
-      promoPrice: Number(row["prices.averagePromoPrice"] || 0),
-    }));
+    return pivot
+      .map((row: any) => ({
+        municipality: row["municipality.name"],
+        retailPrice: Number(row["prices.averageRetailPrice"] || 0),
+        promoPrice: Number(row["prices.averagePromoPrice"] || 0),
+      }))
+      .sort((a, b) => b.retailPrice - a.retailPrice) // ✅ Sort by retail price descending
+      .slice(0, 15); // ✅ Limit to top 15
   }, [resultSet]);
 
   // Update last valid data when we get new data
