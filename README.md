@@ -17,6 +17,7 @@ To democratize access to pricing information and help consumers make informed pu
 - **Budget Planning** - Tools to manage household expenses effectively
 
 ### 📊 Data Analytics & Insights
+- **Retail Price Intelligence Hub** - Comprehensive BI dashboard with 4 analytical tabs
 - **Interactive Charts** - Dynamic data visualizations using Recharts
 - **Market Trend Analysis** - Price patterns and predictions
 - **Regional Comparisons** - Price differences across Bulgarian cities
@@ -42,6 +43,7 @@ To democratize access to pricing information and help consumers make informed pu
 - **TailwindCSS 4.1.12** - Utility-first CSS framework
 
 ### Content & Data Visualization
+- **Cube.js** - OLAP analytics engine for real-time data
 - **MDX 3.1.1** - Markdown with JSX components for blog posts
 - **Recharts 3.1.2** - Interactive charts and data visualization
 - **Remark** - Markdown processing with frontmatter support
@@ -93,6 +95,7 @@ npm run lint      # Run ESLint checks
 src/
 ├── components/          # Reusable React components
 │   ├── ui/             # Base UI components (buttons, cards, etc.)
+│   ├── dashboard/      # Dashboard-specific components
 │   ├── BlogMDXProvider.tsx  # MDX content renderer
 │   ├── Chart.tsx       # Data visualization component
 │   └── theme-provider.tsx   # Theme management
@@ -101,10 +104,12 @@ src/
 ├── layouts/           # Page layout components
 ├── pages/             # Route components
 │   ├── HomePage.tsx   # Landing page
+│   ├── DashboardPage.tsx   # BI Dashboard
 │   ├── BlogPage.tsx   # Blog listing
 │   └── BlogPostPage.tsx    # Individual blog posts
 ├── utils/             # Utility functions
 │   ├── blog.ts        # Blog post management
+│   ├── cube/          # Cube.js integration
 │   └── cs.tsx         # Class name utilities
 └── assets/            # Static assets
 ```

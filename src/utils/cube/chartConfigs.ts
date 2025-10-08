@@ -83,5 +83,72 @@ export const CHART_CONFIGS: Record<string, ChartConfig> = {
       fillMissingDates: true,
     },
   },
+  
+  // OPTIMIZED VERSIONS using additive measures (faster)
+  retailer_fast: {
+    id: "retailer_fast",
+    title: "Average Retail Price by Retailer (Fast)",
+    description: "Track price trends across different retailers over time - optimized version",
+    enableRetailerFilter: true,
+    query: {
+      dimensions: ["retailers.name"],
+      filters: [],
+      timeDimensions: [
+        {
+          dimension: "prices.price_date",
+          granularity: "day",
+          dateRange: "Last 30 days",
+        },
+      ],
+      measures: ["prices.totalRetailPrice", "prices.retailPriceCount"],
+      order: {
+        "prices.price_date": "asc",
+      },
+    },
+    pivotConfig: {
+      x: ["prices.price_date.day"],
+      y: ["retailers.name", "measures"],
+      fillMissingDates: true,
+    },
+    retailerQuery: {
+      dimensions: ["retailers.name"],
+      measures: [],
+      filters: [],
+      timeDimensions: [],
+      order: {
+        "retailers.name": "asc",
+      },
+    },
+  },
+  
+  category_fast: {
+    id: "category_fast",
+    title: "Average Retail Price by Category (Fast)",
+    description: "Compare price trends across product categories - optimized version",
+    decimals: 2,
+    currency: "лв",
+    dateFormat: { month: "short", day: "numeric" },
+    query: {
+      dimensions: ["category_groups.name"],
+      filters: [],
+      timeDimensions: [
+        {
+          dimension: "prices.price_date",
+          granularity: "day",
+          dateRange: "Last 30 days",
+        },
+      ],
+      measures: ["prices.totalRetailPrice", "prices.retailPriceCount"],
+      order: {
+        "prices.price_date": "asc",
+      },
+    },
+    pivotConfig: {
+      x: ["prices.price_date.day"],
+      y: ["category_groups.name", "measures"],
+      fillMissingDates: true,
+    },
+  },
+  
   // Add more chart configs here easily
 };

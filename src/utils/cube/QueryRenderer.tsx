@@ -2,6 +2,7 @@ import { ReactNode, useEffect, useRef } from "react";
 import { useCubeQuery } from "@cubejs-client/react";
 import { Query, ResultSet } from "@cubejs-client/core";
 import { ChartAreaSkeleton } from "./components/ChartSkeleton";
+import { logQueryAnalysis } from "./debugPreAggregations";
 
 interface QueryRendererProps {
   query: Query;
@@ -10,7 +11,14 @@ interface QueryRendererProps {
 
 export function QueryRenderer({ query, children }: QueryRendererProps) {
   const { resultSet, isLoading, error, progress } = useCubeQuery(query);
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Debug query for pre-aggregation matching
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      logQueryAnalysis(query, 'QueryRenderer');
+    }
+  }, [query]);
 
   useEffect(() => {
     if (isLoading) {
