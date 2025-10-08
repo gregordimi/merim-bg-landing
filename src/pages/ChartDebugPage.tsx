@@ -17,15 +17,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { extractHashConfig } from "@/utils/cube/config";
-import { GlobalFilters } from "@/pages/DashboardPage";
+import { GlobalFilters } from "@/utils/cube/filterUtils";
 
 // Import all chart components
 import { StatsCards } from "@/components/charts/StatsCards";
 import { TrendChart } from "@/components/charts/TrendChart";
 import { CategoryChart } from "@/components/charts/CategoryChart";
+import { CategoryTrendChart } from "@/components/charts/CategoryTrendChart";
+import { CategoryRangeChart } from "@/components/charts/CategoryRangeChart";
 import { RegionalTrendChart } from "@/components/charts/RegionalTrendChart";
 import { SettlementChart } from "@/components/charts/SettlementChart";
 import { MunicipalityChart } from "@/components/charts/MunicipalityChart";
+import { RetailerTrendChartPrice } from "@/components/charts/RetailerTrendChartPrice";
+import { RetailerTrendChartPromo } from "@/components/charts/RetailerTrendChartPromo";
+import { RetailerTrendChartDiscount } from "@/components/charts/RetailerTrendChartDiscount";
+import { RetailerPriceChart } from "@/components/charts/RetailerPriceChart";
+import { DiscountChart } from "@/components/charts/DiscountChart";
 import { DebugNavigation } from "@/components/debug/DebugNavigation";
 
 // Simple filter controls
@@ -47,7 +54,8 @@ export default function ChartDebugPage() {
 
   const [globalFilters, setGlobalFilters] = useState<GlobalFilters>({
     retailers: [],
-    locations: [],
+    settlements: [],
+    municipalities: [],
     categories: [],
     dateRange: undefined,
   });
@@ -58,7 +66,8 @@ export default function ChartDebugPage() {
   const stableFilters = useMemo(() => {
     const filters = {
       retailers: globalFilters.retailers,
-      locations: globalFilters.locations,
+      settlements: globalFilters.settlements,
+      municipalities: globalFilters.municipalities,
       categories: globalFilters.categories,
       dateRange: globalFilters.dateRange,
     };
@@ -71,7 +80,8 @@ export default function ChartDebugPage() {
     return filters;
   }, [
     globalFilters.retailers.join(','),
-    globalFilters.locations.join(','), 
+    globalFilters.settlements.join(','),
+    globalFilters.municipalities.join(','),
     globalFilters.categories.join(','),
     (globalFilters.dateRange || []).join(','),
   ]);
@@ -95,7 +105,8 @@ export default function ChartDebugPage() {
       case 'empty':
         setGlobalFilters({
           retailers: [],
-          locations: [],
+          settlements: [],
+          municipalities: [],
           categories: [],
           dateRange: undefined,
         });
@@ -103,7 +114,8 @@ export default function ChartDebugPage() {
       case 'basic':
         setGlobalFilters({
           retailers: [],
-          locations: [],
+          settlements: [],
+          municipalities: [],
           categories: [],
           dateRange: ['2024-10-01', '2024-10-07'],
         });
@@ -111,7 +123,8 @@ export default function ChartDebugPage() {
       case 'filtered':
         setGlobalFilters({
           retailers: ['Kaufland'],
-          locations: ['София'],
+          settlements: ['София'],
+          municipalities: [],
           categories: ['Месо и месни продукти'],
           dateRange: ['2024-10-01', '2024-10-07'],
         });
@@ -141,7 +154,7 @@ export default function ChartDebugPage() {
                 <CardTitle>Global Filters</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
                   <div>
                     <Label htmlFor="retailers">Retailers (comma-separated)</Label>
                     <Input
@@ -155,14 +168,26 @@ export default function ChartDebugPage() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="locations">Locations (comma-separated)</Label>
+                    <Label htmlFor="settlements">Settlements (comma-separated)</Label>
                     <Input
-                      id="locations"
+                      id="settlements"
                       placeholder="e.g., София, Пловдив"
-                      value={globalFilters.locations.join(', ')}
+                      value={globalFilters.settlements.join(', ')}
                       onChange={(e) => setGlobalFilters(prev => ({
                         ...prev,
-                        locations: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
+                        settlements: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
+                      }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="municipalities">Municipalities (comma-separated)</Label>
+                    <Input
+                      id="municipalities"
+                      placeholder="e.g., София, Пловдив"
+                      value={globalFilters.municipalities.join(', ')}
+                      onChange={(e) => setGlobalFilters(prev => ({
+                        ...prev,
+                        municipalities: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
                       }))}
                     />
                   </div>
@@ -211,7 +236,10 @@ export default function ChartDebugPage() {
                     Retailers: {globalFilters.retailers.length || 'All'}
                   </Badge>
                   <Badge variant="secondary">
-                    Locations: {globalFilters.locations.length || 'All'}
+                    Settlements: {globalFilters.settlements.length || 'All'}
+                  </Badge>
+                  <Badge variant="secondary">
+                    Municipalities: {globalFilters.municipalities.length || 'All'}
                   </Badge>
                   <Badge variant="secondary">
                     Categories: {globalFilters.categories.length || 'All'}
@@ -247,20 +275,22 @@ export default function ChartDebugPage() {
 
           {/* Chart Tabs */}
           <Tabs defaultValue="stats" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 mb-8">
+            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 mb-8">
               <TabsTrigger value="stats">📊 Stats</TabsTrigger>
               <TabsTrigger value="trend">📈 Trend</TabsTrigger>
               <TabsTrigger value="category">🛒 Category</TabsTrigger>
+              <TabsTrigger value="retailer">🆚 Retailer</TabsTrigger>
+              <TabsTrigger value="cat-trend">📊 Cat Trend</TabsTrigger>
+              <TabsTrigger value="cat-range">📏 Cat Range</TabsTrigger>
               <TabsTrigger value="regional">🗺️ Regional</TabsTrigger>
               <TabsTrigger value="settlement">🏘️ Settlement</TabsTrigger>
-              <TabsTrigger value="municipality">🏛️ Municipality</TabsTrigger>
             </TabsList>
 
             <TabsContent value="stats">
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold">Stats Cards Component</h2>
                 <p className="text-muted-foreground">
-                  Tests: minRetailPrice, maxRetailPrice, medianRetailPrice measures
+                  Tests: minRetailPrice, maxRetailPrice measures
                 </p>
                 <StatsCards globalFilters={stableFilters} />
               </div>
@@ -280,9 +310,45 @@ export default function ChartDebugPage() {
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold">Category Chart Component</h2>
                 <p className="text-muted-foreground">
-                  Tests: category_groups.name dimension with price measures
+                  Tests: category_group_name dimension with price measures
                 </p>
                 <CategoryChart globalFilters={stableFilters} />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="retailer">
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold">Retailer Charts</h2>
+                <p className="text-muted-foreground">
+                  Tests: retailer_name dimension with various price trends
+                </p>
+                <RetailerTrendChartPrice globalFilters={stableFilters} />
+                <RetailerTrendChartPromo globalFilters={stableFilters} />
+                <RetailerTrendChartDiscount globalFilters={stableFilters} />
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <RetailerPriceChart globalFilters={stableFilters} />
+                  <DiscountChart globalFilters={stableFilters} />
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="cat-trend">
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold">Category Trend Chart</h2>
+                <p className="text-muted-foreground">
+                  Tests: category trends over time
+                </p>
+                <CategoryTrendChart globalFilters={stableFilters} />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="cat-range">
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold">Category Range Chart</h2>
+                <p className="text-muted-foreground">
+                  Tests: min, avg, max prices by category
+                </p>
+                <CategoryRangeChart globalFilters={stableFilters} />
               </div>
             </TabsContent>
 
@@ -290,9 +356,10 @@ export default function ChartDebugPage() {
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold">Regional Trend Chart Component</h2>
                 <p className="text-muted-foreground">
-                  Tests: municipality.name dimension with time series
+                  Tests: municipality_name dimension with time series
                 </p>
                 <RegionalTrendChart globalFilters={stableFilters} />
+                <MunicipalityChart globalFilters={stableFilters} />
               </div>
             </TabsContent>
 
@@ -300,19 +367,9 @@ export default function ChartDebugPage() {
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold">Settlement Chart Component</h2>
                 <p className="text-muted-foreground">
-                  Tests: settlements.name_bg dimension with price comparison
+                  Tests: settlement_name dimension with price comparison
                 </p>
                 <SettlementChart globalFilters={stableFilters} />
-              </div>
-            </TabsContent>
-
-            <TabsContent value="municipality">
-              <div className="space-y-4">
-                <h2 className="text-2xl font-bold">Municipality Chart Component</h2>
-                <p className="text-muted-foreground">
-                  Tests: municipality.name dimension with price comparison
-                </p>
-                <MunicipalityChart globalFilters={stableFilters} />
               </div>
             </TabsContent>
           </Tabs>

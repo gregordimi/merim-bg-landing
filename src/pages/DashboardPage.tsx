@@ -20,11 +20,22 @@ import { extractHashConfig } from "@/utils/cube/config";
 import { GlobalFilters } from "@/utils/cube/filterUtils";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import { DebugNavigation } from "@/components/debug/DebugNavigation";
-import ExecutiveOverview from "@/components/dashboard/ExecutiveOverview";
-import CompetitorAnalysis from "@/components/dashboard/CompetitorAnalysis";
-import CategoryDeepDive from "@/components/dashboard/CategoryDeepDive";
-import GeographicalInsights from "@/components/dashboard/GeographicalInsights";
 import { cn } from "@/lib/utils";
+
+// Import reusable chart components instead of legacy dashboard components
+import { StatsCards } from "@/components/charts/StatsCards";
+import { TrendChart } from "@/components/charts/TrendChart";
+import { CategoryChart } from "@/components/charts/CategoryChart";
+import { RetailerTrendChartPrice } from "@/components/charts/RetailerTrendChartPrice";
+import { RetailerTrendChartPromo } from "@/components/charts/RetailerTrendChartPromo";
+import { RetailerTrendChartDiscount } from "@/components/charts/RetailerTrendChartDiscount";
+import { RetailerPriceChart } from "@/components/charts/RetailerPriceChart";
+import { DiscountChart } from "@/components/charts/DiscountChart";
+import { CategoryTrendChart } from "@/components/charts/CategoryTrendChart";
+import { CategoryRangeChart } from "@/components/charts/CategoryRangeChart";
+import { RegionalTrendChart } from "@/components/charts/RegionalTrendChart";
+import { SettlementChart } from "@/components/charts/SettlementChart";
+import { MunicipalityChart } from "@/components/charts/MunicipalityChart";
 
 interface AppConfig extends Record<string, unknown> {
   apiUrl: string;
@@ -32,7 +43,7 @@ interface AppConfig extends Record<string, unknown> {
   useWebSockets?: boolean;
 }
 
-// Tab configuration
+// Tab configuration - using inline components with reusable charts
 type TabValue = "overview" | "competitor" | "category" | "geographical";
 
 interface TabConfig {
@@ -41,6 +52,50 @@ interface TabConfig {
   icon: string;
   component: React.ComponentType<{ globalFilters: GlobalFilters }>;
 }
+
+// Executive Overview component
+const ExecutiveOverview = ({ globalFilters }: { globalFilters: GlobalFilters }) => (
+  <div className="space-y-6">
+    <StatsCards globalFilters={globalFilters} />
+    <TrendChart globalFilters={globalFilters} />
+    <CategoryChart globalFilters={globalFilters} />
+  </div>
+);
+
+// Competitor Analysis component
+const CompetitorAnalysis = ({ globalFilters }: { globalFilters: GlobalFilters }) => (
+  <div className="space-y-6">
+    <RetailerTrendChartPrice globalFilters={globalFilters} />
+    <RetailerTrendChartPromo globalFilters={globalFilters} />
+    <RetailerTrendChartDiscount globalFilters={globalFilters} />
+    
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <RetailerPriceChart globalFilters={globalFilters} />
+      <DiscountChart globalFilters={globalFilters} />
+    </div>
+  </div>
+);
+
+// Category Deep Dive component
+const CategoryDeepDive = ({ globalFilters }: { globalFilters: GlobalFilters }) => (
+  <div className="space-y-6">
+    <CategoryTrendChart globalFilters={globalFilters} />
+    <CategoryRangeChart globalFilters={globalFilters} />
+    <CategoryChart globalFilters={globalFilters} />
+  </div>
+);
+
+// Geographical Insights component
+const GeographicalInsights = ({ globalFilters }: { globalFilters: GlobalFilters }) => (
+  <div className="space-y-6">
+    <RegionalTrendChart globalFilters={globalFilters} />
+    
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <SettlementChart globalFilters={globalFilters} />
+      <MunicipalityChart globalFilters={globalFilters} />
+    </div>
+  </div>
+);
 
 const DASHBOARD_TABS: TabConfig[] = [
   {
