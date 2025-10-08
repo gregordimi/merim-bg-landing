@@ -16,11 +16,18 @@ interface ChartDataPoint {
 
 export function MunicipalityHorizontalChart({ globalFilters }: MunicipalityHorizontalChartProps) {
   const { resultSet, isLoading, error, progress } = useStableQuery(
-    () => buildOptimizedQuery(
-      ["prices.averageRetailPrice", "prices.averagePromoPrice"],
-      globalFilters,
-      ["prices.municipality_name"] // Always include municipalities dimension
-    ),
+    () => {
+      const query = buildOptimizedQuery(
+        ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+        globalFilters,
+        ["prices.municipality_name"] // Always include municipalities dimension
+      );
+      
+      // Remove time dimensions for aggregate query to improve performance
+      query.timeDimensions = [];
+      
+      return query;
+    },
     [
       (globalFilters.retailers || []).join(','),
       (globalFilters.settlements || []).join(','),

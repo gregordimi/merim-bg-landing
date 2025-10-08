@@ -34,8 +34,8 @@ import { DiscountChart } from "@/components/charts/DiscountChart";
 import { CategoryTrendChart } from "@/components/charts/CategoryTrendChart";
 import { CategoryRangeChart } from "@/components/charts/CategoryRangeChart";
 import { RegionalTrendChart } from "@/components/charts/RegionalTrendChart";
-import { SettlementChart } from "@/components/charts/SettlementChart";
-import { MunicipalityChart } from "@/components/charts/MunicipalityChart";
+import { SettlementHorizontalChart } from "@/components/charts/SettlementHorizontalChart";
+import { MunicipalityHorizontalChart } from "@/components/charts/MunicipalityHorizontalChart";
 
 interface AppConfig extends Record<string, unknown> {
   apiUrl: string;
@@ -91,8 +91,8 @@ const GeographicalInsights = ({ globalFilters }: { globalFilters: GlobalFilters 
     <RegionalTrendChart globalFilters={globalFilters} />
     
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <SettlementChart globalFilters={globalFilters} />
-      <MunicipalityChart globalFilters={globalFilters} />
+      <SettlementHorizontalChart globalFilters={globalFilters} />
+      <MunicipalityHorizontalChart globalFilters={globalFilters} />
     </div>
   </div>
 );
