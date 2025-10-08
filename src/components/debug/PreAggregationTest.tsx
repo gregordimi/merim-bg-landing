@@ -806,11 +806,23 @@ const TEST_QUERIES = {
     },
   },
   filter_values_categories: {
-    name: "📋 Filter Values: Categories List (Direct)",
+    name: "📋 Filter Values: Categories List (Only in Stores)",
+    query: {
+      dimensions: ["store_categories.name"],
+      measures: [],
+      // No timeDimensions - we want ALL categories that are available in stores
+      filters: [],
+      order: {
+        "store_categories.name": "asc",
+      },
+    },
+  },
+  filter_values_categories_all: {
+    name: "📋 Filter Values: Categories List (All Categories)",
     query: {
       dimensions: ["category_groups.name"],
       measures: [],
-      // No timeDimensions - we want ALL categories, not just recent ones
+      // No timeDimensions - we want ALL categories, even those not in stores
       filters: [],
       order: {
         "category_groups.name": "asc",
@@ -1135,11 +1147,14 @@ export function PreAggregationTest() {
                     >
                       <div className="w-full">
                         <div className="font-semibold text-sm flex items-center gap-2">
-                          {key.includes('slow') ? '🐌' : '🚀'}
+                          {key.includes('slow') ? '🐌' : 
+                           key.includes('categories_all') ? '📚' : '🚀'}
                           {test.name}
                         </div>
                         <div className="text-xs opacity-70 truncate">
-                          {key.includes('slow') ? 'Subquery (slow)' : 'Direct query (fast)'}
+                          {key.includes('slow') ? 'Subquery (slow)' : 
+                           key.includes('categories_all') ? 'All categories' : 
+                           key.includes('categories') ? 'Only in stores' : 'Direct query (fast)'}
                         </div>
                       </div>
                     </Button>
@@ -1304,7 +1319,8 @@ export function PreAggregationTest() {
               <div><strong>🚀 Direct Retailers:</strong> → retailer_names (stores cube)</div>
               <div><strong>🚀 Direct Settlements:</strong> → settlement_names (stores cube)</div>
               <div><strong>🚀 Direct Municipalities:</strong> → municipality_names (stores cube)</div>
-              <div><strong>🚀 Direct Categories:</strong> → category_group_names (category_groups cube)</div>
+              <div><strong>🚀 Categories (In Stores):</strong> → available_categories (store_categories cube)</div>
+              <div><strong>🚀 Categories (All):</strong> → category_group_names (category_groups cube)</div>
               <div><strong>🐌 Via Prices:</strong> → (expensive subqueries - avoid!)</div>
             </div>
           </div>

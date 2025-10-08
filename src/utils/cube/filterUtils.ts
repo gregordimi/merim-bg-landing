@@ -255,10 +255,10 @@ export const FILTER_VALUE_QUERIES = {
     },
     
     categories: {
-      dimensions: ["category_groups.name"],
+      dimensions: ["store_categories.name"],
       measures: [],
       filters: [],
-      order: { "category_groups.name": "asc" },
+      order: { "store_categories.name": "asc" },
     },
   },
   
@@ -315,7 +315,7 @@ export function extractDirectFilterValues(resultSet: any, filterType: 'retailers
     retailers: "stores.retailer_name",
     settlements: "stores.settlement_name",
     municipalities: "stores.municipality_name",
-    categories: "category_groups.name"
+    categories: "store_categories.name"
   };
   
   return extractFilterValues(resultSet, dimensionMap[filterType]);
