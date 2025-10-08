@@ -4,12 +4,8 @@ cube(`settlements`, {
 
   joins: {
     municipality: {
-      sql: `${CUBE}.municipality = ${municipality}.code`, // ✅ Fixed syntax
+      sql: `${CUBE}.municipality = ${municipality}.code`,
       relationship: `many_to_one`
-    },
-    stores: {
-      relationship: `one_to_many`,
-      sql: `${CUBE}.ekatte = ${stores}.settlement_ekatte`
     }
   },
 
@@ -35,19 +31,24 @@ cube(`settlements`, {
       sql: `name_en`,
       type: `string`
     },
-    municipality: {
-      sql: `municipality`,
+    
+    // ✅ THIS IS THE KEY FIX:
+    // Create a dimension here so other cubes can reference it easily.
+    municipality_name: {
+      sql: `${municipality.name}`,
       type: `string`
     }
   },
+
   measures: {
     count: {
       type: `count`
     }
   },
+
   pre_aggregations: {
     settlements_basic: {
-      dimensions: [name_bg], // ✅ Use local dimension names only
+      dimensions: [name_bg],
       refreshKey: {every: '4 hours'}
     }
   }

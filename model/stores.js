@@ -2,14 +2,10 @@ cube(`stores`, {
   sql_table: `public.stores`,
   
   joins: {
-    // Correct: Joins to settlements, which then joins to municipality
     settlements: {
       relationship: `many_to_one`,
       sql: `${CUBE}.settlement_ekatte = ${settlements}.ekatte`
     },
-    // REMOVED: The incorrect direct join to municipality that was causing the error.
-    
-    // Correct: This join is fine
     retailers: {
       relationship: `many_to_one`,
       sql: `${CUBE}.retailer_id = ${retailers}.id`
@@ -35,23 +31,23 @@ cube(`stores`, {
       type: `string`
     },
     
-    // Direct settlement and municipality names for filter dropdowns
+    // --- FIXED DIMENSIONS ---
     settlement_name: {
-      // ✅ This correctly references the joined settlements cube
+      // ✅ Correct: References dimension from the joined 'settlements' cube
       sql: `${settlements.name_bg}`,
       type: `string`,
       title: `Settlement Name`
     },
     
     municipality_name: {
-      // ✅ FIXED: This now correctly references municipality through the settlements join
-      sql: `${settlements.municipality.name}`, 
+      // ✅ Correct: Now references the new, stable dimension from 'settlements'
+      sql: `${settlements.municipality_name}`, 
       type: `string`, 
       title: `Municipality Name`
     },
     
     retailer_name: {
-      // ✅ This correctly references the joined retailers cube
+      // ✅ Correct: References dimension from the joined 'retailers' cube
       sql: `${retailers.name}`,
       type: `string`,
       title: `Retailer Name`
@@ -65,27 +61,21 @@ cube(`stores`, {
   },
   
   pre_aggregations: {
-    // Filter value pre-aggregations for dropdowns
     settlement_names: {
       dimensions: [settlement_name],
-      refreshKey: {every: '12 hour'},
+      refreshKey: {every: '6 hours'}
     },
-    
     municipality_names: {
       dimensions: [municipality_name],
-      refreshKey: {every: '12 hour'},
+      refreshKey: {every: '6 hours'}
     },
-    
     retailer_names: {
       dimensions: [retailer_name],
-      refreshKey: {every: '12 hour'},
+      refreshKey: {every: '6 hours'}
     },
-    
-    // Combined for complex filtering
-    // This pre-aggregation will now build correctly with the fixed join path
     all_store_locations: {
       dimensions: [settlement_name, municipality_name, retailer_name],
-      refreshKey: {every: '12 hour'},
+      refreshKey: {every: '6 hours'}
     }
   }
 });
