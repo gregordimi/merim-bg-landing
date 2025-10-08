@@ -8,7 +8,7 @@
  * - Card-based layout similar to ChartListPage
  */
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import cube from "@cubejs-client/core";
 import { CubeProvider } from "@cubejs-client/react";
@@ -238,11 +238,12 @@ export default function DashboardSidebarPage() {
   const currentChart = CHART_ROUTES.find(chart => chart.id === chartId);
   const CurrentChartComponent = currentChart?.component;
 
-  // Default to first chart if none selected
-  if (!chartId) {
-    navigate(`/dashboard-sidebar/${CHART_ROUTES[0].id}`, { replace: true });
-    return null;
-  }
+  // Default to first chart if none selected - use useEffect to avoid render-time navigation
+  useEffect(() => {
+    if (!chartId) {
+      navigate(`/dashboard-sidebar/${CHART_ROUTES[0].id}`, { replace: true });
+    }
+  }, [chartId, navigate]);
 
   return (
     <CubeProvider cubeApi={cubeApi}>

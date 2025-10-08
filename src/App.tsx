@@ -51,8 +51,8 @@ function App() {
               <Route path="list" element={<ChartListPage />} />
             </Route>
 
-            {/* New dashboard sidebar route - fullscreen */}
-            <Route path="/dashboard-sidebar" element={<FullscreenLayout />}>
+            {/* New dashboard sidebar route - standalone (no layout wrapper) */}
+            <Route path="/dashboard-sidebar">
               <Route index element={<DashboardSidebarPage />} />
               <Route path=":chartId" element={<DashboardSidebarPage />} />
             </Route>
