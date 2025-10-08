@@ -1,7 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
-import { GlobalFilters } from "@/pages/DashboardPage";
+import { GlobalFilters, buildOptimizedQuery } from '@/utils/cube/filterUtils';
 import { useStableQuery } from "@/hooks/useStableQuery";
-import { buildFilters, buildTimeDimensions } from "@/utils/queryHelpers";
 import { ChartWrapper } from "./ChartWrapper";
 import {
   BarChart,
@@ -28,17 +27,15 @@ export function SettlementHorizontalChart({
   globalFilters,
 }: SettlementHorizontalChartProps) {
   const { resultSet, isLoading, error, progress } = useStableQuery(
-    () => ({
-      dimensions: ["settlements.name_bg"],
-      measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
-      timeDimensions: buildTimeDimensions(globalFilters.dateRange),
-      filters: buildFilters(globalFilters),
-      order: { "prices.averageRetailPrice": "desc" as const },
-      limit: 20,
-    }),
+    () => buildOptimizedQuery(
+      ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+      globalFilters,
+      ["prices.settlement_name"] // Always include settlements dimension
+    ),
     [
       (globalFilters.retailers || []).join(","),
-      (globalFilters.locations || []).join(","),
+      (globalFilters.settlements || []).join(","),
+      (globalFilters.municipalities || []).join(","),
       (globalFilters.categories || []).join(","),
       (globalFilters.dateRange || []).join(","),
     ],
@@ -55,11 +52,14 @@ export function SettlementHorizontalChart({
     const pivot = resultSet.tablePivot();
     if (!pivot || pivot.length === 0) return null;
 
-    return pivot.map((row: any) => ({
-      settlement: row["settlements.name_bg"],
-      retailPrice: Number(row["prices.averageRetailPrice"] || 0),
-      promoPrice: Number(row["prices.averagePromoPrice"] || 0),
-    }));
+    return pivot
+      .map((row: any) => ({
+        settlement: row["prices.settlement_name"],
+        retailPrice: Number(row["prices.averageRetailPrice"] || 0),
+        promoPrice: Number(row["prices.averagePromoPrice"] || 0),
+      }))
+      .sort((a, b) => b.retailPrice - a.retailPrice) // Sort by retail price descending
+      .slice(0, 20); // Limit to top 20
   }, [resultSet]);
 
   // Update last valid data when we get new data

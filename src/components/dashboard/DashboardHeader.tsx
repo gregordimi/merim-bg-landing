@@ -10,7 +10,7 @@
 import { useCubeQuery } from "@cubejs-client/react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, TrendingUp, TrendingDown, Minus } from "lucide-react";
-import { GlobalFilters } from "@/pages/DashboardPage";
+import { GlobalFilters } from "@/utils/cube/filterUtils";
 import DashboardFilters from "./DashboardFilters";
 
 interface DashboardHeaderProps {
@@ -29,11 +29,18 @@ export default function DashboardHeader({ globalFilters, setGlobalFilters }: Das
         values: globalFilters.retailers,
       });
     }
-    if (globalFilters.locations && globalFilters.locations.length > 0) {
+    if (globalFilters.settlements && globalFilters.settlements.length > 0) {
       filters.push({
         member: "settlements.name_bg",
         operator: "equals" as const,
-        values: globalFilters.locations,
+        values: globalFilters.settlements,
+      });
+    }
+    if (globalFilters.municipalities && globalFilters.municipalities.length > 0) {
+      filters.push({
+        member: "municipality.name",
+        operator: "equals" as const,
+        values: globalFilters.municipalities,
       });
     }
     if (globalFilters.categories && globalFilters.categories.length > 0) {

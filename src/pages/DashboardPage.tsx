@@ -1,6 +1,6 @@
 /**
  * Retail Price Intelligence Hub Dashboard
- * 
+ *
  * A comprehensive BI dashboard for retail price analysis with:
  * - Global header with KPIs and filters
  * - Four analytical tabs: Executive Overview, Competitor Analysis, Category Deep Dive, Geographical Insights
@@ -13,6 +13,7 @@ import { CubeProvider } from "@cubejs-client/react";
 import WebSocketTransport from "@cubejs-client/ws-transport";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { extractHashConfig } from "@/utils/cube/config";
+import { GlobalFilters } from "@/utils/cube/filterUtils";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import { DebugNavigation } from "@/components/debug/DebugNavigation";
 import ExecutiveOverview from "@/components/dashboard/ExecutiveOverview";
@@ -26,12 +27,7 @@ interface AppConfig extends Record<string, unknown> {
   useWebSockets?: boolean;
 }
 
-export interface GlobalFilters {
-  retailers: string[];
-  locations: string[];
-  categories: string[];
-  dateRange?: string[];
-}
+// GlobalFilters interface is now imported from filterUtils
 
 export default function DashboardPage() {
   const { apiUrl, apiToken, useWebSockets } = extractHashConfig<AppConfig>({
@@ -42,34 +38,38 @@ export default function DashboardPage() {
 
   const [globalFilters, setGlobalFilters] = useState<GlobalFilters>({
     retailers: [],
-    locations: [],
+    settlements: [],
+    municipalities: [],
     categories: [],
     dateRange: undefined,
   });
 
   // CRITICAL: Memoize the filters object to prevent unnecessary re-renders
-  const stableFilters = useMemo(() => ({
-    retailers: globalFilters.retailers,
-    locations: globalFilters.locations,
-    categories: globalFilters.categories,
-    dateRange: globalFilters.dateRange,
-  }), [
-    globalFilters.retailers.join(','),
-    globalFilters.locations.join(','), 
-    globalFilters.categories.join(','),
-    (globalFilters.dateRange || []).join(','),
-  ]);
+  const stableFilters = useMemo(
+    () => ({
+      retailers: globalFilters.retailers,
+      settlements: globalFilters.settlements,
+      municipalities: globalFilters.municipalities,
+      categories: globalFilters.categories,
+      dateRange: globalFilters.dateRange,
+    }),
+    [
+      globalFilters.retailers.join(","),
+      globalFilters.settlements.join(","),
+      globalFilters.municipalities.join(","),
+      globalFilters.categories.join(","),
+      (globalFilters.dateRange || []).join(","),
+    ]
+  );
 
   const cubeApi = useMemo(() => {
     let transport = undefined;
     if (useWebSockets) {
       transport = new WebSocketTransport({ authorization: apiToken, apiUrl });
     }
-    return cube(apiToken, { 
-      apiUrl, 
+    return cube(apiToken, {
+      apiUrl,
       transport,
-      // Explicitly disable debug mode
-      debug: false,
     });
   }, [apiToken, apiUrl, useWebSockets]);
 
@@ -78,24 +78,20 @@ export default function DashboardPage() {
       <DebugNavigation />
       <CubeProvider cubeApi={cubeApi}>
         {/* Global Header with KPIs and Filters */}
-        <DashboardHeader 
-          globalFilters={globalFilters} 
-          setGlobalFilters={setGlobalFilters} 
+        <DashboardHeader
+          globalFilters={globalFilters}
+          setGlobalFilters={setGlobalFilters}
         />
 
         {/* Main Dashboard Content with Tabs */}
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Tabs defaultValue="overview" className="w-full">
             <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 mb-8">
-              <TabsTrigger value="overview">
-                📈 Executive Overview
-              </TabsTrigger>
+              <TabsTrigger value="overview">📈 Executive Overview</TabsTrigger>
               <TabsTrigger value="competitor">
                 🆚 Competitor Analysis
               </TabsTrigger>
-              <TabsTrigger value="category">
-                🛒 Category Deep Dive
-              </TabsTrigger>
+              <TabsTrigger value="category">🛒 Category Deep Dive</TabsTrigger>
               <TabsTrigger value="geographical">
                 🗺️ Geographical Insights
               </TabsTrigger>

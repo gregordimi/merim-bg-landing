@@ -1,7 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
-import { GlobalFilters } from '@/pages/DashboardPage';
+import { GlobalFilters, buildFilters, buildTimeDimensions } from '@/utils/cube/filterUtils';
 import { useStableQuery } from '@/hooks/useStableQuery';
-import { buildFilters, buildTimeDimensions } from '@/utils/queryHelpers';
 import { Card, CardContent } from '@/components/ui/card';
 
 interface StatsCardsProps {
@@ -25,7 +24,8 @@ export function StatsCards({ globalFilters }: StatsCardsProps) {
     }),
     [
       (globalFilters.retailers || []).join(','),
-      (globalFilters.locations || []).join(','),
+      (globalFilters.settlements || []).join(','),
+      (globalFilters.municipalities || []).join(','),
       (globalFilters.categories || []).join(','),
       (globalFilters.dateRange || []).join(',')
     ],
@@ -44,8 +44,8 @@ export function StatsCards({ globalFilters }: StatsCardsProps) {
 
     const data = pivot[0];
     const newData = {
-      minPrice: data?.["prices.minRetailPrice"] || 0,
-      maxPrice: data?.["prices.maxRetailPrice"] || 0,
+      minPrice: Number(data?.["prices.minRetailPrice"] || 0),
+      maxPrice: Number(data?.["prices.maxRetailPrice"] || 0),
     };
 
     return newData;

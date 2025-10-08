@@ -1,7 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
-import { GlobalFilters } from '@/pages/DashboardPage';
+import { GlobalFilters, buildOptimizedQuery } from '@/utils/cube/filterUtils';
 import { useStableQuery } from '@/hooks/useStableQuery';
-import { buildFilters, buildTimeDimensions } from '@/utils/queryHelpers';
 import { ChartWrapper } from './ChartWrapper';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
@@ -17,16 +16,15 @@ interface ChartDataPoint {
 
 export function RetailerPriceChart({ globalFilters }: RetailerPriceChartProps) {
   const { resultSet, isLoading, error, progress } = useStableQuery(
-    () => ({
-      dimensions: ["retailers.name"],
-      measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
-      timeDimensions: buildTimeDimensions(globalFilters.dateRange),
-      filters: buildFilters(globalFilters),
-      order: { "prices.averageRetailPrice": "desc" as const },
-    }),
+    () => buildOptimizedQuery(
+      ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+      globalFilters,
+      ["prices.retailer_name"] // Always include retailers dimension
+    ),
     [
       (globalFilters.retailers || []).join(','),
-      (globalFilters.locations || []).join(','),
+      (globalFilters.settlements || []).join(','),
+      (globalFilters.municipalities || []).join(','),
       (globalFilters.categories || []).join(','),
       (globalFilters.dateRange || []).join(',')
     ],
@@ -43,11 +41,13 @@ export function RetailerPriceChart({ globalFilters }: RetailerPriceChartProps) {
     const pivot = resultSet.tablePivot();
     if (!pivot || pivot.length === 0) return null;
 
-    return pivot.map((row: any) => ({
-      retailer: row["retailers.name"],
-      retailPrice: Number(row["prices.averageRetailPrice"] || 0),
-      promoPrice: Number(row["prices.averagePromoPrice"] || 0),
-    }));
+    return pivot
+      .map((row: any) => ({
+        retailer: row["prices.retailer_name"],
+        retailPrice: Number(row["prices.averageRetailPrice"] || 0),
+        promoPrice: Number(row["prices.averagePromoPrice"] || 0),
+      }))
+      .sort((a, b) => b.retailPrice - a.retailPrice); // Sort by retail price descending
   }, [resultSet]);
 
   // Update last valid data when we get new data

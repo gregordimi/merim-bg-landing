@@ -1,7 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
-import { GlobalFilters } from '@/pages/DashboardPage';
+import { GlobalFilters, buildOptimizedQuery } from '@/utils/cube/filterUtils';
 import { useStableQuery } from '@/hooks/useStableQuery';
-import { buildFilters, buildTimeDimensionsWithGranularity } from '@/utils/queryHelpers';
 import { ChartWrapper } from './ChartWrapper';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
@@ -16,16 +15,15 @@ interface ChartDataPoint {
 
 export function RetailerTrendChart({ globalFilters }: RetailerTrendChartProps) {
   const { resultSet, isLoading, error, progress } = useStableQuery(
-    () => ({
-      dimensions: ["retailers.name"],
-      measures: ["prices.averageRetailPrice"],
-      timeDimensions: buildTimeDimensionsWithGranularity(globalFilters.dateRange, 'day'),
-      filters: buildFilters(globalFilters),
-      order: { "prices.price_date": "asc" as const },
-    }),
+    () => buildOptimizedQuery(
+      ["prices.averageRetailPrice"],
+      globalFilters,
+      ["prices.retailer_name"] // Always include retailers dimension
+    ),
     [
       (globalFilters.retailers || []).join(','),
-      (globalFilters.locations || []).join(','),
+      (globalFilters.settlements || []).join(','),
+      (globalFilters.municipalities || []).join(','),
       (globalFilters.categories || []).join(','),
       (globalFilters.dateRange || []).join(',')
     ],
@@ -48,7 +46,7 @@ export function RetailerTrendChart({ globalFilters }: RetailerTrendChartProps) {
     // Group data by date
     pivot.forEach((row: any) => {
       const date = row["prices.price_date.day"] || row["prices.price_date"];
-      const retailer = row["retailers.name"];
+      const retailer = row["prices.retailer_name"];
       const price = Number(row["prices.averageRetailPrice"] || 0);
 
       if (!dataMap.has(date)) {
@@ -73,8 +71,8 @@ export function RetailerTrendChart({ globalFilters }: RetailerTrendChartProps) {
 
     const retailerSet = new Set();
     pivot.forEach((row: any) => {
-      if (row["retailers.name"]) {
-        retailerSet.add(row["retailers.name"]);
+      if (row["prices.retailer_name"]) {
+        retailerSet.add(row["prices.retailer_name"]);
       }
     });
     return Array.from(retailerSet) as string[];

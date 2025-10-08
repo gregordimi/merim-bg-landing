@@ -14,7 +14,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { GlobalFilters } from "@/pages/DashboardPage";
+import { GlobalFilters } from "@/utils/cube/filterUtils";
 import { ChartViewer } from "@/utils/cube/ChartViewer";
 import {
   ChartAreaSkeleton,
@@ -50,11 +50,18 @@ export default function CompetitorAnalysis({
         values: globalFilters.retailers,
       });
     }
-    if (globalFilters.locations && globalFilters.locations.length > 0) {
+    if (globalFilters.settlements && globalFilters.settlements.length > 0) {
       filterArray.push({
         member: "settlements.name_bg",
         operator: "equals" as const,
-        values: globalFilters.locations,
+        values: globalFilters.settlements,
+      });
+    }
+    if (globalFilters.municipalities && globalFilters.municipalities.length > 0) {
+      filterArray.push({
+        member: "municipality.name",
+        operator: "equals" as const,
+        values: globalFilters.municipalities,
       });
     }
     if (globalFilters.categories && globalFilters.categories.length > 0) {
@@ -67,7 +74,8 @@ export default function CompetitorAnalysis({
     return filterArray;
   }, [
     globalFilters.retailers,
-    globalFilters.locations,
+    globalFilters.settlements,
+    globalFilters.municipalities,
     globalFilters.categories,
   ]);
 

@@ -1,7 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
-import { GlobalFilters } from '@/pages/DashboardPage';
+import { GlobalFilters, buildOptimizedQuery } from '@/utils/cube/filterUtils';
 import { useStableQuery } from '@/hooks/useStableQuery';
-import { buildFilters, buildTimeDimensions } from '@/utils/queryHelpers';
 import { ChartWrapper } from './ChartWrapper';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
@@ -17,16 +16,15 @@ interface ChartDataPoint {
 
 export function SettlementChart({ globalFilters }: SettlementChartProps) {
   const { resultSet, isLoading, error, progress } = useStableQuery(
-    () => ({
-      dimensions: ["settlements.name_bg"],
-      measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
-      timeDimensions: buildTimeDimensions(globalFilters.dateRange),
-      filters: buildFilters(globalFilters),
-      // ✅ Removed order and limit to hit cache
-    }),
+    () => buildOptimizedQuery(
+      ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+      globalFilters,
+      ["prices.settlement_name"] // Always include settlements dimension
+    ),
     [
       (globalFilters.retailers || []).join(','),
-      (globalFilters.locations || []).join(','),
+      (globalFilters.settlements || []).join(','),
+      (globalFilters.municipalities || []).join(','),
       (globalFilters.categories || []).join(','),
       (globalFilters.dateRange || []).join(',')
     ],
@@ -45,7 +43,7 @@ export function SettlementChart({ globalFilters }: SettlementChartProps) {
 
     return pivot
       .map((row: any) => ({
-        settlement: row["settlements.name_bg"],
+        settlement: row["prices.settlement_name"],
         retailPrice: Number(row["prices.averageRetailPrice"] || 0),
         promoPrice: Number(row["prices.averagePromoPrice"] || 0),
       }))

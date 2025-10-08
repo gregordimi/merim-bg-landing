@@ -1,7 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
-import { GlobalFilters } from '@/pages/DashboardPage';
+import { GlobalFilters, buildOptimizedQuery } from '@/utils/cube/filterUtils';
 import { useStableQuery } from '@/hooks/useStableQuery';
-import { buildFilters, buildTimeDimensionsWithGranularity } from '@/utils/queryHelpers';
 import { ChartWrapper } from './ChartWrapper';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
@@ -16,16 +15,15 @@ interface ChartDataPoint {
 
 export function RegionalTrendChart({ globalFilters }: RegionalTrendChartProps) {
   const { resultSet, isLoading, error, progress } = useStableQuery(
-    () => ({
-      dimensions: ["municipality.name"],
-      measures: ["prices.averageRetailPrice"],
-      timeDimensions: buildTimeDimensionsWithGranularity(globalFilters.dateRange, 'day'),
-      filters: buildFilters(globalFilters),
-      order: { "prices.price_date": "asc" as const },
-    }),
+    () => buildOptimizedQuery(
+      ["prices.averageRetailPrice"],
+      globalFilters,
+      ["prices.municipality_name"] // Always include municipalities dimension
+    ),
     [
       (globalFilters.retailers || []).join(','),
-      (globalFilters.locations || []).join(','),
+      (globalFilters.settlements || []).join(','),
+      (globalFilters.municipalities || []).join(','),
       (globalFilters.categories || []).join(','),
       (globalFilters.dateRange || []).join(',')
     ],
@@ -48,7 +46,7 @@ export function RegionalTrendChart({ globalFilters }: RegionalTrendChartProps) {
     // Group data by date
     pivot.forEach((row: any) => {
       const date = row["prices.price_date.day"] || row["prices.price_date"];
-      const municipality = row["municipality.name"];
+      const municipality = row["prices.municipality_name"];
       const price = Number(row["prices.averageRetailPrice"] || 0);
 
       if (!dataMap.has(date)) {
@@ -73,8 +71,8 @@ export function RegionalTrendChart({ globalFilters }: RegionalTrendChartProps) {
 
     const municipalitySet = new Set();
     pivot.forEach((row: any) => {
-      if (row["municipality.name"]) {
-        municipalitySet.add(row["municipality.name"]);
+      if (row["prices.municipality_name"]) {
+        municipalitySet.add(row["prices.municipality_name"]);
       }
     });
     return Array.from(municipalitySet) as string[];

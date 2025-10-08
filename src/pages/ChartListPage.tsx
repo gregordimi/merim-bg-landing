@@ -11,14 +11,13 @@ import { useState, useMemo } from "react";
 import cube from "@cubejs-client/core";
 import { CubeProvider } from "@cubejs-client/react";
 import WebSocketTransport from "@cubejs-client/ws-transport";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { extractHashConfig } from "@/utils/cube/config";
-import { GlobalFilters } from "@/pages/DashboardPage";
+import { GlobalFilters, buildOptimizedQuery, QUERY_PATTERNS } from "@/utils/cube/filterUtils";
 import { DebugNavigation } from "@/components/debug/DebugNavigation";
+import { FilterDropdowns } from "@/components/filters/FilterDropdowns";
 
 // Import all chart components
 import { StatsCards } from "@/components/charts/StatsCards";
@@ -35,6 +34,9 @@ import { RetailerPriceChart } from "@/components/charts/RetailerPriceChart";
 import { DiscountChart } from "@/components/charts/DiscountChart";
 import { CategoryTrendChart } from "@/components/charts/CategoryTrendChart";
 import { CategoryRangeChart } from "@/components/charts/CategoryRangeChart";
+import { OptimizedTrendChart } from "@/components/charts/OptimizedTrendChart";
+import { SimpleTrendChart } from "@/components/charts/SimpleTrendChart";
+import { MultiLineTrendChart } from "@/components/charts/MultiLineTrendChart";
 
 interface AppConfig extends Record<string, unknown> {
   apiUrl: string;
@@ -70,10 +72,31 @@ const AVAILABLE_CHARTS: ChartInfo[] = [
   },
   {
     id: 'trend',
-    name: 'Price Trends',
+    name: 'Price Trends (Original)',
     description: 'Retail and promotional price trends over time',
     icon: '📈',
     component: TrendChart,
+  },
+  {
+    id: 'trend-optimized',
+    name: 'Price Trends (Optimized)',
+    description: 'Fast price trends using pre-aggregations and flattened dimensions',
+    icon: '🚀',
+    component: OptimizedTrendChart,
+  },
+  {
+    id: 'trend-simple',
+    name: 'Price Trends (Simple)',
+    description: 'Clean trend lines without dimension grouping - shows overall averages',
+    icon: '📉',
+    component: SimpleTrendChart,
+  },
+  {
+    id: 'trend-multi-line',
+    name: 'Price Trends (Multi-Line)',
+    description: 'Separate lines for each dimension value (retailer, settlement, etc.)',
+    icon: '📊',
+    component: MultiLineTrendChart,
   },
   {
     id: 'category',
@@ -169,7 +192,8 @@ export default function ChartListPage() {
 
   const [globalFilters, setGlobalFilters] = useState<GlobalFilters>({
     retailers: [],
-    locations: [],
+    settlements: [],
+    municipalities: [],
     categories: [],
     dateRange: undefined,
   });
@@ -179,12 +203,14 @@ export default function ChartListPage() {
   // CRITICAL: Memoize the filters object to prevent unnecessary re-renders
   const stableFilters = useMemo(() => ({
     retailers: globalFilters.retailers,
-    locations: globalFilters.locations,
+    settlements: globalFilters.settlements,
+    municipalities: globalFilters.municipalities,
     categories: globalFilters.categories,
     dateRange: globalFilters.dateRange,
   }), [
     globalFilters.retailers.join(','),
-    globalFilters.locations.join(','), 
+    globalFilters.settlements.join(','),
+    globalFilters.municipalities.join(','),
     globalFilters.categories.join(','),
     (globalFilters.dateRange || []).join(','),
   ]);
@@ -207,41 +233,12 @@ export default function ChartListPage() {
     return cube(apiToken, { 
       apiUrl, 
       transport,
-      // Explicitly disable debug mode
-      debug: false,
     });
   }, [apiToken, apiUrl, useWebSockets]);
 
-  // Test filter presets
-  const applyTestFilters = (preset: string) => {
-    switch (preset) {
-      case 'empty':
-        setGlobalFilters({
-          retailers: [],
-          locations: [],
-          categories: [],
-          dateRange: undefined,
-        });
-        break;
-      case 'basic':
-        setGlobalFilters({
-          retailers: [],
-          locations: [],
-          categories: [],
-          dateRange: ['2024-10-01', '2024-10-07'],
-        });
-        break;
-      case 'filtered':
-        setGlobalFilters({
-          retailers: ['Kaufland'],
-          locations: ['София'],
-          categories: ['Месо и месни продукти'],
-          dateRange: ['2024-10-01', '2024-10-07'],
-        });
-        break;
-      default:
-        break;
-    }
+  // Handle filter changes
+  const handleFiltersChange = (newFilters: GlobalFilters) => {
+    setGlobalFilters(newFilters);
   };
 
   const selectedChartInfo = AVAILABLE_CHARTS.find(chart => chart.id === selectedChart);
@@ -261,92 +258,12 @@ export default function ChartListPage() {
           </div>
 
           {/* Global Filters */}
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle>Global Filters</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                <div>
-                  <Label htmlFor="retailers">Retailers (comma-separated)</Label>
-                  <Input
-                    id="retailers"
-                    placeholder="e.g., Kaufland, Billa"
-                    value={globalFilters.retailers.join(', ')}
-                    onChange={(e) => setGlobalFilters(prev => ({
-                      ...prev,
-                      retailers: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
-                    }))}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="locations">Locations (comma-separated)</Label>
-                  <Input
-                    id="locations"
-                    placeholder="e.g., София, Пловдив"
-                    value={globalFilters.locations.join(', ')}
-                    onChange={(e) => setGlobalFilters(prev => ({
-                      ...prev,
-                      locations: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
-                    }))}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="categories">Categories (comma-separated)</Label>
-                  <Input
-                    id="categories"
-                    placeholder="e.g., Месо и месни продукти"
-                    value={globalFilters.categories.join(', ')}
-                    onChange={(e) => setGlobalFilters(prev => ({
-                      ...prev,
-                      categories: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
-                    }))}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="dateRange">Date Range</Label>
-                  <Input
-                    id="dateRange"
-                    placeholder="2024-10-01,2024-10-07"
-                    value={(globalFilters.dateRange || []).join(',')}
-                    onChange={(e) => setGlobalFilters(prev => ({
-                      ...prev,
-                      dateRange: e.target.value ? e.target.value.split(',').map(s => s.trim()) : undefined
-                    }))}
-                  />
-                </div>
-              </div>
-
-              {/* Test Presets */}
-              <div className="flex gap-2 mb-4">
-                <Button variant="outline" size="sm" onClick={() => applyTestFilters('empty')}>
-                  Empty Filters
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => applyTestFilters('basic')}>
-                  Basic (Date Only)
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => applyTestFilters('filtered')}>
-                  Full Filters
-                </Button>
-              </div>
-
-              {/* Current Filter State */}
-              <div className="flex flex-wrap gap-2">
-                <Badge variant="secondary">
-                  Retailers: {globalFilters.retailers.length || 'All'}
-                </Badge>
-                <Badge variant="secondary">
-                  Locations: {globalFilters.locations.length || 'All'}
-                </Badge>
-                <Badge variant="secondary">
-                  Categories: {globalFilters.categories.length || 'All'}
-                </Badge>
-                <Badge variant="secondary">
-                  Date: {globalFilters.dateRange ? globalFilters.dateRange.join(' to ') : 'Last 30 days'}
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="mb-8">
+            <FilterDropdowns 
+              globalFilters={globalFilters}
+              onFiltersChange={handleFiltersChange}
+            />
+          </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Chart List */}

@@ -1,7 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
-import { GlobalFilters } from "@/pages/DashboardPage";
+import { GlobalFilters, buildOptimizedQuery } from '@/utils/cube/filterUtils';
 import { useStableQuery } from "@/hooks/useStableQuery";
-import { buildFilters, buildTimeDimensions } from "@/utils/queryHelpers";
 import { ChartWrapper } from "./ChartWrapper";
 import {
   BarChart,
@@ -26,16 +25,15 @@ interface ChartDataPoint {
 
 export function MunicipalityChart({ globalFilters }: MunicipalityChartProps) {
   const { resultSet, isLoading, error, progress } = useStableQuery(
-    () => ({
-      dimensions: ["municipality.name"],
-      measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
-      timeDimensions: buildTimeDimensions(globalFilters.dateRange),
-      filters: buildFilters(globalFilters),
-      // ✅ Removed order and limit to hit cache
-    }),
+    () => buildOptimizedQuery(
+      ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+      globalFilters,
+      ["prices.municipality_name"] // Always include municipalities dimension
+    ),
     [
       (globalFilters.retailers || []).join(","),
-      (globalFilters.locations || []).join(","),
+      (globalFilters.settlements || []).join(","),
+      (globalFilters.municipalities || []).join(","),
       (globalFilters.categories || []).join(","),
       (globalFilters.dateRange || []).join(","),
     ],
@@ -54,7 +52,7 @@ export function MunicipalityChart({ globalFilters }: MunicipalityChartProps) {
 
     return pivot
       .map((row: any) => ({
-        municipality: row["municipality.name"],
+        municipality: row["prices.municipality_name"],
         retailPrice: Number(row["prices.averageRetailPrice"] || 0),
         promoPrice: Number(row["prices.averagePromoPrice"] || 0),
       }))
