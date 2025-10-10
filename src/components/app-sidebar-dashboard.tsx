@@ -6,7 +6,6 @@
 
 import * as React from "react"
 import { useNavigate } from "react-router-dom"
-import { IconChartBar, IconDashboard, IconFolders } from "@tabler/icons-react"
 import { ChartRoute } from "@/pages/DashboardSidebarPage"
 
 import {
@@ -54,7 +53,7 @@ export function AppSidebar({ charts, currentChartId }: AppSidebarDashboardProps)
             <SidebarMenuButton size="lg" asChild>
               <a href="/dashboard-sidebar/stats">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <IconDashboard className="size-4" />
+                  <span className="text-sm font-bold">AD</span>
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">
@@ -81,7 +80,6 @@ export function AppSidebar({ charts, currentChartId }: AppSidebarDashboardProps)
                       isActive={currentChartId === chart.id}
                       tooltip={chart.description}
                     >
-                      <span className="text-lg">{chart.icon}</span>
                       <span>{chart.name}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -97,7 +95,6 @@ export function AppSidebar({ charts, currentChartId }: AppSidebarDashboardProps)
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
               <a href="/charts/dashboard">
-                <IconFolders className="size-4" />
                 <span>Old Dashboard</span>
               </a>
             </SidebarMenuButton>
@@ -105,7 +102,6 @@ export function AppSidebar({ charts, currentChartId }: AppSidebarDashboardProps)
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
               <a href="/charts/list">
-                <IconChartBar className="size-4" />
                 <span>Chart List</span>
               </a>
             </SidebarMenuButton>

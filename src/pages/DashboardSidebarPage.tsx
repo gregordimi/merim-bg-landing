@@ -16,6 +16,7 @@ import WebSocketTransport from "@cubejs-client/ws-transport";
 import { extractHashConfig } from "@/utils/cube/config";
 import { GlobalFilters } from "@/utils/cube/filterUtils";
 import { FilterDropdowns } from "@/components/filters/FilterDropdowns";
+import { FilterPanel } from "@/components/filters/FilterPanel";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar-dashboard";
 import { Separator } from "@/components/ui/separator";
@@ -32,6 +33,7 @@ import {
 import { StatsCards } from "@/components/charts/StatsCards";
 import { StatsCardsTable } from "@/components/charts/StatsCardsTable";
 import { TrendChart } from "@/components/charts/TrendChart";
+import { StyledTrendChart } from "@/components/charts/StyledTrendChart";
 import { CategoryChart } from "@/components/charts/CategoryChart";
 import { RegionalTrendChart } from "@/components/charts/RegionalTrendChart";
 import { SettlementHorizontalChart } from "@/components/charts/SettlementHorizontalChart";
@@ -45,6 +47,8 @@ import { CategoryTrendChart } from "@/components/charts/CategoryTrendChart";
 import { CategoryRangeChart } from "@/components/charts/CategoryRangeChart";
 import { OptimizedTrendChart } from "@/components/charts/OptimizedTrendChart";
 import { SimpleTrendChart } from "@/components/charts/SimpleTrendChart";
+import { PieChartComponent } from "@/components/charts/PieChartComponent";
+import { RadarChartComponent } from "@/components/charts/RadarChartComponent";
 
 interface AppConfig extends Record<string, unknown> {
   apiUrl: string;
@@ -67,15 +71,15 @@ export const CHART_ROUTES: ChartRoute[] = [
     id: 'stats',
     name: 'Stats Cards',
     description: 'Min and Max price statistics',
-    icon: '📊',
+    icon: '',
     category: 'Overview',
     component: StatsCards,
   },
-    {
+  {
     id: 'stats_table',
     name: 'Stats Cards Table',
-    description: 'FullStats',
-    icon: '🏢',
+    description: 'Full Stats',
+    icon: '',
     category: 'Overview',
     component: StatsCardsTable,
   },
@@ -83,15 +87,23 @@ export const CHART_ROUTES: ChartRoute[] = [
     id: 'trend',
     name: 'Price Trends',
     description: 'Retail and promotional price trends over time',
-    icon: '📈',
+    icon: '',
     category: 'Overview',
     component: TrendChart,
+  },
+  {
+    id: 'trend-styled',
+    name: 'Styled Price Trends',
+    description: 'Modern styled price trends with gradients',
+    icon: '',
+    category: 'Overview',
+    component: StyledTrendChart,
   },
   {
     id: 'trend-optimized',
     name: 'Optimized Trends',
     description: 'Fast price trends using pre-aggregations',
-    icon: '🚀',
+    icon: '',
     category: 'Overview',
     component: OptimizedTrendChart,
   },
@@ -99,7 +111,7 @@ export const CHART_ROUTES: ChartRoute[] = [
     id: 'trend-simple',
     name: 'Simple Trends',
     description: 'Clean trend lines showing overall averages',
-    icon: '📉',
+    icon: '',
     category: 'Overview',
     component: SimpleTrendChart,
   },
@@ -107,9 +119,17 @@ export const CHART_ROUTES: ChartRoute[] = [
     id: 'category',
     name: 'Category Comparison',
     description: 'Price comparison across product categories',
-    icon: '🛒',
+    icon: '',
     category: 'Overview',
     component: CategoryChart,
+  },
+  {
+    id: 'pie-chart',
+    name: 'Category Distribution',
+    description: 'Pie chart showing category price distribution',
+    icon: '',
+    category: 'Overview',
+    component: PieChartComponent,
   },
   
   // Competitor Analysis
@@ -117,7 +137,7 @@ export const CHART_ROUTES: ChartRoute[] = [
     id: 'retailer-trend-price',
     name: 'Retailer Price Trends',
     description: 'Compare how different retailers\' prices change over time',
-    icon: '🆚',
+    icon: '',
     category: 'Competitor',
     component: RetailerTrendChartPrice,
   },
@@ -125,7 +145,7 @@ export const CHART_ROUTES: ChartRoute[] = [
     id: 'retailer-trend-promo',
     name: 'Retailer Promo Trends',
     description: 'Compare how different retailers\' promo prices change over time',
-    icon: '🏷️',
+    icon: '',
     category: 'Competitor',
     component: RetailerTrendChartPromo,
   },
@@ -133,7 +153,7 @@ export const CHART_ROUTES: ChartRoute[] = [
     id: 'retailer-trend-discount',
     name: 'Retailer Discount Trends',
     description: 'Compare how discount rates change over time by retailer',
-    icon: '💰',
+    icon: '',
     category: 'Competitor',
     component: RetailerTrendChartDiscount,
   },
@@ -141,17 +161,25 @@ export const CHART_ROUTES: ChartRoute[] = [
     id: 'retailer-price',
     name: 'Retailer Price Comparison',
     description: 'Compare retail vs promotional prices across retailers',
-    icon: '💵',
+    icon: '',
     category: 'Competitor',
     component: RetailerPriceChart,
   },
   {
     id: 'discount',
     name: 'Discount Rates',
-    description: 'See which retailers offer the best discounts',
-    icon: '🏷️',
+    description: 'Discount percentage analysis across retailers',
+    icon: '',
     category: 'Competitor',
     component: DiscountChart,
+  },
+  {
+    id: 'radar-chart',
+    name: 'Retailer Performance Radar',
+    description: 'Multi-dimensional view of retailer metrics',
+    icon: '',
+    category: 'Competitor',
+    component: RadarChartComponent,
   },
   
   // Category Deep Dive
@@ -159,7 +187,7 @@ export const CHART_ROUTES: ChartRoute[] = [
     id: 'category-trend',
     name: 'Category Price Trends',
     description: 'Track how prices change across different product categories over time',
-    icon: '📊',
+    icon: '',
     category: 'Category',
     component: CategoryTrendChart,
   },
@@ -167,7 +195,7 @@ export const CHART_ROUTES: ChartRoute[] = [
     id: 'category-range',
     name: 'Category Price Range',
     description: 'Min, average, and max prices for each category',
-    icon: '📏',
+    icon: '',
     category: 'Category',
     component: CategoryRangeChart,
   },
@@ -185,7 +213,7 @@ export const CHART_ROUTES: ChartRoute[] = [
     id: 'settlement-horizontal',
     name: 'Settlement Comparison',
     description: 'Top 20 settlements with horizontal bars',
-    icon: '🏘️',
+    icon: '',
     category: 'Geographical',
     component: SettlementHorizontalChart,
   },
@@ -193,7 +221,7 @@ export const CHART_ROUTES: ChartRoute[] = [
     id: 'municipality-horizontal',
     name: 'Municipality Comparison',
     description: 'Top 15 municipalities with horizontal bars',
-    icon: '🏛️',
+    icon: '',
     category: 'Geographical',
     component: MunicipalityHorizontalChart,
   },
@@ -277,13 +305,22 @@ export default function DashboardSidebarPage() {
             </Breadcrumb>
           </header>
 
-          {/* Global Filters */}
+          {/* Global Filters - NEW VERSION */}
+          <div className="border-b bg-muted/40 px-4 py-4">
+            <FilterPanel
+              globalFilters={globalFilters}
+              onFiltersChange={setGlobalFilters}
+            />
+          </div>
+
+          {/* OLD Filter Dropdowns - Keep for rollback
           <div className="border-b bg-muted/40 px-4 py-4">
             <FilterDropdowns
               globalFilters={globalFilters}
               onFiltersChange={setGlobalFilters}
             />
           </div>
+          */}
 
           {/* Chart Content */}
           <div className="flex flex-1 flex-col gap-4 p-4">
