@@ -21,19 +21,41 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # ----------------------------------------------------
-# REMOVED: Explicit ARG/ENV mapping for VITE_API_URL.
-# We assume EasyPanel passes environment variables defined
-# in its UI as build arguments (e.g., VITE_API_URL).
+# FIX: Explicitly define build ARGs and map them to ENVs.
+# This ensures that all required VITE_ variables passed by EasyPanel 
+# (as build arguments) are exposed to the build process for bundling.
+# ----------------------------------------------------
+
+# Supabase Configuration
+ARG VITE_SUPABASE_URL
+ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL
+ARG VITE_SUPABASE_ANON_KEY
+ENV VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY
+
+# reCAPTCHA Configuration
+ARG VITE_RECAPTCHA_SITE_KEY
+ENV VITE_RECAPTCHA_SITE_KEY=$VITE_RECAPTCHA_SITE_KEY
+
+# Cube.js Configuration
+ARG VITE_CUBE_API_URL
+ENV VITE_CUBE_API_URL=$VITE_CUBE_API_URL
+ARG VITE_CUBE_API_TOKEN
+ENV VITE_CUBE_API_TOKEN=$VITE_CUBE_API_TOKEN
+ARG VITE_CUBE_QUERY
+ENV VITE_CUBE_QUERY=$VITE_CUBE_QUERY
+ARG VITE_CUBE_PIVOT_CONFIG
+ENV VITE_CUBE_PIVOT_CONFIG=$VITE_CUBE_PIVOT_CONFIG
+ARG VITE_CHART_TYPE
+ENV VITE_CHART_TYPE=$VITE_CHART_TYPE
+ARG VITE_CUBE_API_USE_WEBSOCKETS
+ENV VITE_CUBE_API_USE_WEBSOCKETS=$VITE_CUBE_API_USE_WEBSOCKETS
+ARG VITE_CUBE_API_USE_SUBSCRIPTION
+ENV VITE_CUBE_API_USE_SUBSCRIPTION=$VITE_CUBE_API_USE_SUBSCRIPTION
+ARG VITE_CUBE_CACHE_TIME
+ENV VITE_CUBE_CACHE_TIME=$VITE_CUBE_CACHE_TIME
 
 # Set production environment flag
 ENV NODE_ENV=production
-
-# NOTE for Vite: Vite automatically picks up environment variables 
-# prefixed with VITE_ that are present during the `npm run build` step,
-# either from the shell environment or from build arguments (which EasyPanel uses).
-# Ensure your variables in EasyPanel are prefixed with VITE_ (e.g., VITE_API_URL).
-
-# ----------------------------------------------------
 
 # Run the Vite build command
 # The output will be in the 'dist' folder by default.
