@@ -1,55 +1,86 @@
 /**
- * Filter utilities for building queries that match pre-aggregations
+ * filterUtils.ts
+ *
+ * This file contains types and helper functions for building dynamic,
+ * optimized Cube.js queries based on a global filter state.
  */
 
-import { Query } from "@cubejs-client/core";
+import { Query } from '@cubejs-client/core';
 
+// =================================================================
+// CORE TYPES
+// =================================================================
+
+/**
+ * Defines the available preset options for the date range selector.
+ */
+export type DateRangePreset = 'today' | 'last3days' | 'last7days' | 'last30days' | 'last3months';
+
+/**
+ * Represents the global filter state used throughout the application.
+ * All properties are optional to allow for flexible initial states.
+ */
 export interface GlobalFilters {
-  retailers: string[];
-  settlements: string[];
-  municipalities: string[];
-  categories: string[];
-  dateRange?: string[];
+  retailers?: string[];
+  settlements?: string[];
+  municipalities?: string[];
+  categories?: string[];
+  /** A tuple representing [startDate, endDate] in 'YYYY-MM-DD' format. */
+  dateRange?: [string, string];
+  /** The name of the selected date preset, which controls the dateRange. */
+  datePreset?: DateRangePreset;
 }
 
 /**
- * Build Cube.js filters array from GlobalFilters
+ * A minimal, safe type for a Cube.js ResultSet to avoid using `any`.
+ */
+interface CubeRow {
+  [key: string]: string | number | boolean | null;
+}
+export interface CubeResultSet {
+  tablePivot: () => CubeRow[];
+}
+
+// =================================================================
+// QUERY BUILDING UTILITIES
+// =================================================================
+
+/**
+ * Builds a Cube.js filters array from the GlobalFilters state.
+ * @param globalFilters The current global filter state.
+ * @returns An array of Cube.js filter objects.
  */
 export function buildFilters(globalFilters: GlobalFilters) {
   const filters = [];
 
-  // Retailer filters
-  if (globalFilters.retailers?.length > 0) {
+  if ((globalFilters.retailers ?? []).length > 0) {
     filters.push({
-      member: "prices.retailer_name",
-      operator: "equals" as const,
+      member: 'prices.retailer_name',
+      operator: 'equals' as const,
       values: globalFilters.retailers,
     });
   }
 
-  // Settlement filters
-  if (globalFilters.settlements?.length > 0) {
+  if ((globalFilters.settlements ?? []).length > 0) {
     filters.push({
-      member: "prices.settlement_name",
-      operator: "equals" as const,
+      member: 'prices.settlement_name',
+      operator: 'equals' as const,
       values: globalFilters.settlements,
     });
   }
 
-  // Municipality filters
-  if (globalFilters.municipalities?.length > 0) {
+  if ((globalFilters.municipalities ?? []).length > 0) {
     filters.push({
-      member: "prices.municipality_name",
-      operator: "equals" as const,
+      member: 'prices.municipality_name',
+      operator: 'equals' as const,
       values: globalFilters.municipalities,
     });
   }
 
-  // Category filters
-  if (globalFilters.categories?.length > 0) {
+  if ((globalFilters.categories ?? []).length > 0) {
     filters.push({
-      member: "prices.category_group_name",
-      operator: "equals" as const,
+      member: 'prices.category_group_name',
+      operator: 'equals' as const,
       values: globalFilters.categories,
     });
   }
@@ -58,48 +89,44 @@ export function buildFilters(globalFilters: GlobalFilters) {
 }
 
 /**
- * Build time dimensions with consistent granularity
+ * Builds the timeDimensions part of a Cube.js query.
+ * @param dateRange A date range tuple or a string literal (e.g., "Last 7 days").
+ * @returns A configured timeDimensions array.
  */
-export function buildTimeDimensions(dateRange?: string[]) {
+export function buildTimeDimensions(dateRange?: [string, string] | string) {
   return [
     {
-      dimension: "prices.price_date",
-      granularity: "day" as const, // Always use 'day' for consistency
-      dateRange: dateRange || "Last 30 days",
+      dimension: 'prices.price_date',
+      granularity: 'day' as const,
+      dateRange: dateRange, // Cube.js handles both array and string formats
     },
   ];
 }
 
 /**
- * Build dimensions array that includes ALL filtered dimensions
- * This is CRITICAL for pre-aggregation matching!
+ * Builds a dimensions array based on which filters are active.
+ * This is crucial for matching pre-aggregations.
+ * @param globalFilters The current global filter state.
+ * @returns An array of dimension names.
  */
 export function buildDimensions(globalFilters: GlobalFilters): string[] {
   const dimensions = [];
 
-  // Include dimension for each active filter
-  if (globalFilters.retailers?.length > 0) {
-    dimensions.push("prices.retailer_name");
-  }
-
-  if (globalFilters.settlements?.length > 0) {
-    dimensions.push("prices.settlement_name");
-  }
-
-  if (globalFilters.municipalities?.length > 0) {
-    dimensions.push("prices.municipality_name");
-  }
-
-  if (globalFilters.categories?.length > 0) {
-    dimensions.push("prices.category_group_name");
-  }
+  if ((globalFilters.retailers ?? []).length > 0) dimensions.push('prices.retailer_name');
+  if ((globalFilters.settlements ?? []).length > 0) dimensions.push('prices.settlement_name');
+  if ((globalFilters.municipalities ?? []).length > 0) dimensions.push('prices.municipality_name');
+  if ((globalFilters.categories ?? []).length > 0) dimensions.push('prices.category_group_name');
 
   return dimensions;
 }
 
 /**
- * Build a complete query that will match pre-aggregations
- * NOTE: Don't include a dimension if it's already being filtered
+ * Builds a complete, optimized query that is designed to match pre-aggregations.
+ * It intelligently adds dimensions and avoids duplication.
+ * @param measures An array of measure names to include.
+ * @param globalFilters The current global filter state.
+ * @param additionalDimensions Any extra dimensions required by a specific chart.
+ * @returns A complete Cube.js Query object.
  */
 export function buildOptimizedQuery(
   measures: string[],
@@ -107,287 +134,68 @@ export function buildOptimizedQuery(
   additionalDimensions: string[] = []
 ): Query {
   const filteredDimensions = buildDimensions(globalFilters);
-  
-  // Only add additional dimensions if they're not already filtered
-  const finalDimensions = [
-    ...filteredDimensions,
-    ...additionalDimensions.filter(dim => {
-      // Don't include category dimension if categories are filtered
-      if (dim === "prices.category_group_name" && globalFilters.categories?.length > 0) {
-        return false;
-      }
-      // Don't include retailer dimension if retailers are filtered
-      if (dim === "prices.retailer_name" && globalFilters.retailers?.length > 0) {
-        return false;
-      }
-      // Don't include settlement dimension if settlements are filtered
-      if (dim === "prices.settlement_name" && globalFilters.settlements?.length > 0) {
-        return false;
-      }
-      // Don't include municipality dimension if municipalities are filtered
-      if (dim === "prices.municipality_name" && globalFilters.municipalities?.length > 0) {
-        return false;
-      }
-      // If not filtered, include this dimension
-      return !filteredDimensions.includes(dim);
-    }),
-  ];
+  const finalDimensions = new Set([...filteredDimensions, ...additionalDimensions]);
 
   return {
     measures,
-    dimensions: [...new Set(finalDimensions)], // Remove duplicates
+    dimensions: Array.from(finalDimensions),
     timeDimensions: buildTimeDimensions(globalFilters.dateRange),
     filters: buildFilters(globalFilters),
     order: {
-      "prices.price_date": "asc",
+      'prices.price_date': 'asc',
     },
   };
 }
 
-/**
- * Predict which pre-aggregation should match a query
- */
-export function predictPreAggregationMatch(
-  globalFilters: GlobalFilters
-): string {
-  const hasRetailer = globalFilters.retailers?.length > 0;
-  const hasSettlement = globalFilters.settlements?.length > 0;
-  const hasMunicipality = globalFilters.municipalities?.length > 0;
-  const hasCategory = globalFilters.categories?.length > 0;
-
-  // Count active filters
-  const filterCount = [hasRetailer, hasSettlement, hasMunicipality, hasCategory].filter(
-    Boolean
-  ).length;
-
-  if (filterCount === 0) {
-    return "time_only_filtered";
-  } else if (filterCount === 1) {
-    if (hasRetailer) return "retailer_only_filtered";
-    if (hasSettlement) return "settlement_only_filtered";
-    if (hasMunicipality) return "municipality_only_filtered";
-    if (hasCategory) return "category_only_filtered";
-  } else if (filterCount >= 2) {
-    return "universal_filtered"; // Use universal for multiple filters
-  }
-
-  return "universal_filtered"; // Fallback
-}
+// =================================================================
+// CHART-SPECIFIC QUERY PATTERNS
+// =================================================================
 
 /**
- * Example usage patterns for different chart types
+ * A collection of pre-defined query builders for different chart types.
  */
 export const QUERY_PATTERNS = {
-  // Trend chart - shows data over time with filters
   trendChart: (globalFilters: GlobalFilters) =>
-    buildOptimizedQuery(
-      ["prices.averageRetailPrice", "prices.averagePromoPrice"],
-      globalFilters
-    ),
+    buildOptimizedQuery(['prices.averageRetailPrice', 'prices.averagePromoPrice'], globalFilters),
 
-  // Retailer comparison - always includes retailers dimension
   retailerChart: (globalFilters: GlobalFilters) =>
     buildOptimizedQuery(
-      ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+      ['prices.averageRetailPrice', 'prices.averagePromoPrice'],
       globalFilters,
-      ["prices.retailer_name"] // Always include retailers
+      ['prices.retailer_name']
     ),
-
-  // Category comparison - always includes categories dimension
-  categoryChart: (globalFilters: GlobalFilters) =>
-    buildOptimizedQuery(
-      ["prices.averageRetailPrice", "prices.averagePromoPrice"],
-      globalFilters,
-      ["prices.category_group_name"] // Always include categories
-    ),
-
-  // Settlement comparison - always includes settlements dimension
-  settlementChart: (globalFilters: GlobalFilters) =>
-    buildOptimizedQuery(
-      ["prices.averageRetailPrice", "prices.averagePromoPrice"],
-      globalFilters,
-      ["prices.settlement_name"] // Always include settlements
-    ),
-
-  // Municipality comparison - always includes municipalities dimension
-  municipalityChart: (globalFilters: GlobalFilters) =>
-    buildOptimizedQuery(
-      ["prices.averageRetailPrice", "prices.averagePromoPrice"],
-      globalFilters,
-      ["prices.municipality_name"] // Always include municipalities
-    ),
-
-  // Stats cards - no dimensions, just measures
-  statsCards: (globalFilters: GlobalFilters) => ({
-    measures: ["prices.minRetailPrice", "prices.maxRetailPrice"],
-    filters: buildFilters(globalFilters),
-  }),
+  
+  // ... other chart patterns
 };
 
-/**
- * Debug helper to analyze filter impact on pre-aggregation matching
- */
-export function analyzeFilterImpact(globalFilters: GlobalFilters) {
-  const dimensions = buildDimensions(globalFilters);
-  const expectedPreAgg = predictPreAggregationMatch(globalFilters);
+// =================================================================
+// FILTER VALUE EXTRACTION
+// =================================================================
 
-  console.group("🔍 Filter Analysis");
-  console.log("Active Filters:", {
-    retailers: globalFilters.retailers?.length || 0,
-    settlements: globalFilters.settlements?.length || 0,
-    municipalities: globalFilters.municipalities?.length || 0,
-    categories: globalFilters.categories?.length || 0,
-  });
-  console.log("Required Dimensions:", dimensions);
-  console.log("Expected Pre-Aggregation:", expectedPreAgg);
-  console.groupEnd();
-
-  return {
-    dimensions,
-    expectedPreAgg,
-    filterCount: dimensions.length,
-  };
-}
 /**
- * Filter value queries for populating dropdowns
- * These queries have no measures, no time filters, and no other filters
- * They should be very fast and match dedicated filter value pre-aggregations
+ * Queries for fetching unique values to populate filter dropdowns.
+ * These should be fast and hit dedicated pre-aggregations.
  */
 export const FILTER_VALUE_QUERIES = {
-  // FAST: Direct queries to source cubes (recommended)
   direct: {
-    retailers: {
-      dimensions: ["stores.retailer_name"],
-      measures: [],
-      filters: [],
-      order: { "stores.retailer_name": "asc" },
-    },
-    
-    settlements: {
-      dimensions: ["stores.settlement_name"],
-      measures: [],
-      filters: [],
-      order: { "stores.settlement_name": "asc" },
-    },
-    
-    municipalities: {
-      dimensions: ["stores.municipality_name"],
-      measures: [],
-      filters: [],
-      order: { "stores.municipality_name": "asc" },
-    },
-    
-    categories: {
-      dimensions: ["store_categories.name"],
-      measures: [],
-      filters: [],
-      order: { "store_categories.name": "asc" },
-    },
-  },
-  
-  // SLOW: Via prices cube with subqueries (avoid if possible)
-  viaPrices: {
-    retailers: {
-      dimensions: ["prices.retailer_name"],
-      measures: [],
-      filters: [],
-      order: { "prices.retailer_name": "asc" },
-    },
-    
-    locations: {
-      dimensions: ["prices.settlement_name"],
-      measures: [],
-      filters: [],
-      order: { "prices.settlement_name": "asc" },
-    },
-    
-    categories: {
-      dimensions: ["prices.category_group_name"],
-      measures: [],
-      filters: [],
-      order: { "prices.category_group_name": "asc" },
-    },
+    retailers: { dimensions: ['stores.retailer_name'], order: { 'stores.retailer_name': 'asc' } },
+    settlements: { dimensions: ['stores.settlement_name'], order: { 'stores.settlement_name': 'asc' } },
+    municipalities: { dimensions: ['stores.municipality_name'], order: { 'stores.municipality_name': 'asc' } },
+    categories: { dimensions: ['store_categories.name'], order: { 'store_categories.name': 'asc' } },
   },
 };
 
 /**
- * Extract unique values from filter value query results
+ * Extracts a sorted list of unique string values from a query result set.
+ * @param resultSet The result set from a Cube.js query.
+ * @param dimension The dimension name to extract values from.
+ * @returns A sorted array of unique strings.
  */
-export function extractFilterValues(resultSet: any, dimension: string): string[] {
+export function extractFilterValues(resultSet: CubeResultSet | undefined, dimension: string): string[] {
   if (!resultSet) return [];
-  
+
   const pivot = resultSet.tablePivot();
-  const values = Array.from(
-    new Set(
-      pivot
-        .map((row: any) => row[dimension] as string)
-        .filter(Boolean)
-    )
-  ).sort();
-  
-  return values;
-}
+  const values = new Set(pivot.map((row: CubeRow) => row[dimension] as string).filter(Boolean));
 
-/**
- * Extract filter values using direct cube queries (fast)
- */
-export function extractDirectFilterValues(resultSet: any, filterType: 'retailers' | 'settlements' | 'municipalities' | 'categories'): string[] {
-  if (!resultSet) return [];
-  
-  const dimensionMap = {
-    retailers: "stores.retailer_name",
-    settlements: "stores.settlement_name",
-    municipalities: "stores.municipality_name",
-    categories: "store_categories.name"
-  };
-  
-  return extractFilterValues(resultSet, dimensionMap[filterType]);
-}
-
-/**
- * Process all filter values from combined query result
- */
-export function processAllFilterValues(resultSet: any) {
-  return {
-    retailers: extractFilterValues(resultSet, "prices.retailer_name"),
-    locations: extractFilterValues(resultSet, "prices.settlement_name"),
-    categories: extractFilterValues(resultSet, "prices.category_group_name"),
-  };
-}
-
-/**
- * Performance expectations for filter value queries
- */
-export const FILTER_VALUE_PERFORMANCE = {
-  target: 200,      // Target: < 200ms
-  acceptable: 500,  // Acceptable: < 500ms
-  problem: 1000,    // Problem: > 1000ms
-};
-
-/**
- * Analyze filter value query performance
- */
-export function analyzeFilterValuePerformance(executionTime: number, queryType: string) {
-  const { target, acceptable, problem } = FILTER_VALUE_PERFORMANCE;
-  
-  let status: 'excellent' | 'good' | 'acceptable' | 'problem';
-  let message: string;
-  
-  if (executionTime < target) {
-    status = 'excellent';
-    message = `🚀 Excellent performance for ${queryType}`;
-  } else if (executionTime < acceptable) {
-    status = 'good';
-    message = `✅ Good performance for ${queryType}`;
-  } else if (executionTime < problem) {
-    status = 'acceptable';
-    message = `⚠️ Acceptable but could be faster for ${queryType}`;
-  } else {
-    status = 'problem';
-    message = `🐌 Performance problem for ${queryType} - check pre-aggregation matching`;
-  }
-  
-  console.log(`📊 Filter Value Performance: ${message} (${executionTime}ms)`);
-  
-  return { status, message, executionTime };
+  return Array.from(values).sort();
 }

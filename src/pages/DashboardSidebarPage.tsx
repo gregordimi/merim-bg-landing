@@ -30,6 +30,7 @@ import {
 
 // Import all chart components
 import { StatsCards } from "@/components/charts/StatsCards";
+import { StatsCardsTable } from "@/components/charts/StatsCardsTable";
 import { TrendChart } from "@/components/charts/TrendChart";
 import { CategoryChart } from "@/components/charts/CategoryChart";
 import { RegionalTrendChart } from "@/components/charts/RegionalTrendChart";
@@ -69,6 +70,14 @@ export const CHART_ROUTES: ChartRoute[] = [
     icon: '📊',
     category: 'Overview',
     component: StatsCards,
+  },
+    {
+    id: 'stats_table',
+    name: 'Stats Cards Table',
+    description: 'FullStats',
+    icon: '🏢',
+    category: 'Overview',
+    component: StatsCardsTable,
   },
   {
     id: 'trend',
