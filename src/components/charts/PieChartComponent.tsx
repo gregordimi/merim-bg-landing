@@ -5,8 +5,8 @@
 
 import { useMemo } from 'react';
 import { Pie, PieChart, Cell, Legend } from 'recharts';
+import { useCubeQuery } from '@cubejs-client/react';
 import { GlobalFilters } from '@/utils/cube/filterUtils';
-import { useStableQuery } from '@/hooks/useStableQuery';
 import { buildOptimizedQuery } from '@/utils/cube/filterUtils';
 import {
   Card,
@@ -39,14 +39,15 @@ const COLORS = [
 ];
 
 export function PieChartComponent({ globalFilters }: PieChartComponentProps) {
-  const query = useMemo(() => buildOptimizedQuery({
-    measures: ['prices.averageRetailPrice'],
-    dimensions: ['prices.category_group_name'],
-    filters: globalFilters,
-    limit: 8, // Top 8 categories
-  }), [globalFilters]);
+  const query = useMemo(() => buildOptimizedQuery(
+    ['prices.averageRetailPrice'],
+    globalFilters,
+    ['prices.category_group_name']
+  ), [globalFilters]);
 
-  const { isLoading, error, resultSet } = useStableQuery(query, 'pie-chart');
+  const { isLoading, error, resultSet } = useCubeQuery(query, {
+    castNumerics: true,
+  });
 
   const { chartData, chartConfig } = useMemo(() => {
     if (!resultSet) return { chartData: [], chartConfig: {} };

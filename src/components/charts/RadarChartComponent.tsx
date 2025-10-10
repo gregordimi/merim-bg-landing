@@ -5,8 +5,8 @@
 
 import { useMemo } from 'react';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts';
+import { useCubeQuery } from '@cubejs-client/react';
 import { GlobalFilters } from '@/utils/cube/filterUtils';
-import { useStableQuery } from '@/hooks/useStableQuery';
 import { buildOptimizedQuery } from '@/utils/cube/filterUtils';
 import {
   Card,
@@ -46,18 +46,19 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export function RadarChartComponent({ globalFilters }: RadarChartComponentProps) {
-  const query = useMemo(() => buildOptimizedQuery({
-    measures: [
+  const query = useMemo(() => buildOptimizedQuery(
+    [
       'prices.averageRetailPrice',
       'prices.averagePromoPrice',
       'prices.averageDiscountPercentage',
     ],
-    dimensions: ['prices.retailer_name'],
-    filters: globalFilters,
-    limit: 6, // Top 6 retailers for readability
-  }), [globalFilters]);
+    globalFilters,
+    ['prices.retailer_name']
+  ), [globalFilters]);
 
-  const { isLoading, error, resultSet } = useStableQuery(query, 'radar-chart');
+  const { isLoading, error, resultSet } = useCubeQuery(query, {
+    castNumerics: true,
+  });
 
   const chartData = useMemo(() => {
     if (!resultSet) return [];

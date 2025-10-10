@@ -5,8 +5,8 @@
 
 import { useMemo } from 'react';
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
+import { useCubeQuery } from '@cubejs-client/react';
 import { GlobalFilters } from '@/utils/cube/filterUtils';
-import { useStableQuery } from '@/hooks/useStableQuery';
 import { buildOptimizedQuery } from '@/utils/cube/filterUtils';
 import {
   Card,
@@ -40,22 +40,17 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export function StyledTrendChart({ globalFilters }: StyledTrendChartProps) {
-  const query = useMemo(() => buildOptimizedQuery({
-    measures: [
+  const query = useMemo(() => buildOptimizedQuery(
+    [
       'prices.averageRetailPrice',
       'prices.averagePromoPrice',
     ],
-    timeDimensions: [
-      {
-        dimension: 'prices.price_date',
-        granularity: 'day',
-        dateRange: globalFilters.dateRange as [string, string] || 'Last 30 days',
-      },
-    ],
-    filters: globalFilters,
-  }), [globalFilters]);
+    globalFilters
+  ), [globalFilters]);
 
-  const { isLoading, error, resultSet } = useStableQuery(query, 'styled-trend-chart');
+  const { isLoading, error, resultSet } = useCubeQuery(query, {
+    castNumerics: true,
+  });
 
   const chartData = useMemo(() => {
     if (!resultSet) return [];
