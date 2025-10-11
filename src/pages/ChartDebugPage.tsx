@@ -83,7 +83,7 @@ export default function ChartDebugPage() {
     globalFilters.settlements.join(','),
     globalFilters.municipalities.join(','),
     globalFilters.categories.join(','),
-    (globalFilters.dateRange || []).join(','),
+    globalFilters.datePreset || "last7days",,
   ]);
 
   const cubeApi = useMemo(() => {
@@ -208,7 +208,7 @@ export default function ChartDebugPage() {
                     <Input
                       id="dateRange"
                       placeholder="2025-10-01,2025-10-07"
-                      value={(globalFilters.dateRange || []).join(',')}
+                      value={globalFilters.datePreset || "last7days"}
                       onChange={(e) => setGlobalFilters(prev => ({
                         ...prev,
                         dateRange: e.target.value ? e.target.value.split(',').map(s => s.trim()) : undefined

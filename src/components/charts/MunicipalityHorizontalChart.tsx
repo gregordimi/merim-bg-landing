@@ -33,7 +33,7 @@ export function MunicipalityHorizontalChart({ globalFilters }: MunicipalityHoriz
       (globalFilters.settlements || []).join(','),
       (globalFilters.municipalities || []).join(','),
       (globalFilters.categories || []).join(','),
-      (globalFilters.dateRange || []).join(',')
+      globalFilters.datePreset || "last7days",
     ],
     'municipality-horizontal-chart'
   );

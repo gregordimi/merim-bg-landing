@@ -40,7 +40,7 @@ export function RetailerPriceChart({ globalFilters }: RetailerPriceChartProps) {
       (globalFilters.settlements || []).join(','),
       (globalFilters.municipalities || []).join(','),
       (globalFilters.categories || []).join(','),
-      (globalFilters.dateRange || []).join(',')
+      globalFilters.datePreset || "last7days",
     ],
     'retailer-price-chart'
   );

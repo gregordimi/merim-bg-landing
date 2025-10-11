@@ -105,7 +105,7 @@ export function buildFilters(globalFilters: GlobalFilters) {
  * @returns A configured timeDimensions array.
  */
 export function buildTimeDimensions(datePreset?: DateRangePreset) {
-  const dateRange = datePreset ? DATE_PRESET_TO_CUBE_STRING[datePreset] : 'last 30 days';
+  const dateRange = datePreset ? DATE_PRESET_TO_CUBE_STRING[datePreset] : 'last 7 days';
   
   return [
     {

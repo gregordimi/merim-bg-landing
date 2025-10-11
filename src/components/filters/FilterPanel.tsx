@@ -399,7 +399,7 @@ export function FilterPanel({
                 : "All"}
             </Badge>
             <Badge variant="secondary">
-              Date: {globalFilters.datePreset || "last30days"}
+              Date: {globalFilters.datePreset || "last7days"}
             </Badge>
           </div>
         </div>

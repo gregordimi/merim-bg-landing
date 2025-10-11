@@ -40,7 +40,7 @@ export function CategoryChart({ globalFilters }: CategoryChartProps) {
       (globalFilters.settlements || []).join(','),
       (globalFilters.municipalities || []).join(','),
       (globalFilters.categories || []).join(','),
-      (globalFilters.dateRange || []).join(',')
+      globalFilters.datePreset || "last7days",
     ],
     'category-chart'
   );

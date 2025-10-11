@@ -39,7 +39,7 @@ export function RetailerTrendChartPrice({ globalFilters }: RetailerTrendChartPro
       (globalFilters.settlements || []).join(','),
       (globalFilters.municipalities || []).join(','),
       (globalFilters.categories || []).join(','),
-      (globalFilters.dateRange || []).join(',')
+      globalFilters.datePreset || "last7days",
     ],
     'retailer-trend-price-chart'
   );

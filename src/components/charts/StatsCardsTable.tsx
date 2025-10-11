@@ -67,14 +67,14 @@ export function StatsCardsTable({ globalFilters }: StatsCardsProps) {
       ],
       dimensions: [],
       filters: buildFilters(globalFilters),
-      timeDimensions: buildTimeDimensions(globalFilters.dateRange),
+      timeDimensions: buildTimeDimensions(globalFilters.datePreset),
     }),
     [
       (globalFilters.retailers || []).join(","),
       (globalFilters.settlements || []).join(","),
       (globalFilters.municipalities || []).join(","),
       (globalFilters.categories || []).join(","),
-      (globalFilters.dateRange || []).join(","),
+      globalFilters.datePreset || "last7days",
     ],
     "stats-table"
   );

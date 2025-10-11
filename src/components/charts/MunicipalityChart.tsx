@@ -35,7 +35,7 @@ export function MunicipalityChart({ globalFilters }: MunicipalityChartProps) {
       (globalFilters.settlements || []).join(","),
       (globalFilters.municipalities || []).join(","),
       (globalFilters.categories || []).join(","),
-      (globalFilters.dateRange || []).join(","),
+      globalFilters.datePreset || "last7days",
     ],
     "municipality-chart"
   );

@@ -40,7 +40,7 @@ export function MultiLineTrendChart({ globalFilters }: MultiLineTrendChartProps)
       (globalFilters.settlements || []).join(','),
       (globalFilters.municipalities || []).join(','),
       (globalFilters.categories || []).join(','),
-      (globalFilters.dateRange || []).join(',')
+      globalFilters.datePreset || "last7days",
     ],
     'multi-line-trend-chart'
   );

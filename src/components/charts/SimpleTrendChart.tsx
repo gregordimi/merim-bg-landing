@@ -30,7 +30,7 @@ export function SimpleTrendChart({ globalFilters }: SimpleTrendChartProps) {
   // Build a simple query without filtered dimensions
   const query = useMemo(() => ({
     measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
-    timeDimensions: buildTimeDimensions(globalFilters.dateRange),
+    timeDimensions: buildTimeDimensions(globalFilters.datePreset),
     filters: buildFilters(globalFilters),
     order: { "prices.price_date": "asc" as const },
   }), [globalFilters]);
@@ -42,7 +42,7 @@ export function SimpleTrendChart({ globalFilters }: SimpleTrendChartProps) {
       (globalFilters.settlements || []).join(','),
       (globalFilters.municipalities || []).join(','),
       (globalFilters.categories || []).join(','),
-      (globalFilters.dateRange || []).join(',')
+      globalFilters.datePreset || "last7days",
     ],
     'simple-trend-chart'
   );

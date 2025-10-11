@@ -1,5 +1,9 @@
-import { useMemo, useState, useEffect } from "react";
-import { GlobalFilters, buildFilters, buildTimeDimensions } from "@/utils/cube/filterUtils";
+import { useMemo } from "react";
+import {
+  GlobalFilters,
+  buildFilters,
+  buildTimeDimensions,
+} from "@/utils/cube/filterUtils";
 import { useStableQuery } from "@/hooks/useStableQuery";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -113,27 +117,41 @@ export function StatsCards({ globalFilters }: StatsCardsProps) {
         "prices.averageDiscountPercentage",
       ],
       filters: buildFilters(globalFilters),
-      timeDimensions: buildTimeDimensions(globalFilters.dateRange),
+      timeDimensions: buildTimeDimensions(globalFilters.datePreset),
     }),
     [
       (globalFilters.retailers || []).join(","),
       (globalFilters.settlements || []).join(","),
       (globalFilters.municipalities || []).join(","),
       (globalFilters.categories || []).join(","),
-      (globalFilters.dateRange || []).join(","),
+      globalFilters.datePreset || "last7days",
     ],
     "stats-cards"
   );
-
-  // Keep track of the last valid data to prevent showing zeros
-  const [lastValidData, setLastValidData] = useState<StatsData | null>(null);
-  const [hasEverLoaded, setHasEverLoaded] = useState(false);
 
   const statsData = useMemo(() => {
     if (!resultSet) return null;
 
     const pivot = resultSet.tablePivot();
-    if (!pivot || pivot.length === 0) return null;
+    if (!pivot || pivot.length === 0) {
+      // Return zeros when no data is found
+      return {
+        count: 0,
+        minRetailPrice: 0,
+        maxRetailPrice: 0,
+        minPromoPrice: 0,
+        maxPromoPrice: 0,
+        avgRetailPrice: 0,
+        avgPromoPrice: 0,
+        totalRetailPrice: 0,
+        totalPromoPrice: 0,
+        retailPriceCount: 0,
+        promoPriceCount: 0,
+        medianRetailPrice: 0,
+        medianPromoPrice: 0,
+        averageDiscountPercentage: 0,
+      };
+    }
 
     const data = pivot[0];
     const count = Number(data?.["prices.count"] || 0);
@@ -153,9 +171,6 @@ export function StatsCards({ globalFilters }: StatsCardsProps) {
       data?.["prices.averageDiscountPercentage"] || 0
     );
 
-    // If count is 0, treat as no data
-    if (count === 0) return null;
-
     return {
       count,
       minRetailPrice,
@@ -172,22 +187,7 @@ export function StatsCards({ globalFilters }: StatsCardsProps) {
       medianPromoPrice,
       averageDiscountPercentage,
     };
-  }, [resultSet]);
-
-  // Update last valid data when we get new data
-  useEffect(() => {
-    if (statsData && statsData.count > 0 && !isLoading) {
-      setLastValidData(statsData);
-      setHasEverLoaded(true);
-    }
-  }, [statsData, isLoading]);
-
-  // Determine what data to display
-  const displayData = statsData || lastValidData;
-  const shouldShowLoading = isLoading && !hasEverLoaded;
-
-  // Show error state or no data state appropriately
-  const hasData = displayData && displayData.count > 0;
+  }, [resultSet, globalFilters]);
 
   // Helper function to format currency
   const formatCurrency = (value: number) => `${value.toFixed(2)} лв`;
@@ -207,11 +207,11 @@ export function StatsCards({ globalFilters }: StatsCardsProps) {
       <CardContent className="p-6">
         <p className="text-sm font-medium text-muted-foreground">{title}</p>
         <p className="text-3xl font-bold mt-2">
-          {shouldShowLoading
+          {isLoading
             ? "Loading..."
             : error
             ? "Error loading"
-            : hasData && displayData
+            : statsData
             ? formatter
               ? formatter(Number(value))
               : value
@@ -224,76 +224,76 @@ export function StatsCards({ globalFilters }: StatsCardsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {/* Count Statistics */}
-      {renderCard("Total Records", displayData?.count || 0, formatNumber)}
+      {renderCard("Total Records", statsData?.count || 0, formatNumber)}
       {renderCard(
         "Retail Price Records",
-        displayData?.retailPriceCount || 0,
+        statsData?.retailPriceCount || 0,
         formatNumber
       )}
       {renderCard(
         "Promo Price Records",
-        displayData?.promoPriceCount || 0,
+        statsData?.promoPriceCount || 0,
         formatNumber
       )}
 
       {/* Price Range - Retail */}
       {renderCard(
         "Min Retail Price",
-        displayData?.minRetailPrice || 0,
+        statsData?.minRetailPrice || 0,
         formatCurrency
       )}
       {renderCard(
         "Max Retail Price",
-        displayData?.maxRetailPrice || 0,
+        statsData?.maxRetailPrice || 0,
         formatCurrency
       )}
       {renderCard(
         "Median Retail Price",
-        displayData?.medianRetailPrice || 0,
+        statsData?.medianRetailPrice || 0,
         formatCurrency
       )}
       {renderCard(
         "Average Retail Price",
-        displayData?.avgRetailPrice || 0,
+        statsData?.avgRetailPrice || 0,
         formatCurrency
       )}
       {renderCard(
         "Total Retail Value",
-        displayData?.totalRetailPrice || 0,
+        statsData?.totalRetailPrice || 0,
         formatCurrency
       )}
 
       {/* Price Range - Promo */}
       {renderCard(
         "Min Promo Price",
-        displayData?.minPromoPrice || 0,
+        statsData?.minPromoPrice || 0,
         formatCurrency
       )}
       {renderCard(
         "Max Promo Price",
-        displayData?.maxPromoPrice || 0,
+        statsData?.maxPromoPrice || 0,
         formatCurrency
       )}
       {renderCard(
         "Median Promo Price",
-        displayData?.medianPromoPrice || 0,
+        statsData?.medianPromoPrice || 0,
         formatCurrency
       )}
       {renderCard(
         "Average Promo Price",
-        displayData?.avgPromoPrice || 0,
+        statsData?.avgPromoPrice || 0,
         formatCurrency
       )}
       {renderCard(
         "Total Promo Value",
-        displayData?.totalPromoPrice || 0,
+        statsData?.totalPromoPrice || 0,
         formatCurrency
       )}
 
       {/* Discount Analysis */}
       {renderCard(
         "Average Discount",
-        displayData?.averageDiscountPercentage || 0,
+        statsData?.averageDiscountPercentage || 0,
         formatPercentage
       )}
     </div>

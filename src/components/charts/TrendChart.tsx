@@ -48,7 +48,7 @@ export function TrendChart({ globalFilters }: TrendChartProps) {
       (globalFilters.settlements || []).join(","),
       (globalFilters.municipalities || []).join(","),
       (globalFilters.categories || []).join(","),
-      (globalFilters.dateRange || []).join(","),
+      globalFilters.datePreset || "last7days",
     ],
     "trend-chart"
   );
@@ -305,31 +305,39 @@ export function TrendChart({ globalFilters }: TrendChartProps) {
                 <h4 className="font-semibold mb-2">Active Filters:</h4>
                 <div className="flex flex-wrap gap-2">
                   <Badge variant="outline">
-                    Retailers: {globalFilters.retailers.length || "All"}
-                    {globalFilters.retailers.length > 0 &&
-                      ` (${globalFilters.retailers.join(", ")})`}
+                    Retailers:{" "}
+                    {(globalFilters.retailers || []).length > 0
+                      ? (globalFilters.retailers || []).length
+                      : "All"}
+                    {(globalFilters.retailers || []).length > 0 &&
+                      ` (${(globalFilters.retailers || []).join(", ")})`}
                   </Badge>
                   <Badge variant="outline">
-                    Settlements: {globalFilters.settlements.length || "All"}
-                    {globalFilters.settlements.length > 0 &&
-                      ` (${globalFilters.settlements.join(", ")})`}
+                    Settlements:{" "}
+                    {(globalFilters.settlements || []).length > 0
+                      ? (globalFilters.settlements || []).length
+                      : "All"}
+                    {(globalFilters.settlements || []).length > 0 &&
+                      ` (${(globalFilters.settlements || []).join(", ")})`}
                   </Badge>
                   <Badge variant="outline">
                     Municipalities:{" "}
-                    {globalFilters.municipalities.length || "All"}
-                    {globalFilters.municipalities.length > 0 &&
-                      ` (${globalFilters.municipalities.join(", ")})`}
+                    {(globalFilters.municipalities || []).length > 0
+                      ? (globalFilters.municipalities || []).length
+                      : "All"}
+                    {(globalFilters.municipalities || []).length > 0 &&
+                      ` (${(globalFilters.municipalities || []).join(", ")})`}
                   </Badge>
                   <Badge variant="outline">
-                    Categories: {globalFilters.categories.length || "All"}
-                    {globalFilters.categories.length > 0 &&
-                      ` (${globalFilters.categories.join(", ")})`}
+                    Categories:{" "}
+                    {(globalFilters.categories || []).length > 0
+                      ? (globalFilters.categories || []).length
+                      : "All"}
+                    {(globalFilters.categories || []).length > 0 &&
+                      ` (${(globalFilters.categories || []).join(", ")})`}
                   </Badge>
                   <Badge variant="outline">
-                    Date:{" "}
-                    {globalFilters.dateRange
-                      ? globalFilters.dateRange.join(" to ")
-                      : "Last 30 days"}
+                    Date: {globalFilters.datePreset || "last7days"}
                   </Badge>
                 </div>
               </div>

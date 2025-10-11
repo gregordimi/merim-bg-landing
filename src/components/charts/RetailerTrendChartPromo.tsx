@@ -50,7 +50,7 @@ export function RetailerTrendChartPromo({
       (globalFilters.settlements || []).join(","),
       (globalFilters.municipalities || []).join(","),
       (globalFilters.categories || []).join(","),
-      (globalFilters.dateRange || []).join(","),
+      globalFilters.datePreset || "last7days",
     ],
     "retailer-trend-promo-chart"
   );
