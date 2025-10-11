@@ -16,7 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MultiSelect } from '@/components/ui/multi-select';
-import { Input } from '@/components/ui/input';
+import { FilterDialog } from '@/components/filters/FilterDialog';
 import { CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 
 interface FilterPanelProps {
@@ -111,9 +111,20 @@ export function FilterPanel({ globalFilters, onFiltersChange }: FilterPanelProps
   };
 
   // --- Date Range Handlers ---
-  const updateDateRange = (dates: [string, string] | null) => {
-    setPendingFilters({ ...pendingFilters, dateRange: dates });
+  const updateDateRange = (range: string) => {
+    setPendingFilters({ ...pendingFilters, dateRange: [range, range] as [string, string] });
   };
+
+  // Relative date options
+  const relativeDateOptions = [
+    { value: 'today', label: 'Today' },
+    { value: 'last 3 days', label: 'Last 3 Days' },
+    { value: 'last 7 days', label: 'Last 7 Days' },
+    { value: 'last 30 days', label: 'Last 30 Days' },
+    { value: 'last month', label: 'Last Month' },
+    { value: 'last 3 months', label: 'Last 3 Months' },
+    { value: 'last year', label: 'Last Year' },
+  ];
 
   // --- Action Handlers ---
   const handleApplyFilters = () => {
@@ -130,7 +141,7 @@ export function FilterPanel({ globalFilters, onFiltersChange }: FilterPanelProps
       settlements: [],
       municipalities: [],
       categories: [],
-      dateRange: ['Last 30 days'] as [string, string],
+      dateRange: ['last 7 days', 'last 7 days'] as [string, string],
     };
     setPendingFilters(clearedFilters);
   };
@@ -161,15 +172,17 @@ export function FilterPanel({ globalFilters, onFiltersChange }: FilterPanelProps
       <CardContent className="space-y-4">
         {/* Filter Selectors Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Retailers */}
+          {/* Retailers - Dialog */}
           <div className="space-y-2">
             <Label>Retailers</Label>
-            <MultiSelect
+            <FilterDialog
+              title="Retailers"
+              description="Select up to 5 retailers"
               options={retailerOptions}
               selected={pendingFilters.retailers}
               onChange={updatePendingRetailers}
-              placeholder={retailersLoading ? "Loading..." : "Select retailers..."}
-              disabled={retailersLoading}
+              maxSelections={MAX_SELECTIONS.retailers}
+              isLoading={retailersLoading}
             />
             <div className="text-xs text-muted-foreground">
               {pendingFilters.retailers.length}/{MAX_SELECTIONS.retailers} selected
@@ -179,15 +192,17 @@ export function FilterPanel({ globalFilters, onFiltersChange }: FilterPanelProps
             </div>
           </div>
 
-          {/* Settlements */}
+          {/* Settlements - Dialog */}
           <div className="space-y-2">
             <Label>Settlements</Label>
-            <MultiSelect
+            <FilterDialog
+              title="Settlements"
+              description="Select up to 10 settlements"
               options={settlementOptions}
               selected={pendingFilters.settlements}
               onChange={updatePendingSettlements}
-              placeholder={settlementsLoading ? "Loading..." : "Select settlements..."}
-              disabled={settlementsLoading}
+              maxSelections={MAX_SELECTIONS.settlements}
+              isLoading={settlementsLoading}
             />
             <div className="text-xs text-muted-foreground">
               {pendingFilters.settlements.length}/{MAX_SELECTIONS.settlements} selected
@@ -197,15 +212,17 @@ export function FilterPanel({ globalFilters, onFiltersChange }: FilterPanelProps
             </div>
           </div>
 
-          {/* Municipalities */}
+          {/* Municipalities - Dialog */}
           <div className="space-y-2">
             <Label>Municipalities</Label>
-            <MultiSelect
+            <FilterDialog
+              title="Municipalities"
+              description="Select up to 8 municipalities"
               options={municipalityOptions}
               selected={pendingFilters.municipalities}
               onChange={updatePendingMunicipalities}
-              placeholder={municipalitiesLoading ? "Loading..." : "Select municipalities..."}
-              disabled={municipalitiesLoading}
+              maxSelections={MAX_SELECTIONS.municipalities}
+              isLoading={municipalitiesLoading}
             />
             <div className="text-xs text-muted-foreground">
               {pendingFilters.municipalities.length}/{MAX_SELECTIONS.municipalities} selected
@@ -215,7 +232,7 @@ export function FilterPanel({ globalFilters, onFiltersChange }: FilterPanelProps
             </div>
           </div>
 
-          {/* Categories */}
+          {/* Categories - Keep MultiSelect */}
           <div className="space-y-2">
             <Label>Categories</Label>
             <MultiSelect
@@ -234,28 +251,25 @@ export function FilterPanel({ globalFilters, onFiltersChange }: FilterPanelProps
           </div>
         </div>
 
-        {/* Date Range */}
+        {/* Date Range - Relative Dates */}
         <div className="space-y-2">
           <Label>Date Range</Label>
-          <div className="flex gap-2">
-            <Input
-              type="text"
-              placeholder="Start date"
-              value={pendingFilters.dateRange ? pendingFilters.dateRange[0] : ''}
-              onChange={(e) => {
-                const current = pendingFilters.dateRange || ['', ''];
-                updateDateRange([e.target.value, current[1]] as [string, string]);
-              }}
-            />
-            <Input
-              type="text"
-              placeholder="End date"
-              value={pendingFilters.dateRange ? pendingFilters.dateRange[1] || pendingFilters.dateRange[0] : ''}
-              onChange={(e) => {
-                const current = pendingFilters.dateRange || ['', ''];
-                updateDateRange([current[0], e.target.value] as [string, string]);
-              }}
-            />
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+            {relativeDateOptions.map((option) => (
+              <Button
+                key={option.value}
+                type="button"
+                variant={pendingFilters.dateRange?.[0] === option.value ? "default" : "outline"}
+                size="sm"
+                onClick={() => updateDateRange(option.value)}
+                className="w-full"
+              >
+                {option.label}
+              </Button>
+            ))}
+          </div>
+          <div className="text-xs text-muted-foreground">
+            Selected: {pendingFilters.dateRange?.[0] || 'last 7 days'}
           </div>
         </div>
 

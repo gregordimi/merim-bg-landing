@@ -17,6 +17,7 @@ import { extractHashConfig } from "@/utils/cube/config";
 import { GlobalFilters } from "@/utils/cube/filterUtils";
 import { FilterDropdowns } from "@/components/filters/FilterDropdowns";
 import { FilterPanel } from "@/components/filters/FilterPanel";
+import { DebugProvider } from "@/contexts/DebugContext";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar-dashboard";
 import { Separator } from "@/components/ui/separator";
@@ -60,7 +61,7 @@ export interface ChartRoute {
   id: string;
   name: string;
   description: string;
-  icon: string;
+  icon: string; // Lucide icon name for when sidebar is collapsed
   category: string;
   component: React.ComponentType<{ globalFilters: GlobalFilters }>;
 }
@@ -71,7 +72,7 @@ export const CHART_ROUTES: ChartRoute[] = [
     id: 'stats',
     name: 'Stats Cards',
     description: 'Min and Max price statistics',
-    icon: '',
+    icon: 'LayoutDashboard',
     category: 'Overview',
     component: StatsCards,
   },
@@ -79,7 +80,7 @@ export const CHART_ROUTES: ChartRoute[] = [
     id: 'stats_table',
     name: 'Stats Cards Table',
     description: 'Full Stats',
-    icon: '',
+    icon: 'Table',
     category: 'Overview',
     component: StatsCardsTable,
   },
@@ -87,7 +88,7 @@ export const CHART_ROUTES: ChartRoute[] = [
     id: 'trend',
     name: 'Price Trends',
     description: 'Retail and promotional price trends over time',
-    icon: '',
+    icon: 'TrendingUp',
     category: 'Overview',
     component: TrendChart,
   },
@@ -95,7 +96,7 @@ export const CHART_ROUTES: ChartRoute[] = [
     id: 'trend-styled',
     name: 'Styled Price Trends',
     description: 'Modern styled price trends with gradients',
-    icon: '',
+    icon: 'LineChart',
     category: 'Overview',
     component: StyledTrendChart,
   },
@@ -103,7 +104,7 @@ export const CHART_ROUTES: ChartRoute[] = [
     id: 'trend-optimized',
     name: 'Optimized Trends',
     description: 'Fast price trends using pre-aggregations',
-    icon: '',
+    icon: 'Zap',
     category: 'Overview',
     component: OptimizedTrendChart,
   },
@@ -111,7 +112,7 @@ export const CHART_ROUTES: ChartRoute[] = [
     id: 'trend-simple',
     name: 'Simple Trends',
     description: 'Clean trend lines showing overall averages',
-    icon: '',
+    icon: 'Activity',
     category: 'Overview',
     component: SimpleTrendChart,
   },
@@ -119,7 +120,7 @@ export const CHART_ROUTES: ChartRoute[] = [
     id: 'category',
     name: 'Category Comparison',
     description: 'Price comparison across product categories',
-    icon: '',
+    icon: 'BarChart3',
     category: 'Overview',
     component: CategoryChart,
   },
@@ -127,7 +128,7 @@ export const CHART_ROUTES: ChartRoute[] = [
     id: 'pie-chart',
     name: 'Category Distribution',
     description: 'Pie chart showing category price distribution',
-    icon: '',
+    icon: 'PieChart',
     category: 'Overview',
     component: PieChartComponent,
   },
@@ -137,7 +138,7 @@ export const CHART_ROUTES: ChartRoute[] = [
     id: 'retailer-trend-price',
     name: 'Retailer Price Trends',
     description: 'Compare how different retailers\' prices change over time',
-    icon: '',
+    icon: 'Users',
     category: 'Competitor',
     component: RetailerTrendChartPrice,
   },
@@ -145,7 +146,7 @@ export const CHART_ROUTES: ChartRoute[] = [
     id: 'retailer-trend-promo',
     name: 'Retailer Promo Trends',
     description: 'Compare how different retailers\' promo prices change over time',
-    icon: '',
+    icon: 'Tag',
     category: 'Competitor',
     component: RetailerTrendChartPromo,
   },
@@ -153,7 +154,7 @@ export const CHART_ROUTES: ChartRoute[] = [
     id: 'retailer-trend-discount',
     name: 'Retailer Discount Trends',
     description: 'Compare how discount rates change over time by retailer',
-    icon: '',
+    icon: 'Percent',
     category: 'Competitor',
     component: RetailerTrendChartDiscount,
   },
@@ -161,7 +162,7 @@ export const CHART_ROUTES: ChartRoute[] = [
     id: 'retailer-price',
     name: 'Retailer Price Comparison',
     description: 'Compare retail vs promotional prices across retailers',
-    icon: '',
+    icon: 'Scale',
     category: 'Competitor',
     component: RetailerPriceChart,
   },
@@ -169,7 +170,7 @@ export const CHART_ROUTES: ChartRoute[] = [
     id: 'discount',
     name: 'Discount Rates',
     description: 'Discount percentage analysis across retailers',
-    icon: '',
+    icon: 'BadgePercent',
     category: 'Competitor',
     component: DiscountChart,
   },
@@ -177,7 +178,7 @@ export const CHART_ROUTES: ChartRoute[] = [
     id: 'radar-chart',
     name: 'Retailer Performance Radar',
     description: 'Multi-dimensional view of retailer metrics',
-    icon: '',
+    icon: 'Radar',
     category: 'Competitor',
     component: RadarChartComponent,
   },
@@ -187,7 +188,7 @@ export const CHART_ROUTES: ChartRoute[] = [
     id: 'category-trend',
     name: 'Category Price Trends',
     description: 'Track how prices change across different product categories over time',
-    icon: '',
+    icon: 'TrendingUp',
     category: 'Category',
     component: CategoryTrendChart,
   },
@@ -195,7 +196,7 @@ export const CHART_ROUTES: ChartRoute[] = [
     id: 'category-range',
     name: 'Category Price Range',
     description: 'Min, average, and max prices for each category',
-    icon: '',
+    icon: 'CandlestickChart',
     category: 'Category',
     component: CategoryRangeChart,
   },
@@ -205,7 +206,7 @@ export const CHART_ROUTES: ChartRoute[] = [
     id: 'regional',
     name: 'Regional Trends',
     description: 'Municipality price trends over time',
-    icon: '🗺️',
+    icon: 'Map',
     category: 'Geographical',
     component: RegionalTrendChart,
   },
@@ -213,7 +214,7 @@ export const CHART_ROUTES: ChartRoute[] = [
     id: 'settlement-horizontal',
     name: 'Settlement Comparison',
     description: 'Top 20 settlements with horizontal bars',
-    icon: '',
+    icon: 'MapPin',
     category: 'Geographical',
     component: SettlementHorizontalChart,
   },
@@ -221,7 +222,7 @@ export const CHART_ROUTES: ChartRoute[] = [
     id: 'municipality-horizontal',
     name: 'Municipality Comparison',
     description: 'Top 15 municipalities with horizontal bars',
-    icon: '',
+    icon: 'Building2',
     category: 'Geographical',
     component: MunicipalityHorizontalChart,
   },
@@ -242,7 +243,7 @@ export default function DashboardSidebarPage() {
     settlements: [],
     municipalities: [],
     categories: [],
-    dateRange: undefined,
+    dateRange: ['last 7 days', 'last 7 days'] as [string, string], // Default to 7 days
   });
 
   // CRITICAL: Memoize the filters object to prevent unnecessary re-renders
@@ -283,57 +284,59 @@ export default function DashboardSidebarPage() {
   }, [chartId, navigate]);
 
   return (
-    <CubeProvider cubeApi={cubeApi}>
-      <SidebarProvider>
-        <AppSidebar charts={CHART_ROUTES} currentChartId={chartId || ''} />
-        <SidebarInset>
-          <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b bg-background px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="/dashboard-sidebar/stats">
-                    Dashboard
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>{currentChart?.name || 'Chart'}</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-          </header>
+    <DebugProvider>
+      <CubeProvider cubeApi={cubeApi}>
+        <SidebarProvider>
+          <AppSidebar charts={CHART_ROUTES} currentChartId={chartId || ''} />
+          <SidebarInset>
+            <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b bg-background px-4">
+              <SidebarTrigger className="-ml-1" />
+              <Separator orientation="vertical" className="mr-2 h-4" />
+              <Breadcrumb>
+                <BreadcrumbList>
+                  <BreadcrumbItem className="hidden md:block">
+                    <BreadcrumbLink href="/dashboard-sidebar/stats">
+                      Dashboard
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator className="hidden md:block" />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>{currentChart?.name || 'Chart'}</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
+            </header>
 
-          {/* Global Filters - NEW VERSION */}
-          <div className="border-b bg-muted/40 px-4 py-4">
-            <FilterPanel
-              globalFilters={globalFilters}
-              onFiltersChange={setGlobalFilters}
-            />
-          </div>
+            {/* Global Filters - NEW VERSION */}
+            <div className="border-b bg-muted/40 px-4 py-4">
+              <FilterPanel
+                globalFilters={globalFilters}
+                onFiltersChange={setGlobalFilters}
+              />
+            </div>
 
-          {/* OLD Filter Dropdowns - Keep for rollback
-          <div className="border-b bg-muted/40 px-4 py-4">
-            <FilterDropdowns
-              globalFilters={globalFilters}
-              onFiltersChange={setGlobalFilters}
-            />
-          </div>
-          */}
+            {/* OLD Filter Dropdowns - Keep for rollback
+            <div className="border-b bg-muted/40 px-4 py-4">
+              <FilterDropdowns
+                globalFilters={globalFilters}
+                onFiltersChange={setGlobalFilters}
+              />
+            </div>
+            */}
 
-          {/* Chart Content */}
-          <div className="flex flex-1 flex-col gap-4 p-4">
-            {CurrentChartComponent ? (
-              <CurrentChartComponent globalFilters={stableFilters} />
-            ) : (
-              <div className="flex h-full items-center justify-center">
-                <p className="text-muted-foreground">Chart not found</p>
-              </div>
-            )}
-          </div>
-        </SidebarInset>
-      </SidebarProvider>
-    </CubeProvider>
+            {/* Chart Content */}
+            <div className="flex flex-1 flex-col gap-4 p-4">
+              {CurrentChartComponent ? (
+                <CurrentChartComponent globalFilters={stableFilters} />
+              ) : (
+                <div className="flex h-full items-center justify-center">
+                  <p className="text-muted-foreground">Chart not found</p>
+                </div>
+              )}
+            </div>
+          </SidebarInset>
+        </SidebarProvider>
+      </CubeProvider>
+    </DebugProvider>
   );
 }

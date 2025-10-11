@@ -7,6 +7,7 @@
 import * as React from "react"
 import { useNavigate } from "react-router-dom"
 import { ChartRoute } from "@/pages/DashboardSidebarPage"
+import * as Icons from "lucide-react"
 
 import {
   Sidebar,
@@ -24,6 +25,12 @@ import {
 interface AppSidebarDashboardProps {
   charts: ChartRoute[]
   currentChartId: string
+}
+
+// Helper to get Lucide icon component by name
+function getLucideIcon(iconName: string) {
+  const IconComponent = (Icons as any)[iconName] as React.ComponentType<any>;
+  return IconComponent || Icons.FileQuestion;
 }
 
 export function AppSidebar({ charts, currentChartId }: AppSidebarDashboardProps) {
@@ -73,17 +80,21 @@ export function AppSidebar({ charts, currentChartId }: AppSidebarDashboardProps)
             <SidebarGroupLabel>{category}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {categoryCharts.map((chart) => (
-                  <SidebarMenuItem key={chart.id}>
-                    <SidebarMenuButton
-                      onClick={() => handleChartClick(chart.id)}
-                      isActive={currentChartId === chart.id}
-                      tooltip={chart.description}
-                    >
-                      <span>{chart.name}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
+                {categoryCharts.map((chart) => {
+                  const IconComponent = getLucideIcon(chart.icon);
+                  return (
+                    <SidebarMenuItem key={chart.id}>
+                      <SidebarMenuButton
+                        onClick={() => handleChartClick(chart.id)}
+                        isActive={currentChartId === chart.id}
+                        tooltip={chart.description}
+                      >
+                        <IconComponent className="h-4 w-4" />
+                        <span>{chart.name}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
@@ -95,6 +106,7 @@ export function AppSidebar({ charts, currentChartId }: AppSidebarDashboardProps)
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
               <a href="/charts/dashboard">
+                <Icons.LayoutGrid className="h-4 w-4" />
                 <span>Old Dashboard</span>
               </a>
             </SidebarMenuButton>
@@ -102,6 +114,7 @@ export function AppSidebar({ charts, currentChartId }: AppSidebarDashboardProps)
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
               <a href="/charts/list">
+                <Icons.List className="h-4 w-4" />
                 <span>Chart List</span>
               </a>
             </SidebarMenuButton>
