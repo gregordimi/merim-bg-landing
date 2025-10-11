@@ -32,23 +32,26 @@ export function TrendChart({ globalFilters }: TrendChartProps) {
   const [showDebugInfo, setShowDebugInfo] = useState(false);
 
   // Build the query
-  const query = useMemo(
-    () =>
-      buildOptimizedQuery(
-        ["prices.averageRetailPrice", "prices.averagePromoPrice"],
-        globalFilters
-      ),
-    [globalFilters]
-  );
+  const query = useMemo(() => {
+    console.log(
+      "🔧 TrendChart building query with globalFilters:",
+      globalFilters
+    );
+    return buildOptimizedQuery(
+      ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+      globalFilters
+    );
+  }, [globalFilters]);
 
   const { resultSet, isLoading, error, progress } = useStableQuery(
     () => query,
     [
-      (globalFilters.retailers || []).join(","),
-      (globalFilters.settlements || []).join(","),
-      (globalFilters.municipalities || []).join(","),
-      (globalFilters.categories || []).join(","),
-      globalFilters.datePreset || "last7days",
+      globalFilters.retailers?.join(",") ?? "",
+      globalFilters.settlements?.join(",") ?? "",
+      globalFilters.municipalities?.join(",") ?? "",
+      globalFilters.categories?.join(",") ?? "",
+      globalFilters.datePreset ?? "last7days",
+      globalFilters.granularity ?? "day",
     ],
     "trend-chart"
   );
@@ -67,7 +70,9 @@ export function TrendChart({ globalFilters }: TrendChartProps) {
     const dataMap = new Map();
 
     pivot.forEach((row: any) => {
-      const date = row["prices.price_date.day"] || row["prices.price_date"];
+      const granularity = globalFilters.granularity ?? "day";
+      const dateKey = `prices.price_date.${granularity}`;
+      const date = row[dateKey] || row["prices.price_date"];
       const retailPrice = Number(row["prices.averageRetailPrice"] || 0);
       const promoPrice = Number(row["prices.averagePromoPrice"] || 0);
 
@@ -106,7 +111,7 @@ export function TrendChart({ globalFilters }: TrendChartProps) {
         promoPriceCount: entry.promoPrices.length,
       }))
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  }, [resultSet]);
+  }, [resultSet, globalFilters.granularity]);
 
   // Update last valid data when we get new data
   useEffect(() => {
@@ -337,7 +342,10 @@ export function TrendChart({ globalFilters }: TrendChartProps) {
                       ` (${(globalFilters.categories || []).join(", ")})`}
                   </Badge>
                   <Badge variant="outline">
-                    Date: {globalFilters.datePreset || "last7days"}
+                    Date: {globalFilters.datePreset ?? "last7days"}
+                  </Badge>
+                  <Badge variant="outline">
+                    Granularity: {globalFilters.granularity ?? "day"}
                   </Badge>
                 </div>
               </div>

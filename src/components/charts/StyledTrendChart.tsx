@@ -54,15 +54,17 @@ export function StyledTrendChart({ globalFilters }: StyledTrendChartProps) {
 
   const chartData = useMemo(() => {
     if (!resultSet) return [];
+    const granularity = globalFilters.granularity ?? "day";
+    const dateKey = `prices.price_date.${granularity}`;
     return resultSet.tablePivot().map(row => ({
-      date: new Date(row['prices.price_date.day'] as string).toLocaleDateString('en-US', {
+      date: new Date(row[dateKey] as string).toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
       }),
       retailPrice: Number(row['prices.averageRetailPrice']) || 0,
       promoPrice: Number(row['prices.averagePromoPrice']) || 0,
     }));
-  }, [resultSet]);
+  }, [resultSet, globalFilters.granularity]);
 
   // Calculate trend
   const trend = useMemo(() => {

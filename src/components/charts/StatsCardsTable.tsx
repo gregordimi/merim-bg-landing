@@ -47,6 +47,7 @@ interface StatsTableRow {
 }
 
 export function StatsCardsTable({ globalFilters }: StatsCardsProps) {
+  console.log("🔍 StatsCardsTable globalFilters:", globalFilters);
   const { resultSet, isLoading, error } = useStableQuery(
     () => ({
       measures: [
@@ -67,14 +68,18 @@ export function StatsCardsTable({ globalFilters }: StatsCardsProps) {
       ],
       dimensions: [],
       filters: buildFilters(globalFilters),
-      timeDimensions: buildTimeDimensions(globalFilters.datePreset),
+      timeDimensions: buildTimeDimensions(
+        globalFilters.datePreset,
+        globalFilters.granularity
+      ),
     }),
     [
-      (globalFilters.retailers || []).join(","),
-      (globalFilters.settlements || []).join(","),
-      (globalFilters.municipalities || []).join(","),
-      (globalFilters.categories || []).join(","),
-      globalFilters.datePreset || "last7days",
+      globalFilters.retailers?.join(",") ?? "",
+      globalFilters.settlements?.join(",") ?? "",
+      globalFilters.municipalities?.join(",") ?? "",
+      globalFilters.categories?.join(",") ?? "",
+      globalFilters.datePreset ?? "last7days",
+      globalFilters.granularity ?? "day",
     ],
     "stats-table"
   );
@@ -86,35 +91,34 @@ export function StatsCardsTable({ globalFilters }: StatsCardsProps) {
     if (!pivot || pivot.length === 0) return [];
 
     return pivot.map((row) => {
-      // THE FIX: Use the correct key for the date from your resultSet.
-      // Cube.js often uses underscores for pivoted time dimensions.
-      const dateValue = row["prices.price_date.day"] || row["prices.priceDateDay"] || "";
-      const formattedDate =
-        dateValue && typeof dateValue === "string"
-          ? new Date(dateValue).toLocaleDateString()
-          : "N/A";
+      const granularity = globalFilters.granularity ?? "day";
+      const dateKey = `prices.price_date.${granularity}`;
+      const dateValue = row[dateKey];
+      const formattedDate = dateValue
+        ? new Date(dateValue as string).toLocaleDateString()
+        : "N/A";
 
       return {
         date: formattedDate,
-        count: Number(row["prices.count"] || 0),
-        avgRetailPrice: Number(row["prices.averageRetailPrice"] || 0),
-        avgPromoPrice: Number(row["prices.averagePromoPrice"] || 0),
-        totalRetailPrice: Number(row["prices.totalRetailPrice"] || 0),
-        totalPromoPrice: Number(row["prices.totalPromoPrice"] || 0),
-        retailPriceCount: Number(row["prices.retailPriceCount"] || 0),
-        promoPriceCount: Number(row["prices.promoPriceCount"] || 0),
-        minRetailPrice: Number(row["prices.minRetailPrice"] || 0),
-        minPromoPrice: Number(row["prices.minPromoPrice"] || 0),
-        maxRetailPrice: Number(row["prices.maxRetailPrice"] || 0),
-        maxPromoPrice: Number(row["prices.maxPromoPrice"] || 0),
-        medianRetailPrice: Number(row["prices.medianRetailPrice"] || 0),
-        medianPromoPrice: Number(row["prices.medianPromoPrice"] || 0),
+        count: Number(row["prices.count"]),
+        avgRetailPrice: Number(row["prices.averageRetailPrice"]),
+        avgPromoPrice: Number(row["prices.averagePromoPrice"]),
+        totalRetailPrice: Number(row["prices.totalRetailPrice"]),
+        totalPromoPrice: Number(row["prices.totalPromoPrice"]),
+        retailPriceCount: Number(row["prices.retailPriceCount"]),
+        promoPriceCount: Number(row["prices.promoPriceCount"]),
+        minRetailPrice: Number(row["prices.minRetailPrice"]),
+        minPromoPrice: Number(row["prices.minPromoPrice"]),
+        maxRetailPrice: Number(row["prices.maxRetailPrice"]),
+        maxPromoPrice: Number(row["prices.maxPromoPrice"]),
+        medianRetailPrice: Number(row["prices.medianRetailPrice"]),
+        medianPromoPrice: Number(row["prices.medianPromoPrice"]),
         averageDiscountPercentage: Number(
-          row["prices.averageDiscountPercentage"] || 0
+          row["prices.averageDiscountPercentage"]
         ),
       };
     });
-  }, [resultSet]);
+  }, [resultSet, globalFilters.granularity]);
 
   // Helper functions for formatting
   const formatCurrency = (value: number) => `${value.toFixed(2)} лв`;
@@ -256,7 +260,6 @@ export function StatsCardsTable({ globalFilters }: StatsCardsProps) {
       </Card>
     );
   }
-
 
   return (
     <Card>

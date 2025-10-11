@@ -1,18 +1,31 @@
 /**
  * Simple Trend Chart
- * 
+ *
  * A simplified version that doesn't include filtered dimensions in the query,
  * which should provide cleaner trend lines when filters are applied.
  */
 
-import { useMemo, useState, useEffect } from 'react';
-import { GlobalFilters, buildFilters, buildTimeDimensions } from '@/utils/cube/filterUtils';
-import { useStableQuery } from '@/hooks/useStableQuery';
-import { ChartWrapper } from './ChartWrapper';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { useMemo, useState, useEffect } from "react";
+import {
+  GlobalFilters,
+  buildFilters,
+  buildTimeDimensions,
+} from "@/utils/cube/filterUtils";
+import { useStableQuery } from "@/hooks/useStableQuery";
+import { ChartWrapper } from "./ChartWrapper";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 interface SimpleTrendChartProps {
   globalFilters: GlobalFilters;
@@ -26,25 +39,32 @@ interface ChartDataPoint {
 
 export function SimpleTrendChart({ globalFilters }: SimpleTrendChartProps) {
   const [showDebugInfo, setShowDebugInfo] = useState(false);
-  
+
   // Build a simple query without filtered dimensions
-  const query = useMemo(() => ({
-    measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
-    timeDimensions: buildTimeDimensions(globalFilters.datePreset),
-    filters: buildFilters(globalFilters),
-    order: { "prices.price_date": "asc" as const },
-  }), [globalFilters]);
+  const query = useMemo(
+    () => ({
+      measures: ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+      timeDimensions: buildTimeDimensions(
+        globalFilters.datePreset,
+        globalFilters.granularity
+      ),
+      filters: buildFilters(globalFilters),
+      order: { "prices.price_date": "asc" as const },
+    }),
+    [globalFilters]
+  );
 
   const { resultSet, isLoading, error, progress } = useStableQuery(
     () => query,
     [
-      (globalFilters.retailers || []).join(','),
-      (globalFilters.settlements || []).join(','),
-      (globalFilters.municipalities || []).join(','),
-      (globalFilters.categories || []).join(','),
-      globalFilters.datePreset || "last7days",
+      (globalFilters.retailers || []).join(","),
+      (globalFilters.settlements || []).join(","),
+      (globalFilters.municipalities || []).join(","),
+      (globalFilters.categories || []).join(","),
+      globalFilters.datePreset ?? "last7days",
+      globalFilters.granularity ?? "day",
     ],
-    'simple-trend-chart'
+    "simple-trend-chart"
   );
 
   // Keep track of the last valid data to prevent showing empty charts
@@ -53,16 +73,20 @@ export function SimpleTrendChart({ globalFilters }: SimpleTrendChartProps) {
 
   const chartData = useMemo(() => {
     if (!resultSet) return null;
-    
+
     const pivot = resultSet.tablePivot();
     if (!pivot || pivot.length === 0) return null;
 
-    return pivot.map((row: any) => ({
-      date: row["prices.price_date.day"] || row["prices.price_date"],
-      retailPrice: Number(row["prices.averageRetailPrice"] || 0),
-      promoPrice: Number(row["prices.averagePromoPrice"] || 0),
-    }));
-  }, [resultSet]);
+    return pivot.map((row: any) => {
+      const granularity = globalFilters.granularity ?? "day";
+      const dateKey = `prices.price_date.${granularity}`;
+      return {
+        date: row[dateKey] || row["prices.price_date"],
+        retailPrice: Number(row["prices.averageRetailPrice"] || 0),
+        promoPrice: Number(row["prices.averagePromoPrice"] || 0),
+      };
+    });
+  }, [resultSet, globalFilters]);
 
   // Update last valid data when we get new data
   useEffect(() => {
@@ -79,9 +103,9 @@ export function SimpleTrendChart({ globalFilters }: SimpleTrendChartProps) {
   const formatDate = (dateStr: string) => {
     try {
       const date = new Date(dateStr);
-      return date.toLocaleDateString("en-US", { 
-        month: "short", 
-        day: "numeric" 
+      return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
       });
     } catch {
       return dateStr;
@@ -98,33 +122,32 @@ export function SimpleTrendChart({ globalFilters }: SimpleTrendChartProps) {
         progress={progress}
       >
         <div className="mb-4 flex gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => setShowDebugInfo(!showDebugInfo)}
           >
-            {showDebugInfo ? 'Hide' : 'Show'} Debug Info
+            {showDebugInfo ? "Hide" : "Show"} Debug Info
           </Button>
           {displayData && (
-            <Badge variant="secondary">
-              {displayData.length} data points
-            </Badge>
+            <Badge variant="secondary">{displayData.length} data points</Badge>
           )}
-          <Badge variant="outline">
-            No dimensions - clean aggregation
-          </Badge>
+          <Badge variant="outline">No dimensions - clean aggregation</Badge>
         </div>
 
         {displayData && displayData.length > 0 ? (
           <ResponsiveContainer width="100%" height={400}>
-            <LineChart data={displayData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+            <LineChart
+              data={displayData}
+              margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+            >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" tickFormatter={formatDate} />
               <YAxis tickFormatter={(value) => `${value.toFixed(2)} лв`} />
               <Tooltip
                 formatter={(value: number, name: string) => [
                   `${Number(value).toFixed(2)} лв`,
-                  name === "retailPrice" ? "Retail Price" : "Promo Price"
+                  name === "retailPrice" ? "Retail Price" : "Promo Price",
                 ]}
                 labelFormatter={(date) => formatDate(date)}
                 labelStyle={{ color: "#000" }}
@@ -170,36 +193,46 @@ export function SimpleTrendChart({ globalFilters }: SimpleTrendChartProps) {
                   {JSON.stringify(query, null, 2)}
                 </pre>
                 <div className="mt-2 p-2 bg-blue-50 rounded text-sm">
-                  <strong>Note:</strong> This query has no dimensions, so it aggregates all filtered data into single values per time period.
-                  This should produce clean trend lines without the complexity of multiple dimension groupings.
+                  <strong>Note:</strong> This query has no dimensions, so it
+                  aggregates all filtered data into single values per time
+                  period. This should produce clean trend lines without the
+                  complexity of multiple dimension groupings.
                 </div>
               </div>
 
               {/* Raw Data Preview */}
               {resultSet && (
                 <div>
-                  <h4 className="font-semibold mb-2">Raw Data (first 10 rows):</h4>
+                  <h4 className="font-semibold mb-2">
+                    Raw Data (first 10 rows):
+                  </h4>
                   <div className="bg-muted p-3 rounded text-sm overflow-auto">
                     <table className="w-full text-xs">
                       <thead>
                         <tr className="border-b">
                           {resultSet.tableColumns().map((column: any) => (
-                            <th key={column.key} className="text-left p-1 font-semibold">
+                            <th
+                              key={column.key}
+                              className="text-left p-1 font-semibold"
+                            >
                               {column.title}
                             </th>
                           ))}
                         </tr>
                       </thead>
                       <tbody>
-                        {resultSet.tablePivot().slice(0, 10).map((row: any, index: number) => (
-                          <tr key={index} className="border-b">
-                            {resultSet.tableColumns().map((column: any) => (
-                              <td key={column.key} className="p-1">
-                                {row[column.key]}
-                              </td>
-                            ))}
-                          </tr>
-                        ))}
+                        {resultSet
+                          .tablePivot()
+                          .slice(0, 10)
+                          .map((row: any, index: number) => (
+                            <tr key={index} className="border-b">
+                              {resultSet.tableColumns().map((column: any) => (
+                                <td key={column.key} className="p-1">
+                                  {row[column.key]}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
                       </tbody>
                     </table>
                   </div>
@@ -209,22 +242,32 @@ export function SimpleTrendChart({ globalFilters }: SimpleTrendChartProps) {
               {/* Processed Chart Data */}
               {displayData && (
                 <div>
-                  <h4 className="font-semibold mb-2">Processed Chart Data (first 10 points):</h4>
+                  <h4 className="font-semibold mb-2">
+                    Processed Chart Data (first 10 points):
+                  </h4>
                   <div className="bg-muted p-3 rounded text-sm overflow-auto">
                     <table className="w-full text-xs">
                       <thead>
                         <tr className="border-b">
                           <th className="text-left p-1 font-semibold">Date</th>
-                          <th className="text-left p-1 font-semibold">Retail Price</th>
-                          <th className="text-left p-1 font-semibold">Promo Price</th>
+                          <th className="text-left p-1 font-semibold">
+                            Retail Price
+                          </th>
+                          <th className="text-left p-1 font-semibold">
+                            Promo Price
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
                         {displayData.slice(0, 10).map((point, index) => (
                           <tr key={index} className="border-b">
                             <td className="p-1">{point.date}</td>
-                            <td className="p-1">{point.retailPrice.toFixed(2)} лв</td>
-                            <td className="p-1">{point.promoPrice.toFixed(2)} лв</td>
+                            <td className="p-1">
+                              {point.retailPrice.toFixed(2)} лв
+                            </td>
+                            <td className="p-1">
+                              {point.promoPrice.toFixed(2)} лв
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -238,23 +281,31 @@ export function SimpleTrendChart({ globalFilters }: SimpleTrendChartProps) {
                 <h4 className="font-semibold mb-2">Active Filters:</h4>
                 <div className="flex flex-wrap gap-2">
                   <Badge variant="outline">
-                    Retailers: {globalFilters.retailers.length || 'All'} 
-                    {globalFilters.retailers.length > 0 && ` (${globalFilters.retailers.join(', ')})`}
+                    Retailers: {globalFilters.retailers.length || "All"}
+                    {globalFilters.retailers.length > 0 &&
+                      ` (${globalFilters.retailers.join(", ")})`}
                   </Badge>
                   <Badge variant="outline">
-                    Settlements: {globalFilters.settlements.length || 'All'}
-                    {globalFilters.settlements.length > 0 && ` (${globalFilters.settlements.join(', ')})`}
+                    Settlements: {globalFilters.settlements.length || "All"}
+                    {globalFilters.settlements.length > 0 &&
+                      ` (${globalFilters.settlements.join(", ")})`}
                   </Badge>
                   <Badge variant="outline">
-                    Municipalities: {globalFilters.municipalities.length || 'All'}
-                    {globalFilters.municipalities.length > 0 && ` (${globalFilters.municipalities.join(', ')})`}
+                    Municipalities:{" "}
+                    {globalFilters.municipalities.length || "All"}
+                    {globalFilters.municipalities.length > 0 &&
+                      ` (${globalFilters.municipalities.join(", ")})`}
                   </Badge>
                   <Badge variant="outline">
-                    Categories: {globalFilters.categories.length || 'All'}
-                    {globalFilters.categories.length > 0 && ` (${globalFilters.categories.join(', ')})`}
+                    Categories: {globalFilters.categories.length || "All"}
+                    {globalFilters.categories.length > 0 &&
+                      ` (${globalFilters.categories.join(", ")})`}
                   </Badge>
                   <Badge variant="outline">
-                    Date: {globalFilters.dateRange ? globalFilters.dateRange.join(' to ') : 'Last 30 days'}
+                    Date:{" "}
+                    {globalFilters.dateRange
+                      ? globalFilters.dateRange.join(" to ")
+                      : "Last 30 days"}
                   </Badge>
                 </div>
               </div>

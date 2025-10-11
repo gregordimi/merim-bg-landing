@@ -117,14 +117,14 @@ export function StatsCards({ globalFilters }: StatsCardsProps) {
         "prices.averageDiscountPercentage",
       ],
       filters: buildFilters(globalFilters),
-      timeDimensions: buildTimeDimensions(globalFilters.datePreset),
+      timeDimensions: buildTimeDimensions(globalFilters.dateConfig),
     }),
     [
       (globalFilters.retailers || []).join(","),
       (globalFilters.settlements || []).join(","),
       (globalFilters.municipalities || []).join(","),
       (globalFilters.categories || []).join(","),
-      globalFilters.datePreset || "last7days",
+      globalFilters.dateConfig || "last7days",
     ],
     "stats-cards"
   );

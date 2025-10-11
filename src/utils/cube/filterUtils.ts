@@ -5,7 +5,7 @@
  * optimized Cube.js queries based on a global filter state.
  */
 
-import { Query } from '@cubejs-client/core';
+import { Query } from "@cubejs-client/core";
 
 // =================================================================
 // CORE TYPES
@@ -14,18 +14,28 @@ import { Query } from '@cubejs-client/core';
 /**
  * Defines the available preset options for the date range selector.
  */
-export type DateRangePreset = 'today' | 'last3days' | 'last7days' | 'last30days' | 'last3months';
+export type DateRangePreset =
+  | "today"
+  | "last3days"
+  | "last7days"
+  | "last30days"
+  | "last3months";
 
 /**
  * Maps DateRangePreset values to Cube.js relative date strings.
  */
 export const DATE_PRESET_TO_CUBE_STRING: Record<DateRangePreset, string> = {
-  today: 'today',
-  last3days: 'last 3 days',
-  last7days: 'last 7 days',
-  last30days: 'last 30 days',
-  last3months: 'last 3 months',
+  today: "today",
+  last3days: "last 3 days",
+  last7days: "last 7 days",
+  last30days: "last 30 days",
+  last3months: "last 3 months",
 };
+
+/**
+ * Defines the available granularity options for time dimensions.
+ */
+export type TimeGranularity = "day" | "week" | "month";
 
 /**
  * Represents the global filter state used throughout the application.
@@ -36,10 +46,8 @@ export interface GlobalFilters {
   settlements?: string[];
   municipalities?: string[];
   categories?: string[];
-  /** A tuple representing [startDate, endDate] in 'YYYY-MM-DD' format. */
-  dateRange?: [string, string];
-  /** The name of the selected date preset, which controls the dateRange. */
   datePreset?: DateRangePreset;
+  granularity?: TimeGranularity;
 }
 
 /**
@@ -66,32 +74,32 @@ export function buildFilters(globalFilters: GlobalFilters) {
 
   if ((globalFilters.retailers ?? []).length > 0) {
     filters.push({
-      member: 'prices.retailer_name',
-      operator: 'equals' as const,
+      member: "prices.retailer_name",
+      operator: "equals" as const,
       values: globalFilters.retailers!,
     });
   }
 
   if ((globalFilters.settlements ?? []).length > 0) {
     filters.push({
-      member: 'prices.settlement_name',
-      operator: 'equals' as const,
+      member: "prices.settlement_name",
+      operator: "equals" as const,
       values: globalFilters.settlements!,
     });
   }
 
   if ((globalFilters.municipalities ?? []).length > 0) {
     filters.push({
-      member: 'prices.municipality_name',
-      operator: 'equals' as const,
+      member: "prices.municipality_name",
+      operator: "equals" as const,
       values: globalFilters.municipalities!,
     });
   }
 
   if ((globalFilters.categories ?? []).length > 0) {
     filters.push({
-      member: 'prices.category_group_name',
-      operator: 'equals' as const,
+      member: "prices.category_group_name",
+      operator: "equals" as const,
       values: globalFilters.categories!,
     });
   }
@@ -101,17 +109,19 @@ export function buildFilters(globalFilters: GlobalFilters) {
 
 /**
  * Builds the timeDimensions part of a Cube.js query.
- * @param datePreset The date preset to convert to a Cube.js relative date string.
+ * @param preset The date preset to use.
+ * @param granularity The time granularity for aggregation.
  * @returns A configured timeDimensions array.
  */
-export function buildTimeDimensions(datePreset?: DateRangePreset) {
-  const dateRange = datePreset ? DATE_PRESET_TO_CUBE_STRING[datePreset] : 'last 7 days';
-  
+export function buildTimeDimensions(
+  preset: DateRangePreset = "last7days",
+  granularity: TimeGranularity = "day"
+) {
   return [
     {
-      dimension: 'prices.price_date',
-      granularity: 'day' as const,
-      dateRange: dateRange,
+      dimension: "prices.price_date",
+      granularity: granularity,
+      dateRange: DATE_PRESET_TO_CUBE_STRING[preset],
     },
   ];
 }
@@ -125,10 +135,14 @@ export function buildTimeDimensions(datePreset?: DateRangePreset) {
 export function buildDimensions(globalFilters: GlobalFilters): string[] {
   const dimensions = [];
 
-  if ((globalFilters.retailers ?? []).length > 0) dimensions.push('prices.retailer_name');
-  if ((globalFilters.settlements ?? []).length > 0) dimensions.push('prices.settlement_name');
-  if ((globalFilters.municipalities ?? []).length > 0) dimensions.push('prices.municipality_name');
-  if ((globalFilters.categories ?? []).length > 0) dimensions.push('prices.category_group_name');
+  if ((globalFilters.retailers ?? []).length > 0)
+    dimensions.push("prices.retailer_name");
+  if ((globalFilters.settlements ?? []).length > 0)
+    dimensions.push("prices.settlement_name");
+  if ((globalFilters.municipalities ?? []).length > 0)
+    dimensions.push("prices.municipality_name");
+  if ((globalFilters.categories ?? []).length > 0)
+    dimensions.push("prices.category_group_name");
 
   return dimensions;
 }
@@ -147,15 +161,21 @@ export function buildOptimizedQuery(
   additionalDimensions: string[] = []
 ): Query {
   const filteredDimensions = buildDimensions(globalFilters);
-  const finalDimensions = new Set([...filteredDimensions, ...additionalDimensions]);
+  const finalDimensions = new Set([
+    ...filteredDimensions,
+    ...additionalDimensions,
+  ]);
 
   return {
     measures,
     dimensions: Array.from(finalDimensions),
-    timeDimensions: buildTimeDimensions(globalFilters.datePreset),
+    timeDimensions: buildTimeDimensions(
+      globalFilters.datePreset,
+      globalFilters.granularity
+    ),
     filters: buildFilters(globalFilters),
     order: {
-      'prices.price_date': 'asc' as const,
+      "prices.price_date": "asc" as const,
     },
   };
 }
@@ -169,15 +189,18 @@ export function buildOptimizedQuery(
  */
 export const QUERY_PATTERNS = {
   trendChart: (globalFilters: GlobalFilters) =>
-    buildOptimizedQuery(['prices.averageRetailPrice', 'prices.averagePromoPrice'], globalFilters),
+    buildOptimizedQuery(
+      ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+      globalFilters
+    ),
 
   retailerChart: (globalFilters: GlobalFilters) =>
     buildOptimizedQuery(
-      ['prices.averageRetailPrice', 'prices.averagePromoPrice'],
+      ["prices.averageRetailPrice", "prices.averagePromoPrice"],
       globalFilters,
-      ['prices.retailer_name']
+      ["prices.retailer_name"]
     ),
-  
+
   // ... other chart patterns
 };
 
@@ -191,10 +214,22 @@ export const QUERY_PATTERNS = {
  */
 export const FILTER_VALUE_QUERIES = {
   direct: {
-    retailers: { dimensions: ['stores.retailer_name'], order: { 'stores.retailer_name': 'asc' } },
-    settlements: { dimensions: ['stores.settlement_name'], order: { 'stores.settlement_name': 'asc' } },
-    municipalities: { dimensions: ['stores.municipality_name'], order: { 'stores.municipality_name': 'asc' } },
-    categories: { dimensions: ['store_categories.name'], order: { 'store_categories.name': 'asc' } },
+    retailers: {
+      dimensions: ["stores.retailer_name"],
+      order: { "stores.retailer_name": "asc" },
+    },
+    settlements: {
+      dimensions: ["stores.settlement_name"],
+      order: { "stores.settlement_name": "asc" },
+    },
+    municipalities: {
+      dimensions: ["stores.municipality_name"],
+      order: { "stores.municipality_name": "asc" },
+    },
+    categories: {
+      dimensions: ["store_categories.name"],
+      order: { "store_categories.name": "asc" },
+    },
   },
 };
 
@@ -204,11 +239,16 @@ export const FILTER_VALUE_QUERIES = {
  * @param dimension The dimension name to extract values from.
  * @returns A sorted array of unique strings.
  */
-export function extractFilterValues(resultSet: CubeResultSet | undefined, dimension: string): string[] {
+export function extractFilterValues(
+  resultSet: CubeResultSet | undefined,
+  dimension: string
+): string[] {
   if (!resultSet) return [];
 
   const pivot = resultSet.tablePivot();
-  const values = new Set(pivot.map((row: CubeRow) => row[dimension] as string).filter(Boolean));
+  const values = new Set(
+    pivot.map((row: CubeRow) => row[dimension] as string).filter(Boolean)
+  );
 
   return Array.from(values).sort();
 }

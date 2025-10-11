@@ -1,8 +1,17 @@
-import { useMemo, useState, useEffect } from 'react';
-import { GlobalFilters, buildOptimizedQuery } from '@/utils/cube/filterUtils';
-import { useStableQuery } from '@/hooks/useStableQuery';
-import { ChartWrapper } from './ChartWrapper';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { useMemo, useState, useEffect } from "react";
+import { GlobalFilters, buildOptimizedQuery } from "@/utils/cube/filterUtils";
+import { useStableQuery } from "@/hooks/useStableQuery";
+import { ChartWrapper } from "./ChartWrapper";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 interface CategoryChartProps {
   globalFilters: GlobalFilters;
@@ -24,7 +33,7 @@ export function CategoryChart({ globalFilters }: CategoryChartProps) {
         globalFilters,
         [] // Don't pass additional dimensions here
       );
-      
+
       // Force include category dimension for this chart
       if (!query.dimensions) {
         query.dimensions = [];
@@ -32,17 +41,17 @@ export function CategoryChart({ globalFilters }: CategoryChartProps) {
       if (!query.dimensions.includes("prices.category_group_name")) {
         query.dimensions.push("prices.category_group_name");
       }
-      
+
       return query;
     },
     [
-      (globalFilters.retailers || []).join(','),
-      (globalFilters.settlements || []).join(','),
-      (globalFilters.municipalities || []).join(','),
-      (globalFilters.categories || []).join(','),
+      (globalFilters.retailers || []).join(","),
+      (globalFilters.settlements || []).join(","),
+      (globalFilters.municipalities || []).join(","),
+      (globalFilters.categories || []).join(","),
       globalFilters.datePreset || "last7days",
     ],
-    'category-chart'
+    "category-chart"
   );
 
   // Keep track of the last valid data to prevent showing empty charts
@@ -56,20 +65,27 @@ export function CategoryChart({ globalFilters }: CategoryChartProps) {
     if (!pivot || pivot.length === 0) return null;
 
     // Group by category to handle any potential duplicates
-    const categoryMap = new Map<string, { retailPrice: number; promoPrice: number; count: number }>();
-    
+    const categoryMap = new Map<
+      string,
+      { retailPrice: number; promoPrice: number; count: number }
+    >();
+
     pivot.forEach((row: any) => {
       const category = row["prices.category_group_name"];
       const retailPrice = Number(row["prices.averageRetailPrice"] || 0);
       const promoPrice = Number(row["prices.averagePromoPrice"] || 0);
-      
+
       if (!category) return; // Skip rows without category
-      
+
       if (categoryMap.has(category)) {
         // If duplicate, average the values
         const existing = categoryMap.get(category)!;
-        existing.retailPrice = (existing.retailPrice * existing.count + retailPrice) / (existing.count + 1);
-        existing.promoPrice = (existing.promoPrice * existing.count + promoPrice) / (existing.count + 1);
+        existing.retailPrice =
+          (existing.retailPrice * existing.count + retailPrice) /
+          (existing.count + 1);
+        existing.promoPrice =
+          (existing.promoPrice * existing.count + promoPrice) /
+          (existing.count + 1);
         existing.count += 1;
       } else {
         categoryMap.set(category, { retailPrice, promoPrice, count: 1 });
@@ -89,10 +105,10 @@ export function CategoryChart({ globalFilters }: CategoryChartProps) {
   // Update last valid data when we get new data
   useEffect(() => {
     if (chartData && chartData.length > 0 && !isLoading) {
-      console.log('CategoryChart: Updated chart data', {
+      console.log("CategoryChart: Updated chart data", {
         dataLength: chartData.length,
-        categories: chartData.map(d => d.category),
-        sampleData: chartData.slice(0, 3)
+        categories: chartData.map((d) => d.category),
+        sampleData: chartData.slice(0, 3),
       });
       setLastValidData(chartData);
       setHasEverLoaded(true);
@@ -132,7 +148,8 @@ export function CategoryChart({ globalFilters }: CategoryChartProps) {
             <YAxis tickFormatter={(value) => `${value.toFixed(2)} лв`} />
             <Tooltip
               formatter={(value: number, name: string) => {
-                const label = name === "retailPrice" ? "Retail Price" : "Promo Price";
+                const label =
+                  name === "retailPrice" ? "Retail Price" : "Promo Price";
                 return [`${value.toFixed(2)} лв`, label];
               }}
               labelStyle={{ color: "#000" }}

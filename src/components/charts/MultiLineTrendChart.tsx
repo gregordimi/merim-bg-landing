@@ -40,7 +40,8 @@ export function MultiLineTrendChart({ globalFilters }: MultiLineTrendChartProps)
       (globalFilters.settlements || []).join(','),
       (globalFilters.municipalities || []).join(','),
       (globalFilters.categories || []).join(','),
-      globalFilters.datePreset || "last7days",
+      globalFilters.datePreset ?? "last7days",
+      globalFilters.granularity ?? "day",
     ],
     'multi-line-trend-chart'
   );
@@ -75,7 +76,9 @@ export function MultiLineTrendChart({ globalFilters }: MultiLineTrendChartProps)
     const dimValues = new Set();
 
     pivot.forEach((row: any) => {
-      const date = row["prices.price_date.day"] || row["prices.price_date"];
+      const granularity = globalFilters.granularity ?? "day";
+      const dateKey = `prices.price_date.${granularity}`;
+      const date = row[dateKey] || row["prices.price_date"];
       const dimensionValue = row[dimKey];
       const retailPrice = Number(row["prices.averageRetailPrice"] || 0);
       const promoPrice = Number(row["prices.averagePromoPrice"] || 0);
@@ -101,7 +104,7 @@ export function MultiLineTrendChart({ globalFilters }: MultiLineTrendChartProps)
       dimensionValues: Array.from(dimValues) as string[],
       dimensionKey: dimKey,
     };
-  }, [resultSet]);
+  }, [resultSet, globalFilters.granularity]);
 
   // Update last valid data when we get new data
   useEffect(() => {

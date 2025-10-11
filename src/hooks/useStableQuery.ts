@@ -7,7 +7,7 @@ let queryBuildCount = 0;
 
 export function useStableQuery(queryBuilder: () => any, dependencies: any[], componentId?: string) {
   // Create a single stable string from all dependencies, including component ID to prevent cache collisions
-  const stableKey = `${componentId || 'unknown'}:${dependencies.join('|')}`;
+  const stableKey = `${componentId || 'unknown'}:${dependencies.map(d => d ?? 'null').join('|')}`;
   
   // Only rebuild query when the stable key actually changes
   const query = useMemo(() => {

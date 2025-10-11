@@ -70,7 +70,9 @@ export function RetailerTrendChartDiscount({
 
     // Group data by date
     pivot.forEach((row: any) => {
-      const date = row["prices.price_date.day"] || row["prices.price_date"];
+      const granularity = globalFilters.granularity ?? "day";
+      const dateKey = `prices.price_date.${granularity}`;
+      const date = row[dateKey] || row["prices.price_date"];
       const retailer = row["prices.retailer_name"];
       const discount = Number(row["prices.averageDiscountPercentage"] || 0);
 
@@ -89,7 +91,7 @@ export function RetailerTrendChartDiscount({
     return Array.from(dataMap.values()).sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     );
-  }, [resultSet]);
+  }, [resultSet, globalFilters.granularity]);
 
   // Get unique retailers for line colors
   const retailers = useMemo(() => {

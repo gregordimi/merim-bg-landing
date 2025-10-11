@@ -11,7 +11,7 @@
 
 import { useState, useEffect } from "react";
 import { useCubeQuery } from "@cubejs-client/react";
-import { GlobalFilters, DateRangePreset } from "@/utils/cube/filterUtils";
+import { GlobalFilters, DateRangePreset, TimeGranularity } from "@/utils/cube/filterUtils";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,6 +39,7 @@ interface ExtendedFilters {
   municipalities: string[];
   categories: string[];
   datePreset: DateRangePreset;
+  granularity: TimeGranularity;
 }
 
 // Configuration for max selections per filter
@@ -60,6 +61,7 @@ export function FilterPanel({
     municipalities: globalFilters.municipalities || [],
     categories: globalFilters.categories || [],
     datePreset: globalFilters.datePreset || "last7days",
+    granularity: globalFilters.granularity || "day",
   });
 
   // Track if there are pending changes - normalize both objects for comparison
@@ -69,6 +71,7 @@ export function FilterPanel({
     municipalities: filters.municipalities || [],
     categories: filters.categories || [],
     datePreset: filters.datePreset || "last7days",
+    granularity: filters.granularity || "day",
   });
 
   const normalizedGlobalFilters = normalizeFilters(globalFilters);
@@ -83,6 +86,7 @@ export function FilterPanel({
       municipalities: globalFilters.municipalities || [],
       categories: globalFilters.categories || [],
       datePreset: globalFilters.datePreset || "last7days",
+      granularity: globalFilters.granularity || "day",
     });
   }, [globalFilters]);
 
@@ -173,16 +177,23 @@ export function FilterPanel({
     setPendingFilters({ ...pendingFilters, datePreset: preset });
   };
 
+  // --- Granularity Handler ---
+  const handleGranularityChange = (granularity: TimeGranularity) => {
+    setPendingFilters({ ...pendingFilters, granularity });
+  };
+
   // --- Action Handlers ---
   const handleApplyFilters = () => {
-    const filtersToApply = {
+    const filtersToApply: GlobalFilters = {
       retailers: pendingFilters.retailers,
       settlements: pendingFilters.settlements,
       municipalities: pendingFilters.municipalities,
       categories: pendingFilters.categories,
       datePreset: pendingFilters.datePreset,
+      granularity: pendingFilters.granularity,
     };
 
+    console.log("🚀 FilterPanel applying filters:", filtersToApply);
     onFiltersChange(filtersToApply);
   };
 
@@ -193,6 +204,7 @@ export function FilterPanel({
       municipalities: globalFilters.municipalities || [],
       categories: globalFilters.categories || [],
       datePreset: globalFilters.datePreset || "last7days",
+      granularity: globalFilters.granularity || "day",
     });
   };
 
@@ -203,6 +215,7 @@ export function FilterPanel({
       municipalities: [],
       categories: [],
       datePreset: "last7days", // Reset to default, not last30days
+      granularity: "day", // Reset to default
     };
     setPendingFilters(clearedFilters);
   };
@@ -214,6 +227,7 @@ export function FilterPanel({
       municipalities: [],
       categories: [],
       datePreset: pendingFilters.datePreset,
+      granularity: pendingFilters.granularity,
     });
   };
 
@@ -232,7 +246,7 @@ export function FilterPanel({
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Filter Selectors Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
           {/* Retailers - Dialog */}
           <div className="space-y-2">
             <Label>Retailers</Label>
@@ -341,6 +355,26 @@ export function FilterPanel({
               </SelectContent>
             </Select>
           </div>
+
+          {/* Granularity - Dropdown */}
+          <div className="space-y-2">
+            <Label>Granularity</Label>
+            <Select
+              value={pendingFilters.granularity}
+              onValueChange={(value: TimeGranularity) =>
+                handleGranularityChange(value)
+              }
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select granularity" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="day">Day</SelectItem>
+                <SelectItem value="week">Week</SelectItem>
+                <SelectItem value="month">Month</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {/* Action Buttons */}
@@ -400,6 +434,9 @@ export function FilterPanel({
             </Badge>
             <Badge variant="secondary">
               Date: {globalFilters.datePreset || "last7days"}
+            </Badge>
+            <Badge variant="secondary">
+              Granularity: {globalFilters.granularity || "day"}
             </Badge>
           </div>
         </div>

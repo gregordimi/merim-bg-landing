@@ -25,7 +25,8 @@ export function CategoryTrendChart({ globalFilters }: CategoryTrendChartProps) {
       (globalFilters.settlements || []).join(','),
       (globalFilters.municipalities || []).join(','),
       (globalFilters.categories || []).join(','),
-      globalFilters.datePreset || "last7days",
+      globalFilters.datePreset ?? "last7days",
+      globalFilters.granularity ?? "day",
     ],
     'category-trend-chart'
   );
@@ -45,7 +46,9 @@ export function CategoryTrendChart({ globalFilters }: CategoryTrendChartProps) {
 
     // Group data by date
     pivot.forEach((row: any) => {
-      const date = row["prices.price_date.day"] || row["prices.price_date"];
+      const granularity = globalFilters.granularity ?? "day";
+      const dateKey = `prices.price_date.${granularity}`;
+      const date = row[dateKey] || row["prices.price_date"];
       const category = row["prices.category_group_name"];
       const price = Number(row["prices.averageRetailPrice"] || 0);
 
@@ -61,7 +64,7 @@ export function CategoryTrendChart({ globalFilters }: CategoryTrendChartProps) {
     return Array.from(dataMap.values()).sort((a, b) => 
       new Date(a.date).getTime() - new Date(b.date).getTime()
     );
-  }, [resultSet]);
+  }, [resultSet, globalFilters.granularity]);
 
   // Get unique categories for line colors
   const categories = useMemo(() => {

@@ -43,7 +43,9 @@ export function OptimizedTrendChart({
     const dataMap = new Map();
 
     pivot.forEach((row: any) => {
-      const date = row["prices.price_date.day"] || row["prices.price_date"];
+      const granularity = globalFilters.granularity ?? "day";
+      const dateKey = `prices.price_date.${granularity}`;
+      const date = row[dateKey] || row["prices.price_date"];
       const retailPrice = Number(row["prices.averageRetailPrice"] || 0);
       const promoPrice = Number(row["prices.averagePromoPrice"] || 0);
 
@@ -69,7 +71,7 @@ export function OptimizedTrendChart({
         promoPrice: item.count > 0 ? item.promoPrice / item.count : 0,
       }))
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  }, [resultSet]);
+  }, [resultSet, globalFilters.granularity]);
 
   if (error) {
     return (

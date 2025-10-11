@@ -1,6 +1,6 @@
 /**
  * Dashboard Sidebar Page
- * 
+ *
  * New dashboard layout with:
  * - Sidebar navigation for each chart
  * - Global filters at the top
@@ -17,7 +17,11 @@ import { extractHashConfig } from "@/utils/cube/config";
 import { GlobalFilters } from "@/utils/cube/filterUtils";
 import { FilterPanel } from "@/components/filters/FilterPanel";
 import { DebugProvider } from "@/contexts/DebugContext";
-import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import {
+  SidebarProvider,
+  SidebarInset,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar-dashboard";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -68,161 +72,163 @@ export interface ChartRoute {
 export const CHART_ROUTES: ChartRoute[] = [
   // Executive Overview
   {
-    id: 'stats',
-    name: 'Stats Cards',
-    description: 'Min and Max price statistics',
-    icon: 'LayoutDashboard',
-    category: 'Overview',
+    id: "stats",
+    name: "Stats Cards",
+    description: "Min and Max price statistics",
+    icon: "LayoutDashboard",
+    category: "Overview",
     component: StatsCards,
   },
   {
-    id: 'stats_table',
-    name: 'Stats Cards Table',
-    description: 'Full Stats',
-    icon: 'Table',
-    category: 'Overview',
+    id: "stats_table",
+    name: "Stats Cards Table",
+    description: "Full Stats",
+    icon: "Table",
+    category: "Overview",
     component: StatsCardsTable,
   },
   {
-    id: 'trend',
-    name: 'Price Trends',
-    description: 'Retail and promotional price trends over time',
-    icon: 'TrendingUp',
-    category: 'Overview',
+    id: "trend",
+    name: "Price Trends",
+    description: "Retail and promotional price trends over time",
+    icon: "TrendingUp",
+    category: "Overview",
     component: TrendChart,
   },
   {
-    id: 'trend-styled',
-    name: 'Styled Price Trends',
-    description: 'Modern styled price trends with gradients',
-    icon: 'LineChart',
-    category: 'Overview',
+    id: "trend-styled",
+    name: "Styled Price Trends",
+    description: "Modern styled price trends with gradients",
+    icon: "LineChart",
+    category: "Overview",
     component: StyledTrendChart,
   },
   {
-    id: 'trend-optimized',
-    name: 'Optimized Trends',
-    description: 'Fast price trends using pre-aggregations',
-    icon: 'Zap',
-    category: 'Overview',
+    id: "trend-optimized",
+    name: "Optimized Trends",
+    description: "Fast price trends using pre-aggregations",
+    icon: "Zap",
+    category: "Overview",
     component: OptimizedTrendChart,
   },
   {
-    id: 'trend-simple',
-    name: 'Simple Trends',
-    description: 'Clean trend lines showing overall averages',
-    icon: 'Activity',
-    category: 'Overview',
+    id: "trend-simple",
+    name: "Simple Trends",
+    description: "Clean trend lines showing overall averages",
+    icon: "Activity",
+    category: "Overview",
     component: SimpleTrendChart,
   },
   {
-    id: 'category',
-    name: 'Category Comparison',
-    description: 'Price comparison across product categories',
-    icon: 'BarChart3',
-    category: 'Overview',
+    id: "category",
+    name: "Category Comparison",
+    description: "Price comparison across product categories",
+    icon: "BarChart3",
+    category: "Overview",
     component: CategoryChart,
   },
   {
-    id: 'pie-chart',
-    name: 'Category Distribution',
-    description: 'Pie chart showing category price distribution',
-    icon: 'PieChart',
-    category: 'Overview',
+    id: "pie-chart",
+    name: "Category Distribution",
+    description: "Pie chart showing category price distribution",
+    icon: "PieChart",
+    category: "Overview",
     component: PieChartComponent,
   },
-  
+
   // Competitor Analysis
   {
-    id: 'retailer-trend-price',
-    name: 'Retailer Price Trends',
-    description: 'Compare how different retailers\' prices change over time',
-    icon: 'Users',
-    category: 'Competitor',
+    id: "retailer-trend-price",
+    name: "Retailer Price Trends",
+    description: "Compare how different retailers' prices change over time",
+    icon: "Users",
+    category: "Competitor",
     component: RetailerTrendChartPrice,
   },
   {
-    id: 'retailer-trend-promo',
-    name: 'Retailer Promo Trends',
-    description: 'Compare how different retailers\' promo prices change over time',
-    icon: 'Tag',
-    category: 'Competitor',
+    id: "retailer-trend-promo",
+    name: "Retailer Promo Trends",
+    description:
+      "Compare how different retailers' promo prices change over time",
+    icon: "Tag",
+    category: "Competitor",
     component: RetailerTrendChartPromo,
   },
   {
-    id: 'retailer-trend-discount',
-    name: 'Retailer Discount Trends',
-    description: 'Compare how discount rates change over time by retailer',
-    icon: 'Percent',
-    category: 'Competitor',
+    id: "retailer-trend-discount",
+    name: "Retailer Discount Trends",
+    description: "Compare how discount rates change over time by retailer",
+    icon: "Percent",
+    category: "Competitor",
     component: RetailerTrendChartDiscount,
   },
   {
-    id: 'retailer-price',
-    name: 'Retailer Price Comparison',
-    description: 'Compare retail vs promotional prices across retailers',
-    icon: 'Scale',
-    category: 'Competitor',
+    id: "retailer-price",
+    name: "Retailer Price Comparison",
+    description: "Compare retail vs promotional prices across retailers",
+    icon: "Scale",
+    category: "Competitor",
     component: RetailerPriceChart,
   },
   {
-    id: 'discount',
-    name: 'Discount Rates',
-    description: 'Discount percentage analysis across retailers',
-    icon: 'BadgePercent',
-    category: 'Competitor',
+    id: "discount",
+    name: "Discount Rates",
+    description: "Discount percentage analysis across retailers",
+    icon: "BadgePercent",
+    category: "Competitor",
     component: DiscountChart,
   },
   {
-    id: 'radar-chart',
-    name: 'Retailer Performance Radar',
-    description: 'Multi-dimensional view of retailer metrics',
-    icon: 'Radar',
-    category: 'Competitor',
+    id: "radar-chart",
+    name: "Retailer Performance Radar",
+    description: "Multi-dimensional view of retailer metrics",
+    icon: "Radar",
+    category: "Competitor",
     component: RadarChartComponent,
   },
-  
+
   // Category Deep Dive
   {
-    id: 'category-trend',
-    name: 'Category Price Trends',
-    description: 'Track how prices change across different product categories over time',
-    icon: 'TrendingUp',
-    category: 'Category',
+    id: "category-trend",
+    name: "Category Price Trends",
+    description:
+      "Track how prices change across different product categories over time",
+    icon: "TrendingUp",
+    category: "Category",
     component: CategoryTrendChart,
   },
   {
-    id: 'category-range',
-    name: 'Category Price Range',
-    description: 'Min, average, and max prices for each category',
-    icon: 'CandlestickChart',
-    category: 'Category',
+    id: "category-range",
+    name: "Category Price Range",
+    description: "Min, average, and max prices for each category",
+    icon: "CandlestickChart",
+    category: "Category",
     component: CategoryRangeChart,
   },
-  
+
   // Geographical Insights
   {
-    id: 'regional',
-    name: 'Regional Trends',
-    description: 'Municipality price trends over time',
-    icon: 'Map',
-    category: 'Geographical',
+    id: "regional",
+    name: "Regional Trends",
+    description: "Municipality price trends over time",
+    icon: "Map",
+    category: "Geographical",
     component: RegionalTrendChart,
   },
   {
-    id: 'settlement-horizontal',
-    name: 'Settlement Comparison',
-    description: 'Top 20 settlements with horizontal bars',
-    icon: 'MapPin',
-    category: 'Geographical',
+    id: "settlement-horizontal",
+    name: "Settlement Comparison",
+    description: "Top 20 settlements with horizontal bars",
+    icon: "MapPin",
+    category: "Geographical",
     component: SettlementHorizontalChart,
   },
   {
-    id: 'municipality-horizontal',
-    name: 'Municipality Comparison',
-    description: 'Top 15 municipalities with horizontal bars',
-    icon: 'Building2',
-    category: 'Geographical',
+    id: "municipality-horizontal",
+    name: "Municipality Comparison",
+    description: "Top 15 municipalities with horizontal bars",
+    icon: "Building2",
+    category: "Geographical",
     component: MunicipalityHorizontalChart,
   },
 ];
@@ -230,7 +236,7 @@ export const CHART_ROUTES: ChartRoute[] = [
 export default function DashboardSidebarPage() {
   const { chartId } = useParams<{ chartId?: string }>();
   const navigate = useNavigate();
-  
+
   const { apiUrl, apiToken, useWebSockets } = extractHashConfig<AppConfig>({
     apiUrl: import.meta.env.VITE_CUBE_API_URL || "",
     apiToken: import.meta.env.VITE_CUBE_API_TOKEN || "",
@@ -242,37 +248,43 @@ export default function DashboardSidebarPage() {
     settlements: [],
     municipalities: [],
     categories: [],
-    datePreset: 'last7days', // Use datePreset instead of dateRange
+    datePreset: "last7days",
+    granularity: "day",
   });
 
   // CRITICAL: Memoize the filters object to prevent unnecessary re-renders
-  const stableFilters = useMemo(() => ({
-    retailers: globalFilters.retailers,
-    settlements: globalFilters.settlements,
-    municipalities: globalFilters.municipalities,
-    categories: globalFilters.categories,
-    datePreset: globalFilters.datePreset,
-  }), [
-    globalFilters.retailers.join(','),
-    globalFilters.settlements.join(','),
-    globalFilters.municipalities.join(','),
-    globalFilters.categories.join(','),
-    globalFilters.datePreset,
-  ]);
+  const stableFilters = useMemo(
+    () => ({
+      retailers: globalFilters.retailers,
+      settlements: globalFilters.settlements,
+      municipalities: globalFilters.municipalities,
+      categories: globalFilters.categories,
+      datePreset: globalFilters.datePreset,
+      granularity: globalFilters.granularity,
+    }),
+    [
+      globalFilters.retailers?.join(","),
+      globalFilters.settlements?.join(","),
+      globalFilters.municipalities?.join(","),
+      globalFilters.categories?.join(","),
+      globalFilters.datePreset,
+      globalFilters.granularity,
+    ]
+  );
 
   const cubeApi = useMemo(() => {
     let transport = undefined;
     if (useWebSockets) {
       transport = new WebSocketTransport({ authorization: apiToken, apiUrl });
     }
-    return cube(apiToken, { 
-      apiUrl, 
+    return cube(apiToken, {
+      apiUrl,
       transport,
     });
   }, [apiToken, apiUrl, useWebSockets]);
 
   // Find current chart
-  const currentChart = CHART_ROUTES.find(chart => chart.id === chartId);
+  const currentChart = CHART_ROUTES.find((chart) => chart.id === chartId);
   const CurrentChartComponent = currentChart?.component;
 
   // Default to first chart if none selected - use useEffect to avoid render-time navigation
@@ -286,7 +298,7 @@ export default function DashboardSidebarPage() {
     <DebugProvider>
       <CubeProvider cubeApi={cubeApi}>
         <SidebarProvider>
-          <AppSidebar charts={CHART_ROUTES} currentChartId={chartId || ''} />
+          <AppSidebar charts={CHART_ROUTES} currentChartId={chartId || ""} />
           <SidebarInset>
             <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b bg-background px-4">
               <SidebarTrigger className="-ml-1" />
@@ -300,7 +312,9 @@ export default function DashboardSidebarPage() {
                   </BreadcrumbItem>
                   <BreadcrumbSeparator className="hidden md:block" />
                   <BreadcrumbItem>
-                    <BreadcrumbPage>{currentChart?.name || 'Chart'}</BreadcrumbPage>
+                    <BreadcrumbPage>
+                      {currentChart?.name || "Chart"}
+                    </BreadcrumbPage>
                   </BreadcrumbItem>
                 </BreadcrumbList>
               </Breadcrumb>
