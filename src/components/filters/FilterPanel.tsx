@@ -202,7 +202,7 @@ export function FilterPanel({
       settlements: [],
       municipalities: [],
       categories: [],
-      datePreset: "last30days",
+      datePreset: "last7days", // Reset to default, not last30days
     };
     setPendingFilters(clearedFilters);
   };

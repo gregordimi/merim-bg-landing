@@ -17,7 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { extractHashConfig } from "@/utils/cube/config";
 import { GlobalFilters, buildOptimizedQuery, QUERY_PATTERNS } from "@/utils/cube/filterUtils";
 import { DebugNavigation } from "@/components/debug/DebugNavigation";
-import { FilterDropdowns } from "@/components/filters/FilterDropdowns";
+import { FilterPanel } from "@/components/filters/FilterPanel";
 
 // Import all chart components
 import { StatsCards } from "@/components/charts/StatsCards";
@@ -267,7 +267,7 @@ export default function ChartListPage() {
 
           {/* Global Filters */}
           <div className="mb-8">
-            <FilterDropdowns 
+            <FilterPanel 
               globalFilters={globalFilters}
               onFiltersChange={handleFiltersChange}
             />

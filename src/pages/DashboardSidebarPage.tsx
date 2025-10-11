@@ -15,7 +15,6 @@ import { CubeProvider } from "@cubejs-client/react";
 import WebSocketTransport from "@cubejs-client/ws-transport";
 import { extractHashConfig } from "@/utils/cube/config";
 import { GlobalFilters } from "@/utils/cube/filterUtils";
-import { FilterDropdowns } from "@/components/filters/FilterDropdowns";
 import { FilterPanel } from "@/components/filters/FilterPanel";
 import { DebugProvider } from "@/contexts/DebugContext";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
