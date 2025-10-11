@@ -243,7 +243,7 @@ export default function DashboardSidebarPage() {
     settlements: [],
     municipalities: [],
     categories: [],
-    dateRange: ['last 7 days', 'last 7 days'] as [string, string], // Default to 7 days
+    datePreset: 'last7days', // Use datePreset instead of dateRange
   });
 
   // CRITICAL: Memoize the filters object to prevent unnecessary re-renders
@@ -252,13 +252,13 @@ export default function DashboardSidebarPage() {
     settlements: globalFilters.settlements,
     municipalities: globalFilters.municipalities,
     categories: globalFilters.categories,
-    dateRange: globalFilters.dateRange,
+    datePreset: globalFilters.datePreset,
   }), [
     globalFilters.retailers.join(','),
     globalFilters.settlements.join(','),
     globalFilters.municipalities.join(','),
     globalFilters.categories.join(','),
-    (globalFilters.dateRange || []).join(','),
+    globalFilters.datePreset,
   ]);
 
   const cubeApi = useMemo(() => {

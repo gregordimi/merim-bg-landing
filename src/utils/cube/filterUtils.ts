@@ -17,6 +17,17 @@ import { Query } from '@cubejs-client/core';
 export type DateRangePreset = 'today' | 'last3days' | 'last7days' | 'last30days' | 'last3months';
 
 /**
+ * Maps DateRangePreset values to Cube.js relative date strings.
+ */
+export const DATE_PRESET_TO_CUBE_STRING: Record<DateRangePreset, string> = {
+  today: 'today',
+  last3days: 'last 3 days',
+  last7days: 'last 7 days',
+  last30days: 'last 30 days',
+  last3months: 'last 3 months',
+};
+
+/**
  * Represents the global filter state used throughout the application.
  * All properties are optional to allow for flexible initial states.
  */
@@ -57,7 +68,7 @@ export function buildFilters(globalFilters: GlobalFilters) {
     filters.push({
       member: 'prices.retailer_name',
       operator: 'equals' as const,
-      values: globalFilters.retailers,
+      values: globalFilters.retailers!,
     });
   }
 
@@ -65,7 +76,7 @@ export function buildFilters(globalFilters: GlobalFilters) {
     filters.push({
       member: 'prices.settlement_name',
       operator: 'equals' as const,
-      values: globalFilters.settlements,
+      values: globalFilters.settlements!,
     });
   }
 
@@ -73,7 +84,7 @@ export function buildFilters(globalFilters: GlobalFilters) {
     filters.push({
       member: 'prices.municipality_name',
       operator: 'equals' as const,
-      values: globalFilters.municipalities,
+      values: globalFilters.municipalities!,
     });
   }
 
@@ -81,7 +92,7 @@ export function buildFilters(globalFilters: GlobalFilters) {
     filters.push({
       member: 'prices.category_group_name',
       operator: 'equals' as const,
-      values: globalFilters.categories,
+      values: globalFilters.categories!,
     });
   }
 
@@ -90,15 +101,17 @@ export function buildFilters(globalFilters: GlobalFilters) {
 
 /**
  * Builds the timeDimensions part of a Cube.js query.
- * @param dateRange A date range tuple or a string literal (e.g., "Last 7 days").
+ * @param datePreset The date preset to convert to a Cube.js relative date string.
  * @returns A configured timeDimensions array.
  */
-export function buildTimeDimensions(dateRange?: [string, string] | string) {
+export function buildTimeDimensions(datePreset?: DateRangePreset) {
+  const dateRange = datePreset ? DATE_PRESET_TO_CUBE_STRING[datePreset] : 'last 30 days';
+  
   return [
     {
       dimension: 'prices.price_date',
       granularity: 'day' as const,
-      dateRange: dateRange, // Cube.js handles both array and string formats
+      dateRange: dateRange,
     },
   ];
 }
@@ -139,10 +152,10 @@ export function buildOptimizedQuery(
   return {
     measures,
     dimensions: Array.from(finalDimensions),
-    timeDimensions: buildTimeDimensions(globalFilters.dateRange),
+    timeDimensions: buildTimeDimensions(globalFilters.datePreset),
     filters: buildFilters(globalFilters),
     order: {
-      'prices.price_date': 'asc',
+      'prices.price_date': 'asc' as const,
     },
   };
 }

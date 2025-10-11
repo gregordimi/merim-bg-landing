@@ -1,27 +1,44 @@
 /**
  * Filter Panel Component - New version with confirmation
- * 
+ *
  * Features:
  * - Non-reactive: filters don't apply until user confirms
  * - Max selection limits to prevent overcrowded charts
  * - Default values support
  * - Visual indication of pending changes
+ * - Simple date preset handling: passes relative date strings directly to Cube.js
  */
 
-import { useState, useEffect } from 'react';
-import { useCubeQuery } from '@cubejs-client/react';
-import { GlobalFilters } from '@/utils/cube/filterUtils';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MultiSelect } from '@/components/ui/multi-select';
-import { FilterDialog } from '@/components/filters/FilterDialog';
-import { CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useCubeQuery } from "@cubejs-client/react";
+import { GlobalFilters, DateRangePreset } from "@/utils/cube/filterUtils";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MultiSelect } from "@/components/ui/multi-select";
+import { FilterDialog } from "@/components/filters/FilterDialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 
 interface FilterPanelProps {
   globalFilters: GlobalFilters;
   onFiltersChange: (filters: GlobalFilters) => void;
+}
+
+// Extended interface for internal state
+interface ExtendedFilters {
+  retailers: string[];
+  settlements: string[];
+  municipalities: string[];
+  categories: string[];
+  datePreset: DateRangePreset;
 }
 
 // Configuration for max selections per filter
@@ -32,60 +49,101 @@ const MAX_SELECTIONS = {
   categories: 6,
 } as const;
 
-export function FilterPanel({ globalFilters, onFiltersChange }: FilterPanelProps) {
+export function FilterPanel({
+  globalFilters,
+  onFiltersChange,
+}: FilterPanelProps) {
   // Pending filters (what user is currently selecting)
-  const [pendingFilters, setPendingFilters] = useState<GlobalFilters>(globalFilters);
-  
-  // Track if there are pending changes
-  const hasPendingChanges = JSON.stringify(pendingFilters) !== JSON.stringify(globalFilters);
+  const [pendingFilters, setPendingFilters] = useState<ExtendedFilters>({
+    retailers: globalFilters.retailers || [],
+    settlements: globalFilters.settlements || [],
+    municipalities: globalFilters.municipalities || [],
+    categories: globalFilters.categories || [],
+    datePreset: globalFilters.datePreset || "last7days",
+  });
+
+  // Track if there are pending changes - normalize both objects for comparison
+  const normalizeFilters = (filters: GlobalFilters): ExtendedFilters => ({
+    retailers: filters.retailers || [],
+    settlements: filters.settlements || [],
+    municipalities: filters.municipalities || [],
+    categories: filters.categories || [],
+    datePreset: filters.datePreset || "last7days",
+  });
+
+  const normalizedGlobalFilters = normalizeFilters(globalFilters);
+  const hasPendingChanges =
+    JSON.stringify(pendingFilters) !== JSON.stringify(normalizedGlobalFilters);
 
   // Sync pending filters when global filters change externally
   useEffect(() => {
-    setPendingFilters(globalFilters);
+    setPendingFilters({
+      retailers: globalFilters.retailers || [],
+      settlements: globalFilters.settlements || [],
+      municipalities: globalFilters.municipalities || [],
+      categories: globalFilters.categories || [],
+      datePreset: globalFilters.datePreset || "last7days",
+    });
   }, [globalFilters]);
 
   // --- Data Fetching for Filters ---
-  const { resultSet: retailersResult, isLoading: retailersLoading } = useCubeQuery({
-    dimensions: ['stores.retailer_name'],
-    order: { 'stores.retailer_name': 'asc' },
-  });
-  const { resultSet: settlementsResult, isLoading: settlementsLoading } = useCubeQuery({
-    dimensions: ['stores.settlement_name'],
-    order: { 'stores.settlement_name': 'asc' },
-  });
-  const { resultSet: municipalitiesResult, isLoading: municipalitiesLoading } = useCubeQuery({
-    dimensions: ['stores.municipality_name'],
-    order: { 'stores.municipality_name': 'asc' },
-  });
-  const { resultSet: categoriesResult, isLoading: categoriesLoading } = useCubeQuery({
-    dimensions: ['store_categories.name'],
-    order: { 'store_categories.name': 'asc' },
-  });
+  const { resultSet: retailersResult, isLoading: retailersLoading } =
+    useCubeQuery({
+      dimensions: ["stores.retailer_name"],
+      order: { "stores.retailer_name": "asc" },
+    });
+  const { resultSet: settlementsResult, isLoading: settlementsLoading } =
+    useCubeQuery({
+      dimensions: ["stores.settlement_name"],
+      order: { "stores.settlement_name": "asc" },
+    });
+  const { resultSet: municipalitiesResult, isLoading: municipalitiesLoading } =
+    useCubeQuery({
+      dimensions: ["stores.municipality_name"],
+      order: { "stores.municipality_name": "asc" },
+    });
+  const { resultSet: categoriesResult, isLoading: categoriesLoading } =
+    useCubeQuery({
+      dimensions: ["store_categories.name"],
+      order: { "store_categories.name": "asc" },
+    });
 
   // --- Filter Options Extraction ---
   const retailerOptions = retailersResult
-    ? retailersResult.tablePivot().map(row => ({
-        value: row['stores.retailer_name'] as string,
-        label: row['stores.retailer_name'] as string,
-      })).filter(option => option.value)
+    ? retailersResult
+        .tablePivot()
+        .map((row) => ({
+          value: row["stores.retailer_name"] as string,
+          label: row["stores.retailer_name"] as string,
+        }))
+        .filter((option) => option.value)
     : [];
   const settlementOptions = settlementsResult
-    ? settlementsResult.tablePivot().map(row => ({
-        value: row['stores.settlement_name'] as string,
-        label: row['stores.settlement_name'] as string,
-      })).filter(option => option.value)
+    ? settlementsResult
+        .tablePivot()
+        .map((row) => ({
+          value: row["stores.settlement_name"] as string,
+          label: row["stores.settlement_name"] as string,
+        }))
+        .filter((option) => option.value)
     : [];
   const municipalityOptions = municipalitiesResult
-    ? municipalitiesResult.tablePivot().map(row => ({
-        value: row['stores.municipality_name'] as string,
-        label: row['stores.municipality_name'] as string,
-      })).filter(option => option.value)
+    ? municipalitiesResult
+        .tablePivot()
+        .map((row) => ({
+          value: row["stores.municipality_name"] as string,
+          label: row["stores.municipality_name"] as string,
+        }))
+        .filter((option) => option.value)
     : [];
   const categoryOptions = categoriesResult
-    ? categoriesResult.tablePivot().map(row => ({
-        value: row['store_categories.name'] as string,
-        label: row['store_categories.name'] as string,
-      })).filter(option => option.value)
+    ? categoriesResult
+        .tablePivot()
+        .map((row) => ({
+          value: row["store_categories.name"] as string,
+          label: row["store_categories.name"] as string,
+        }))
+        .filter((option) => option.value)
     : [];
 
   // --- Pending Filter Update Handlers ---
@@ -110,38 +168,41 @@ export function FilterPanel({ globalFilters, onFiltersChange }: FilterPanelProps
     }
   };
 
-  // --- Date Range Handlers ---
-  const updateDateRange = (range: string) => {
-    setPendingFilters({ ...pendingFilters, dateRange: [range, range] as [string, string] });
+  // --- Date Preset Handler ---
+  const handleDatePresetChange = (preset: DateRangePreset) => {
+    setPendingFilters({ ...pendingFilters, datePreset: preset });
   };
-
-  // Relative date options
-  const relativeDateOptions = [
-    { value: 'today', label: 'Today' },
-    { value: 'last 3 days', label: 'Last 3 Days' },
-    { value: 'last 7 days', label: 'Last 7 Days' },
-    { value: 'last 30 days', label: 'Last 30 Days' },
-    { value: 'last month', label: 'Last Month' },
-    { value: 'last 3 months', label: 'Last 3 Months' },
-    { value: 'last year', label: 'Last Year' },
-  ];
 
   // --- Action Handlers ---
   const handleApplyFilters = () => {
-    onFiltersChange(pendingFilters);
+    const filtersToApply = {
+      retailers: pendingFilters.retailers,
+      settlements: pendingFilters.settlements,
+      municipalities: pendingFilters.municipalities,
+      categories: pendingFilters.categories,
+      datePreset: pendingFilters.datePreset,
+    };
+
+    onFiltersChange(filtersToApply);
   };
 
   const handleReset = () => {
-    setPendingFilters(globalFilters);
+    setPendingFilters({
+      retailers: globalFilters.retailers || [],
+      settlements: globalFilters.settlements || [],
+      municipalities: globalFilters.municipalities || [],
+      categories: globalFilters.categories || [],
+      datePreset: globalFilters.datePreset || "last7days",
+    });
   };
 
   const handleClearAll = () => {
-    const clearedFilters: GlobalFilters = {
+    const clearedFilters: ExtendedFilters = {
       retailers: [],
       settlements: [],
       municipalities: [],
       categories: [],
-      dateRange: ['last 7 days', 'last 7 days'] as [string, string],
+      datePreset: "last30days",
     };
     setPendingFilters(clearedFilters);
   };
@@ -152,7 +213,7 @@ export function FilterPanel({ globalFilters, onFiltersChange }: FilterPanelProps
       settlements: [],
       municipalities: [],
       categories: [],
-      dateRange: pendingFilters.dateRange,
+      datePreset: pendingFilters.datePreset,
     });
   };
 
@@ -171,7 +232,7 @@ export function FilterPanel({ globalFilters, onFiltersChange }: FilterPanelProps
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Filter Selectors Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           {/* Retailers - Dialog */}
           <div className="space-y-2">
             <Label>Retailers</Label>
@@ -185,7 +246,8 @@ export function FilterPanel({ globalFilters, onFiltersChange }: FilterPanelProps
               isLoading={retailersLoading}
             />
             <div className="text-xs text-muted-foreground">
-              {pendingFilters.retailers.length}/{MAX_SELECTIONS.retailers} selected
+              {pendingFilters.retailers.length}/{MAX_SELECTIONS.retailers}{" "}
+              selected
               {pendingFilters.retailers.length >= MAX_SELECTIONS.retailers && (
                 <span className="text-amber-600"> (max reached)</span>
               )}
@@ -205,8 +267,10 @@ export function FilterPanel({ globalFilters, onFiltersChange }: FilterPanelProps
               isLoading={settlementsLoading}
             />
             <div className="text-xs text-muted-foreground">
-              {pendingFilters.settlements.length}/{MAX_SELECTIONS.settlements} selected
-              {pendingFilters.settlements.length >= MAX_SELECTIONS.settlements && (
+              {pendingFilters.settlements.length}/{MAX_SELECTIONS.settlements}{" "}
+              selected
+              {pendingFilters.settlements.length >=
+                MAX_SELECTIONS.settlements && (
                 <span className="text-amber-600"> (max reached)</span>
               )}
             </div>
@@ -225,8 +289,10 @@ export function FilterPanel({ globalFilters, onFiltersChange }: FilterPanelProps
               isLoading={municipalitiesLoading}
             />
             <div className="text-xs text-muted-foreground">
-              {pendingFilters.municipalities.length}/{MAX_SELECTIONS.municipalities} selected
-              {pendingFilters.municipalities.length >= MAX_SELECTIONS.municipalities && (
+              {pendingFilters.municipalities.length}/
+              {MAX_SELECTIONS.municipalities} selected
+              {pendingFilters.municipalities.length >=
+                MAX_SELECTIONS.municipalities && (
                 <span className="text-amber-600"> (max reached)</span>
               )}
             </div>
@@ -239,52 +305,56 @@ export function FilterPanel({ globalFilters, onFiltersChange }: FilterPanelProps
               options={categoryOptions}
               selected={pendingFilters.categories}
               onChange={updatePendingCategories}
-              placeholder={categoriesLoading ? "Loading..." : "Select categories..."}
+              placeholder={
+                categoriesLoading ? "Loading..." : "Select categories..."
+              }
               disabled={categoriesLoading}
             />
             <div className="text-xs text-muted-foreground">
-              {pendingFilters.categories.length}/{MAX_SELECTIONS.categories} selected
-              {pendingFilters.categories.length >= MAX_SELECTIONS.categories && (
+              {pendingFilters.categories.length}/{MAX_SELECTIONS.categories}{" "}
+              selected
+              {pendingFilters.categories.length >=
+                MAX_SELECTIONS.categories && (
                 <span className="text-amber-600"> (max reached)</span>
               )}
             </div>
           </div>
-        </div>
 
-        {/* Date Range - Relative Dates */}
-        <div className="space-y-2">
-          <Label>Date Range</Label>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
-            {relativeDateOptions.map((option) => (
-              <Button
-                key={option.value}
-                type="button"
-                variant={pendingFilters.dateRange?.[0] === option.value ? "default" : "outline"}
-                size="sm"
-                onClick={() => updateDateRange(option.value)}
-                className="w-full"
-              >
-                {option.label}
-              </Button>
-            ))}
-          </div>
-          <div className="text-xs text-muted-foreground">
-            Selected: {pendingFilters.dateRange?.[0] || 'last 7 days'}
+          {/* Date Range - Dropdown */}
+          <div className="space-y-2">
+            <Label>Date Range</Label>
+            <Select
+              value={pendingFilters.datePreset}
+              onValueChange={(value: DateRangePreset) =>
+                handleDatePresetChange(value)
+              }
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select date range" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="today">Today</SelectItem>
+                <SelectItem value="last3days">Last 3 days</SelectItem>
+                <SelectItem value="last7days">Last 7 days</SelectItem>
+                <SelectItem value="last30days">Last 30 days</SelectItem>
+                <SelectItem value="last3months">Last 3 months</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
         {/* Action Buttons */}
         <div className="flex flex-wrap gap-2 pt-2">
-          <Button 
-            onClick={handleApplyFilters} 
+          <Button
+            onClick={handleApplyFilters}
             disabled={!hasPendingChanges}
             className="gap-2"
           >
             <CheckCircle2 className="h-4 w-4" />
             Apply Filters
           </Button>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={handleReset}
             disabled={!hasPendingChanges}
             className="gap-2"
@@ -305,19 +375,31 @@ export function FilterPanel({ globalFilters, onFiltersChange }: FilterPanelProps
           <div className="text-sm font-medium">Applied Filters:</div>
           <div className="flex flex-wrap gap-2 text-sm">
             <Badge variant="secondary">
-              Retailers: {globalFilters.retailers.length > 0 ? globalFilters.retailers.join(', ') : 'All'}
+              Retailers:{" "}
+              {(globalFilters.retailers || []).length > 0
+                ? (globalFilters.retailers || []).join(", ")
+                : "All"}
             </Badge>
             <Badge variant="secondary">
-              Settlements: {globalFilters.settlements.length > 0 ? globalFilters.settlements.join(', ') : 'All'}
+              Settlements:{" "}
+              {(globalFilters.settlements || []).length > 0
+                ? (globalFilters.settlements || []).join(", ")
+                : "All"}
             </Badge>
             <Badge variant="secondary">
-              Municipalities: {globalFilters.municipalities.length > 0 ? globalFilters.municipalities.join(', ') : 'All'}
+              Municipalities:{" "}
+              {(globalFilters.municipalities || []).length > 0
+                ? (globalFilters.municipalities || []).join(", ")
+                : "All"}
             </Badge>
             <Badge variant="secondary">
-              Categories: {globalFilters.categories.length > 0 ? globalFilters.categories.join(', ') : 'All'}
+              Categories:{" "}
+              {(globalFilters.categories || []).length > 0
+                ? (globalFilters.categories || []).join(", ")
+                : "All"}
             </Badge>
             <Badge variant="secondary">
-              Date: {globalFilters.dateRange ? (Array.isArray(globalFilters.dateRange) ? globalFilters.dateRange.join(' to ') : globalFilters.dateRange) : 'Last 30 days'}
+              Date: {globalFilters.datePreset || "last30days"}
             </Badge>
           </div>
         </div>

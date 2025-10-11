@@ -203,7 +203,7 @@ export default function ChartListPage() {
     settlements: [],
     municipalities: [],
     categories: [],
-    dateRange: undefined,
+    datePreset: 'last30days',
   });
 
   const [selectedChart, setSelectedChart] = useState<string | null>(null);
@@ -214,13 +214,13 @@ export default function ChartListPage() {
     settlements: globalFilters.settlements,
     municipalities: globalFilters.municipalities,
     categories: globalFilters.categories,
-    dateRange: globalFilters.dateRange,
+    datePreset: globalFilters.datePreset,
   }), [
     globalFilters.retailers.join(','),
     globalFilters.settlements.join(','),
     globalFilters.municipalities.join(','),
     globalFilters.categories.join(','),
-    (globalFilters.dateRange || []).join(','),
+    globalFilters.datePreset,
   ]);
 
   const cubeApi = useMemo(() => {

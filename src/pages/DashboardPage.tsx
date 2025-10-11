@@ -138,7 +138,7 @@ export default function DashboardPage() {
     settlements: [],
     municipalities: [],
     categories: [],
-    dateRange: undefined,
+    datePreset: 'last30days',
   });
 
   // Manual tab state instead of using shadcn Tabs
@@ -151,14 +151,14 @@ export default function DashboardPage() {
       settlements: globalFilters.settlements,
       municipalities: globalFilters.municipalities,
       categories: globalFilters.categories,
-      dateRange: globalFilters.dateRange,
+      datePreset: globalFilters.datePreset,
     }),
     [
       globalFilters.retailers.join(","),
       globalFilters.settlements.join(","),
       globalFilters.municipalities.join(","),
       globalFilters.categories.join(","),
-      (globalFilters.dateRange || []).join(","),
+      globalFilters.datePreset,
     ]
   );
 
