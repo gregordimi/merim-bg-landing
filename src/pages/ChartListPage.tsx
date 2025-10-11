@@ -17,7 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { extractHashConfig } from "@/utils/cube/config";
 import { GlobalFilters, buildOptimizedQuery, QUERY_PATTERNS } from "@/utils/cube/filterUtils";
 import { DebugNavigation } from "@/components/debug/DebugNavigation";
-import { FilterDropdowns } from "@/components/filters/FilterDropdowns";
+import { FilterPanel } from "@/components/filters/FilterPanel";
 
 // Import all chart components
 import { StatsCards } from "@/components/charts/StatsCards";
@@ -29,7 +29,8 @@ import { MunicipalityChart } from "@/components/charts/MunicipalityChart";
 import { SettlementHorizontalChart } from "@/components/charts/SettlementHorizontalChart";
 import { MunicipalityHorizontalChart } from "@/components/charts/MunicipalityHorizontalChart";
 import { PreAggregationTest } from "@/components/debug/PreAggregationTest";
-import { RetailerTrendChart } from "@/components/charts/RetailerTrendChart";
+import { RetailerTrendChartPrice } from "@/components/charts/RetailerTrendChartPrice";
+import { RetailerTrendChartPromo } from "@/components/charts/RetailerTrendChartPromo";
 import { RetailerPriceChart } from "@/components/charts/RetailerPriceChart";
 import { DiscountChart } from "@/components/charts/DiscountChart";
 import { CategoryTrendChart } from "@/components/charts/CategoryTrendChart";
@@ -108,11 +109,18 @@ const AVAILABLE_CHARTS: ChartInfo[] = [
   
   // Competitor Analysis
   {
-    id: 'retailer-trend',
-    name: 'Retailer Price Trends',
+    id: 'retailer-trend-price',
+    name: 'Retailer Price Trends - Price',
     description: 'Compare how different retailers\' prices change over time',
     icon: '🆚',
-    component: RetailerTrendChart,
+    component: RetailerTrendChartPrice,
+  },
+    {
+    id: 'retailer-trend-primo',
+    name: 'Retailer Price Trends - Promo',
+    description: 'Compare how different retailers\' promo change over time',
+    icon: '🆚',
+    component: RetailerTrendChartPromo,
   },
   {
     id: 'retailer-price',
@@ -195,7 +203,7 @@ export default function ChartListPage() {
     settlements: [],
     municipalities: [],
     categories: [],
-    dateRange: undefined,
+    datePreset: 'last30days',
   });
 
   const [selectedChart, setSelectedChart] = useState<string | null>(null);
@@ -206,13 +214,13 @@ export default function ChartListPage() {
     settlements: globalFilters.settlements,
     municipalities: globalFilters.municipalities,
     categories: globalFilters.categories,
-    dateRange: globalFilters.dateRange,
+    datePreset: globalFilters.datePreset,
   }), [
     globalFilters.retailers.join(','),
     globalFilters.settlements.join(','),
     globalFilters.municipalities.join(','),
     globalFilters.categories.join(','),
-    (globalFilters.dateRange || []).join(','),
+    globalFilters.datePreset,
   ]);
 
   const cubeApi = useMemo(() => {
@@ -259,7 +267,7 @@ export default function ChartListPage() {
 
           {/* Global Filters */}
           <div className="mb-8">
-            <FilterDropdowns 
+            <FilterPanel 
               globalFilters={globalFilters}
               onFiltersChange={handleFiltersChange}
             />

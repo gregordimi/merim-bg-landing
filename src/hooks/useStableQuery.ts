@@ -13,7 +13,7 @@ export function useStableQuery(queryBuilder: () => any, dependencies: any[], com
   const query = useMemo(() => {
     // Check if we already have this query cached
     if (queryCache.has(stableKey)) {
-      console.log(`🔄 [${++queryBuildCount}] Using CACHED query for key: "${stableKey}" (React StrictMode double-mount)`);
+      console.log(`🔄 [${++queryBuildCount}] Using CACHED query for key: "${stableKey}"`);
       return queryCache.get(stableKey);
     }
     
@@ -30,10 +30,12 @@ export function useStableQuery(queryBuilder: () => any, dependencies: any[], com
     castNumerics: true,
     resetResultSetOnChange: false,
     subscribe: false,
+    // Let Cube.js handle retries - don't artificially interrupt
   });
   
   // Debug the actual query result
   console.log('🔍 Query result:', {
+    componentId,
     isLoading: result.isLoading,
     error: result.error,
     resultSet: result.resultSet ? 'HAS_DATA' : 'NO_DATA',

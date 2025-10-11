@@ -139,6 +139,12 @@ export const Header = () => {
           >
             {content.header.nav.blog}
           </Link>
+          <Link
+            to="/dashboard-sidebar/stats"
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {content.header.nav.dashboard}
+          </Link>
         </nav>
 
         <div className="hidden md:flex items-center gap-4">
