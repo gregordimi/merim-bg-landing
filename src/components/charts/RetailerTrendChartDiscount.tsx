@@ -1,17 +1,7 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo } from "react";
 import { GlobalFilters, buildOptimizedQuery } from "@/utils/cube/filterUtils";
 import { useStableQuery } from "@/hooks/useStableQuery";
 import { ChartWrapper } from "../../config/ChartWrapper";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
 
 interface RetailerTrendChartProps {
   globalFilters: GlobalFilters;
@@ -25,40 +15,43 @@ interface ChartDataPoint {
 export function RetailerTrendChartDiscount({
   globalFilters,
 }: RetailerTrendChartProps) {
+  // Build the query
+  const query = useMemo(() => {
+    console.log(
+      "🔧 RetailerTrendChartDiscount building query with globalFilters:",
+      globalFilters
+    );
+    // For RetailerTrendChartDiscount, we need to ensure retailer dimension is always included
+    // even when retailers are filtered, to show breakdown by retailer
+    const query = buildOptimizedQuery(
+      ["prices.averageDiscountPercentage"],
+      globalFilters,
+      [] // Don't pass additional dimensions here
+    );
+
+    // Force include retailer dimension for this chart
+    if (!query.dimensions) {
+      query.dimensions = [];
+    }
+    if (!query.dimensions.includes("prices.retailer_name")) {
+      query.dimensions.push("prices.retailer_name");
+    }
+
+    return query;
+  }, [globalFilters]);
+
   const { resultSet, isLoading, error, progress } = useStableQuery(
-    () => {
-      // For RetailerTrendChartDiscount, we need to ensure retailer dimension is always included
-      // even when retailers are filtered, to show breakdown by retailer
-      const query = buildOptimizedQuery(
-        ["prices.averageDiscountPercentage"],
-        globalFilters,
-        [] // Don't pass additional dimensions here
-      );
-
-      // Force include retailer dimension for this chart
-      if (!query.dimensions) {
-        query.dimensions = [];
-      }
-      if (!query.dimensions.includes("prices.retailer_name")) {
-        query.dimensions.push("prices.retailer_name");
-      }
-
-      return query;
-    },
+    () => query,
     [
-      (globalFilters.retailers || []).join(","),
-      (globalFilters.settlements || []).join(","),
-      (globalFilters.municipalities || []).join(","),
-      (globalFilters.categories || []).join(","),
-      globalFilters.datePreset || "last7days",
+      globalFilters.retailers?.join(",") ?? "",
+      globalFilters.settlements?.join(",") ?? "",
+      globalFilters.municipalities?.join(",") ?? "",
+      globalFilters.categories?.join(",") ?? "",
+      globalFilters.datePreset ?? "last7days",
+      globalFilters.granularity ?? "day",
     ],
     "retailer-trend-discount-chart"
   );
-
-  // Keep track of the last valid data to prevent showing empty charts
-  const [lastValidData, setLastValidData] = useState<ChartDataPoint[]>([]);
-  const [lastValidRetailers, setLastValidRetailers] = useState<string[]>([]);
-  const [hasEverLoaded, setHasEverLoaded] = useState(false);
 
   const chartData = useMemo(() => {
     if (!resultSet) return null;
@@ -66,9 +59,9 @@ export function RetailerTrendChartDiscount({
     const pivot = resultSet.tablePivot();
     if (!pivot || pivot.length === 0) return null;
 
+    // Group data by date and aggregate multiple retailer values
     const dataMap = new Map();
 
-    // Group data by date
     pivot.forEach((row: any) => {
       const granularity = globalFilters.granularity ?? "day";
       const dateKey = `prices.price_date.${granularity}`;
@@ -95,9 +88,9 @@ export function RetailerTrendChartDiscount({
 
   // Get unique retailers for line colors
   const retailers = useMemo(() => {
-    if (!resultSet) return null;
+    if (!resultSet) return [];
     const pivot = resultSet.tablePivot();
-    if (!pivot || pivot.length === 0) return null;
+    if (!pivot || pivot.length === 0) return [];
 
     const retailerSet = new Set();
     pivot.forEach((row: any) => {
@@ -108,53 +101,8 @@ export function RetailerTrendChartDiscount({
     return Array.from(retailerSet) as string[];
   }, [resultSet]);
 
-  // Update last valid data when we get new data
-  useEffect(() => {
-    if (
-      chartData &&
-      chartData.length > 0 &&
-      retailers &&
-      retailers.length > 0 &&
-      !isLoading
-    ) {
-      console.log("RetailerTrendChartDiscount: Updated chart data", {
-        dataLength: chartData.length,
-        retailers: retailers,
-        sampleData: chartData.slice(0, 3),
-      });
-      setLastValidData(chartData);
-      setLastValidRetailers(retailers);
-      setHasEverLoaded(true);
-    }
-    // If loading finished but no data, and we've never loaded, mark as loaded
-    if (!isLoading && (!chartData || !retailers) && !hasEverLoaded) {
-      setHasEverLoaded(true);
-    }
-  }, [chartData, retailers, isLoading, hasEverLoaded]);
-
-  // Determine what data to display
-  const displayData = chartData || lastValidData;
-  const displayRetailers = retailers || lastValidRetailers;
-  const shouldShowLoading = isLoading && !hasEverLoaded;
-
-  const COLORS = [
-    "#0088FE",
-    "#00C49F",
-    "#FFBB28",
-    "#FF8042",
-    "#8884d8",
-    "#82ca9d",
-    "#ffc658",
-    "#ff7c7c",
-    "#8dd1e1",
-    "#d084d0",
-    "#ffb347",
-    "#87ceeb",
-    "#dda0dd",
-    "#98fb98",
-    "#f0e68c",
-    "#ff6347",
-  ];
+  // Use chart data directly
+  const displayData = chartData;
 
   const formatDate = (dateStr: string) => {
     try {
@@ -168,55 +116,44 @@ export function RetailerTrendChartDiscount({
     }
   };
 
+  // Calculate trend for the first retailer (if available)
+  const trend = useMemo(() => {
+    if (
+      !displayData ||
+      displayData.length < 2 ||
+      !retailers ||
+      retailers.length === 0
+    )
+      return null;
+    const firstRetailer = retailers[0];
+    const first = displayData[0][firstRetailer];
+    const last = displayData[displayData.length - 1][firstRetailer];
+    if (!first || first === 0) return null;
+    const change = ((last - first) / first) * 100;
+    return {
+      value: change.toFixed(1),
+      direction: change > 0 ? ("up" as const) : ("down" as const),
+    };
+  }, [displayData, retailers]);
+
   return (
     <ChartWrapper
       title="Retailer Discount Trends"
-      description="Compare how discount rates change over time by retailer"
-      isLoading={shouldShowLoading}
+      description="Compare how discount rates change over time by retailer (separate line per retailer)"
+      isLoading={isLoading}
       error={error}
       progress={progress}
-    >
-      {displayData &&
-      displayData.length > 0 &&
-      displayRetailers &&
-      displayRetailers.length > 0 ? (
-        <ResponsiveContainer width="100%" height={400}>
-          <LineChart
-            data={displayData}
-            margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" tickFormatter={formatDate} />
-            <YAxis tickFormatter={(value) => `${value.toFixed(1)}%`} />
-            <Tooltip
-              formatter={(value: number, name: string) => {
-                if (value === null || value === undefined) {
-                  return ["No discount data", name];
-                }
-                return [`${Number(value).toFixed(1)}%`, name];
-              }}
-              labelFormatter={(date) => formatDate(date)}
-              labelStyle={{ color: "#000" }}
-            />
-            <Legend />
-            {displayRetailers.map((retailer, index) => (
-              <Line
-                key={String(retailer)}
-                type="monotone"
-                dataKey={String(retailer)}
-                stroke={COLORS[index % COLORS.length]}
-                strokeWidth={2}
-                dot={{ r: 4 }}
-                connectNulls={false}
-              />
-            ))}
-          </LineChart>
-        </ResponsiveContainer>
-      ) : !shouldShowLoading ? (
-        <div className="w-full h-[400px] flex items-center justify-center text-muted-foreground">
-          No data available for the selected filters
-        </div>
-      ) : null}
-    </ChartWrapper>
+      trend={trend}
+      height="medium"
+      chartType="multiline"
+      data={displayData}
+      xAxisKey="date"
+      xAxisFormatter={formatDate}
+      yAxisFormatter={(value) => `${value.toFixed(1)}%`}
+      dynamicKeys={retailers}
+      query={query}
+      resultSet={resultSet}
+      globalFilters={globalFilters}
+    />
   );
 }

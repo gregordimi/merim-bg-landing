@@ -2,15 +2,20 @@ import { ReactNode, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCircle, TrendingUp } from 'lucide-react';
-import { CHART_HEIGHTS, getChartConfig } from '@/config/chartConfig';
+import { CHART_HEIGHTS, getChartConfig, CHART_COLORS } from '@/config/chartConfig';
 import {
   Area,
   AreaChart,
   Bar,
   BarChart,
+  Line,
+  LineChart,
   XAxis,
   YAxis,
   CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
 } from "recharts";
 import {
   ChartContainer,
@@ -25,7 +30,7 @@ interface TrendData {
   direction: 'up' | 'down';
 }
 
-type ChartType = 'area' | 'bar' | 'custom';
+type ChartType = 'area' | 'bar' | 'multiline' | 'custom';
 
 interface ChartWrapperProps {
   title: string;
@@ -49,6 +54,9 @@ interface ChartWrapperProps {
   dataKeys?: string[];
   barRadius?: number | [number, number, number, number];
   showGradients?: boolean;
+  
+  // Multi-line chart specific props
+  dynamicKeys?: string[]; // For multi-line charts where keys are dynamic (e.g., retailer names)
   
   // Debug props (optional - automatically enabled with ?dev=1)
   query?: any;
@@ -76,6 +84,9 @@ export function ChartWrapper({
   dataKeys = ['retailPrice', 'promoPrice'],
   barRadius = [2, 2, 0, 0],
   showGradients = true,
+  
+  // Multi-line chart specific props
+  dynamicKeys = [],
   
   // Debug props
   query,
@@ -237,6 +248,57 @@ export function ChartWrapper({
             ))}
           </BarChart>
         </ChartContainer>
+      );
+    }
+
+    if (chartType === 'multiline') {
+      return (
+        <ResponsiveContainer width="100%" height={chartHeight}>
+          <LineChart
+            data={data}
+            margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+            <XAxis
+              dataKey={xAxisKey}
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              tick={{ fontSize: 12 }}
+              tickFormatter={xAxisFormatter}
+            />
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              tick={{ fontSize: 12 }}
+              tickFormatter={yAxisFormatter}
+            />
+            <Tooltip
+              cursor={{ strokeDasharray: "3 3" }}
+              formatter={(value: number, name: string) => {
+                if (value === null || value === undefined) {
+                  return ["No data", name];
+                }
+                return [yAxisFormatter(value), name];
+              }}
+              labelFormatter={xAxisFormatter}
+              labelStyle={{ color: "#000" }}
+            />
+            <Legend />
+            {dynamicKeys.map((key, index) => (
+              <Line
+                key={String(key)}
+                type="monotone"
+                dataKey={String(key)}
+                stroke={CHART_COLORS[index % CHART_COLORS.length]}
+                strokeWidth={2}
+                dot={{ r: 4 }}
+                connectNulls={false}
+              />
+            ))}
+          </LineChart>
+        </ResponsiveContainer>
       );
     }
 

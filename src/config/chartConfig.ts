@@ -55,12 +55,28 @@ export const getChartConfig = (
           label: "Promo Price",
           color: CHART_COLORS[1],
         },
+        minimum: {
+          label: "Min Price",
+          color: CHART_COLORS[2],
+        },
+        average: {
+          label: "Avg Price",
+          color: CHART_COLORS[0],
+        },
+        maximum: {
+          label: "Max Price",
+          color: CHART_COLORS[3],
+        },
+        discount: {
+          label: "Discount Rate",
+          color: CHART_COLORS[3],
+        },
         ...Object.fromEntries(
           Array.from({ length: 8 }, (_, i) => [
             `category${i}`,
             {
               label: `Category ${i + 1}`,
-              color: CHART_COLORS[(i + 2) % CHART_COLORS.length],
+              color: CHART_COLORS[(i + 4) % CHART_COLORS.length],
             },
           ])
         )

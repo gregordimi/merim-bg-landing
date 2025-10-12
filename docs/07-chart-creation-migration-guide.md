@@ -15,6 +15,8 @@ This guide covers how to create new charts and migrate existing charts to use th
 - **Type Safety**: Full TypeScript support with proper error handling
 - **Built-in Features**: Loading states, error handling, trend indicators, tooltips
 - **Centralized Configuration**: Colors, margins, and styling managed in one place
+- **Automatic Debug Mode**: Debug functionality automatically enabled with `?dev=1` URL parameter
+- **Centralized Debug UI**: Consistent debug interface across all charts
 
 ### Supported Chart Types
 
@@ -86,6 +88,9 @@ export function MyTrendChart({ globalFilters }: TrendChartProps) {
       xAxisFormatter={formatDate}
       dataKeys={["retailPrice", "promoPrice"]}
       showGradients={true}
+      query={query}
+      resultSet={resultSet}
+      globalFilters={globalFilters}
     />
   );
 }
@@ -118,6 +123,9 @@ export function MyCategoryChart({ globalFilters }: CategoryChartProps) {
       xAxisKey="category"
       dataKeys={["retailPrice", "promoPrice"]}
       height="large" // More space for category labels
+      query={query}
+      resultSet={resultSet}
+      globalFilters={globalFilters}
     />
   );
 }
@@ -312,6 +320,9 @@ export function NewChart({ globalFilters }: ChartProps) {
       chartConfigType="trend"
       xAxisKey="date"
       dataKeys={["retailPrice", "promoPrice"]}
+      query={query}
+      resultSet={resultSet}
+      globalFilters={globalFilters}
     />
   );
 }
@@ -431,6 +442,71 @@ export function NewChart({ globalFilters }: ChartProps) {
   value: number,   // Segment value
 }
 ```
+
+---
+
+## Debug Mode Integration
+
+### Automatic Debug Detection
+
+ChartWrapper automatically detects debug mode from the URL parameter `?dev=1`. When enabled and the required debug props are provided, it shows a comprehensive debug interface.
+
+### Adding Debug Support to Charts
+
+To enable debug functionality, simply pass the debug props to ChartWrapper:
+
+```typescript
+export function MyChart({ globalFilters }: ChartProps) {
+  const query = useMemo(() => buildOptimizedQuery(
+    ['prices.averageRetailPrice'],
+    globalFilters
+  ), [globalFilters]);
+
+  const { resultSet, isLoading, error } = useStableQuery(
+    () => query,
+    [/* dependencies */],
+    'my-chart'
+  );
+
+  const chartData = useMemo(() => {
+    // Data transformation logic
+  }, [resultSet]);
+
+  return (
+    <ChartWrapper
+      title="My Chart"
+      isLoading={isLoading}
+      error={error}
+      chartType="area"
+      data={chartData}
+      // Debug props - automatically used when ?dev=1 is in URL
+      query={query}
+      resultSet={resultSet}
+      globalFilters={globalFilters}
+    />
+  );
+}
+```
+
+### Debug Features
+
+When `?dev=1` is added to the URL, charts automatically show:
+
+1. **Debug Toggle Button**: Shows/hides debug information with data point count
+2. **Query Inspector**: Formatted JSON display of the Cube.js query
+3. **Raw Data Preview**: First 10 rows from the result set in table format
+4. **Processed Data**: Transformed chart data structure
+5. **Filter Information**: All active filters with counts and values
+
+### Debug Props
+
+| Prop | Type | Required | Description |
+|------|------|----------|-------------|
+| `query` | `any` | Yes | The Cube.js query object |
+| `resultSet` | `any` | Yes | The result set from useStableQuery |
+| `globalFilters` | `GlobalFilters` | Yes | The current filter state |
+
+**Note**: Debug functionality only appears when all three props are provided and `?dev=1` is in the URL.
 
 ---
 
@@ -736,6 +812,7 @@ When migrating an existing chart:
 - [ ] Check responsive behavior
 - [ ] Update any custom formatters
 - [ ] Remove unused imports
+- [ ] Add debug props (`query`, `resultSet`, `globalFilters`) for debug support
 
 ---
 
@@ -757,5 +834,64 @@ For complex charts that don't fit the standard patterns, you can always use `cha
 3. Move to more complex custom implementations
 4. Update documentation as you go
 
+---
+
+## Debug Architecture
+
+### Centralized Debug System
+
+The debug functionality is built into the ChartWrapper architecture:
+
+```
+ChartWrapper
+├── Automatic URL Detection (?dev=1)
+├── Debug Props Validation
+├── ChartWrapperDebug Component
+│   ├── Debug Toggle Controls
+│   ├── Query Inspector
+│   ├── Raw Data Table
+│   ├── Processed Data Display
+│   └── Filter Information Panel
+└── Chart Rendering (Normal/Debug Layout)
+```
+
+### Debug Component Structure
+
+**ChartWrapperDebug** (`src/config/ChartWrapperDebug.tsx`):
+- Reusable debug component used by all charts
+- Consistent debug interface across the application
+- Handles all debug UI logic and state management
+
+**ChartWrapper** (`src/config/ChartWrapper.tsx`):
+- Automatically detects `?dev=1` URL parameter
+- Conditionally renders debug component when enabled
+- Maintains normal chart functionality when debug is disabled
+
+### Benefits of Centralized Debug
+
+1. **Consistency**: All charts have identical debug interfaces
+2. **Maintainability**: Debug improvements benefit all charts instantly
+3. **Easy Integration**: Just pass debug props to any ChartWrapper
+4. **Performance**: Debug code only loads when needed
+5. **Developer Experience**: Familiar debug interface across all charts
+
+### Extending Debug Functionality
+
+To add new debug features, modify `ChartWrapperDebug.tsx`:
+
+```typescript
+// Add new debug section
+<div>
+  <h4 className="font-semibold mb-2">Performance Metrics:</h4>
+  <div className="bg-muted p-3 rounded text-sm">
+    <p>Query Time: {queryTime}ms</p>
+    <p>Data Points: {dataPoints}</p>
+    <p>Render Time: {renderTime}ms</p>
+  </div>
+</div>
+```
+
+All charts using ChartWrapper will automatically get the new debug features.
+
 **Last Updated**: January 2025  
-**Version**: 1.0 (Enhanced ChartWrapper)
+**Version**: 1.1 (Enhanced ChartWrapper with Centralized Debug)

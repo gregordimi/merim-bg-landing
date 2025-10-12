@@ -8,13 +8,7 @@ import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'r
 import { useCubeQuery } from '@cubejs-client/react';
 import { GlobalFilters } from '@/utils/cube/filterUtils';
 import { buildOptimizedQuery } from '@/utils/cube/filterUtils';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { ChartWrapper } from '@/config/ChartWrapper';
 import {
   ChartConfig,
   ChartContainer,
@@ -23,8 +17,6 @@ import {
   ChartLegend,
   ChartLegendContent,
 } from '@/components/ui/chart';
-import { Skeleton } from '@/components/ui/skeleton';
-import { AlertCircle } from 'lucide-react';
 
 interface RadarChartComponentProps {
   globalFilters: GlobalFilters;
@@ -73,108 +65,63 @@ export function RadarChartComponent({ globalFilters }: RadarChartComponentProps)
     return data;
   }, [resultSet]);
 
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-48" />
-          <Skeleton className="h-4 w-full mt-2" />
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-[400px] w-full" />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (error) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Retailer Performance Radar</CardTitle>
-          <CardDescription>Unable to load chart data</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col items-center justify-center h-[400px] text-muted-foreground">
-            <AlertCircle className="h-12 w-12 mb-4" />
-            <p className="text-sm">{error.message || 'Failed to load data'}</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (chartData.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Retailer Performance Radar</CardTitle>
-          <CardDescription>No data available for the selected filters</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col items-center justify-center h-[400px] text-muted-foreground">
-            <p className="text-sm">No data to display</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Retailer Performance Radar</CardTitle>
-        <CardDescription>
-          Multi-dimensional view of pricing metrics across retailers
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig} className="h-[450px] w-full">
-          <RadarChart data={chartData}>
-            <PolarGrid gridType="circle" />
-            <PolarAngleAxis 
-              dataKey="retailer" 
-              tick={{ fontSize: 12 }}
-            />
-            <PolarRadiusAxis 
-              angle={90} 
-              domain={[0, 'dataMax']}
-              tick={{ fontSize: 10 }}
-            />
-            <ChartTooltip content={<ChartTooltipContent />} />
-            <ChartLegend content={<ChartLegendContent />} />
-            <Radar
-              name="Retail Price"
-              dataKey="retailPrice"
-              stroke="var(--color-retailPrice)"
-              fill="var(--color-retailPrice)"
-              fillOpacity={0.6}
-            />
-            <Radar
-              name="Promo Price"
-              dataKey="promoPrice"
-              stroke="var(--color-promoPrice)"
-              fill="var(--color-promoPrice)"
-              fillOpacity={0.6}
-            />
-            <Radar
-              name="Discount %"
-              dataKey="discountRate"
-              stroke="var(--color-discountRate)"
-              fill="var(--color-discountRate)"
-              fillOpacity={0.6}
-            />
-          </RadarChart>
-        </ChartContainer>
+    <ChartWrapper
+      title="Retailer Performance Radar"
+      description="Multi-dimensional view of pricing metrics across retailers"
+      isLoading={isLoading}
+      error={error}
+      chartType="custom"
+      height="xl"
+      query={query}
+      resultSet={resultSet}
+      globalFilters={globalFilters}
+    >
+      <ChartContainer config={chartConfig} className="h-[450px] w-full">
+        <RadarChart data={chartData}>
+          <PolarGrid gridType="circle" />
+          <PolarAngleAxis 
+            dataKey="retailer" 
+            tick={{ fontSize: 12 }}
+          />
+          <PolarRadiusAxis 
+            angle={90} 
+            domain={[0, 'dataMax']}
+            tick={{ fontSize: 10 }}
+          />
+          <ChartTooltip content={<ChartTooltipContent />} />
+          <ChartLegend content={<ChartLegendContent />} />
+          <Radar
+            name="Retail Price"
+            dataKey="retailPrice"
+            stroke="var(--color-retailPrice)"
+            fill="var(--color-retailPrice)"
+            fillOpacity={0.6}
+          />
+          <Radar
+            name="Promo Price"
+            dataKey="promoPrice"
+            stroke="var(--color-promoPrice)"
+            fill="var(--color-promoPrice)"
+            fillOpacity={0.6}
+          />
+          <Radar
+            name="Discount %"
+            dataKey="discountRate"
+            stroke="var(--color-discountRate)"
+            fill="var(--color-discountRate)"
+            fillOpacity={0.6}
+          />
+        </RadarChart>
+      </ChartContainer>
 
-        {/* Summary Info */}
-        <div className="mt-4 p-4 bg-muted rounded-lg">
-          <p className="text-sm text-muted-foreground">
-            Showing {chartData.length} retailers. Each axis represents a different metric. 
-            Larger areas indicate higher values.
-          </p>
-        </div>
-      </CardContent>
-    </Card>
+      {/* Summary Info */}
+      <div className="mt-4 p-4 bg-muted rounded-lg">
+        <p className="text-sm text-muted-foreground">
+          Showing {chartData.length} retailers. Each axis represents a different metric. 
+          Larger areas indicate higher values.
+        </p>
+      </div>
+    </ChartWrapper>
   );
 }

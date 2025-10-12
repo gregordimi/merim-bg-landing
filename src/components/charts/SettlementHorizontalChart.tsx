@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo } from "react";
 import { GlobalFilters, buildOptimizedQuery } from '@/utils/cube/filterUtils';
 import { useStableQuery } from "@/hooks/useStableQuery";
 import { ChartWrapper } from "../../config/ChartWrapper";
@@ -26,19 +26,21 @@ interface ChartDataPoint {
 export function SettlementHorizontalChart({
   globalFilters,
 }: SettlementHorizontalChartProps) {
+  const query = useMemo(() => {
+    const query = buildOptimizedQuery(
+      ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+      globalFilters,
+      ["prices.settlement_name"] // Always include settlements dimension
+    );
+    
+    // Remove time dimensions for aggregate query to improve performance
+    query.timeDimensions = [];
+    
+    return query;
+  }, [globalFilters]);
+
   const { resultSet, isLoading, error, progress } = useStableQuery(
-    () => {
-      const query = buildOptimizedQuery(
-        ["prices.averageRetailPrice", "prices.averagePromoPrice"],
-        globalFilters,
-        ["prices.settlement_name"] // Always include settlements dimension
-      );
-      
-      // Remove time dimensions for aggregate query to improve performance
-      query.timeDimensions = [];
-      
-      return query;
-    },
+    () => query,
     [
       (globalFilters.retailers || []).join(","),
       (globalFilters.settlements || []).join(","),
@@ -48,10 +50,6 @@ export function SettlementHorizontalChart({
     ],
     "settlement-horizontal-chart"
   );
-
-  // Keep track of the last valid data to prevent showing empty charts
-  const [lastValidData, setLastValidData] = useState<ChartDataPoint[]>([]);
-  const [hasEverLoaded, setHasEverLoaded] = useState(false);
 
   const chartData = useMemo(() => {
     if (!resultSet) return null;
@@ -69,30 +67,23 @@ export function SettlementHorizontalChart({
       .slice(0, 20); // Limit to top 20
   }, [resultSet]);
 
-  // Update last valid data when we get new data
-  useEffect(() => {
-    if (chartData && chartData.length > 0 && !isLoading) {
-      setLastValidData(chartData);
-      setHasEverLoaded(true);
-    }
-  }, [chartData, isLoading]);
-
-  // Determine what data to display
-  const displayData = chartData || lastValidData;
-  const shouldShowLoading = isLoading && !hasEverLoaded;
-
   return (
     <ChartWrapper
       title="Top 20 Settlements - Horizontal View"
       description="Compare retail and promotional prices by settlement (horizontal bars)"
-      isLoading={shouldShowLoading}
+      isLoading={isLoading}
       error={error}
       progress={progress}
+      chartType="custom"
+      height="xl"
+      query={query}
+      resultSet={resultSet}
+      globalFilters={globalFilters}
     >
-      {displayData && displayData.length > 0 ? (
+      {chartData && chartData.length > 0 ? (
         <ResponsiveContainer width="100%" height={600}>
           <BarChart
-            data={displayData}
+            data={chartData}
             layout="vertical"
             margin={{ top: 20, right: 80, left: 150, bottom: 20 }}
           >
@@ -132,11 +123,11 @@ export function SettlementHorizontalChart({
             />
           </BarChart>
         </ResponsiveContainer>
-      ) : !shouldShowLoading ? (
+      ) : (
         <div className="w-full h-[600px] flex items-center justify-center text-muted-foreground">
           No data available for the selected filters
         </div>
-      ) : null}
+      )}
     </ChartWrapper>
   );
 }

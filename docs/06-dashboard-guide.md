@@ -182,13 +182,19 @@ Each chart displays different insights based on the applied filters.
 Enable debug mode by adding `?dev=1` to the URL:
 ```
 /dashboard-sidebar/stats?dev=1
+/dashboard-sidebar/category?dev=1
+/dashboard-sidebar/trends?dev=1
 ```
 
-Debug mode provides additional context for development and troubleshooting:
-- Query inspection
-- Performance metrics
-- Filter state visibility
-- Error details
+Debug mode automatically activates for all ChartWrapper-based charts and provides:
+- **Query Inspection**: View the exact Cube.js query being executed
+- **Raw Data Preview**: See the first 10 rows from the result set
+- **Processed Chart Data**: View the transformed data structure used by the chart
+- **Filter Information**: Display all active filters with counts and values
+- **Debug Controls**: Toggle debug panel visibility and show data point counts
+- **Performance Insights**: Monitor query execution and data processing
+
+**Note**: Debug mode only works with charts using the new ChartWrapper architecture. Legacy charts using ChartViewer/QueryRenderer will not show debug information.
 
 ---
 
@@ -296,6 +302,9 @@ export const MyNewChart = ({ globalFilters }: MyNewChartProps) => {
       xAxisKey="name"
       dataKeys={['retailPrice', 'promoPrice']}
       height="medium"
+      query={query}
+      resultSet={resultSet}
+      globalFilters={globalFilters}
     />
   );
 };
@@ -435,15 +444,13 @@ Add `?dev=1` to any dashboard URL:
 /dashboard-sidebar/stats?dev=1
 ```
 
-This activates the `DebugContext` which provides:
-```typescript
-const { isDebugMode } = useDebug();
+Debug mode is automatically detected by ChartWrapper components. When enabled, charts will show:
+- Debug toggle button with data point count
+- Expandable debug panel with query, raw data, and processed data
+- Filter state information
+- Performance metrics
 
-if (isDebugMode) {
-  console.log('Query:', query);
-  console.log('Filters:', globalFilters);
-}
-```
+**Automatic Detection**: ChartWrapper automatically detects the `?dev=1` URL parameter and enables debug mode when the required props (`query`, `resultSet`, `globalFilters`) are provided.
 
 #### Common Issues
 

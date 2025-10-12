@@ -1,8 +1,7 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { GlobalFilters, buildOptimizedQuery } from '@/utils/cube/filterUtils';
 import { useStableQuery } from '@/hooks/useStableQuery';
 import { ChartWrapper } from '../../config/ChartWrapper';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 interface CategoryRangeChartProps {
   globalFilters: GlobalFilters;
@@ -10,30 +9,32 @@ interface CategoryRangeChartProps {
 
 interface ChartDataPoint {
   category: string;
-  average: number;
   minimum: number;
+  average: number;
   maximum: number;
 }
 
 export function CategoryRangeChart({ globalFilters }: CategoryRangeChartProps) {
+  const query = useMemo(() => {
+    // Build a query without time dimensions for aggregated stats
+    const query = buildOptimizedQuery(
+      [
+        "prices.averageRetailPrice",
+        "prices.minRetailPrice",
+        "prices.maxRetailPrice",
+      ],
+      globalFilters,
+      ["prices.category_group_name"] // Always include categories dimension
+    );
+    
+    // Remove time dimensions for aggregate query to avoid duplicates
+    query.timeDimensions = [];
+    
+    return query;
+  }, [globalFilters]);
+
   const { resultSet, isLoading, error, progress } = useStableQuery(
-    () => {
-      // Build a query without time dimensions for aggregated stats
-      const query = buildOptimizedQuery(
-        [
-          "prices.averageRetailPrice",
-          "prices.minRetailPrice",
-          "prices.maxRetailPrice",
-        ],
-        globalFilters,
-        ["prices.category_group_name"] // Always include categories dimension
-      );
-      
-      // Remove time dimensions for aggregate query to avoid duplicates
-      query.timeDimensions = [];
-      
-      return query;
-    },
+    () => query,
     [
       (globalFilters.retailers || []).join(','),
       (globalFilters.settlements || []).join(','),
@@ -43,10 +44,6 @@ export function CategoryRangeChart({ globalFilters }: CategoryRangeChartProps) {
     ],
     'category-range-chart'
   );
-
-  // Keep track of the last valid data to prevent showing empty charts
-  const [lastValidData, setLastValidData] = useState<ChartDataPoint[]>([]);
-  const [hasEverLoaded, setHasEverLoaded] = useState(false);
 
   const chartData = useMemo(() => {
     if (!resultSet) return null;
@@ -90,62 +87,22 @@ export function CategoryRangeChart({ globalFilters }: CategoryRangeChartProps) {
       .slice(0, 50); // Limit to top 50 categories to avoid overcrowding
   }, [resultSet]);
 
-  // Update last valid data when we get new data
-  useEffect(() => {
-    if (chartData && chartData.length > 0 && !isLoading) {
-      setLastValidData(chartData);
-      setHasEverLoaded(true);
-    }
-  }, [chartData, isLoading]);
-
-  // Determine what data to display
-  const displayData = chartData || lastValidData;
-  const shouldShowLoading = isLoading && !hasEverLoaded;
-
   return (
     <ChartWrapper
       title="Price Range by Category"
       description="Min, average, and max prices for each category"
-      isLoading={shouldShowLoading}
+      isLoading={isLoading}
       error={error}
       progress={progress}
-    >
-      {displayData && displayData.length > 0 ? (
-        <ResponsiveContainer width="100%" height={400}>
-          <BarChart
-            data={displayData}
-            margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey="category"
-              angle={-45}
-              textAnchor="end"
-              height={100}
-              interval={0}
-            />
-            <YAxis tickFormatter={(value) => `${value.toFixed(2)} лв`} />
-            <Tooltip
-              formatter={(value: number, name: string) => {
-                let label = "Price";
-                if (name === "minimum") label = "Min Price";
-                else if (name === "average") label = "Avg Price";
-                else if (name === "maximum") label = "Max Price";
-                return [`${value.toFixed(2)} лв`, label];
-              }}
-              labelStyle={{ color: "#000" }}
-            />
-            <Legend />
-            <Bar dataKey="minimum" fill="#82ca9d" name="Min Price" />
-            <Bar dataKey="average" fill="#0088FE" name="Avg Price" />
-            <Bar dataKey="maximum" fill="#FF8042" name="Max Price" />
-          </BarChart>
-        </ResponsiveContainer>
-      ) : !shouldShowLoading ? (
-        <div className="w-full h-[400px] flex items-center justify-center text-muted-foreground">
-          No data available for the selected filters
-        </div>
-      ) : null}
-    </ChartWrapper>
+      chartType="bar"
+      data={chartData}
+      chartConfigType="category"
+      xAxisKey="category"
+      dataKeys={['minimum', 'average', 'maximum']}
+      height="large"
+      query={query}
+      resultSet={resultSet}
+      globalFilters={globalFilters}
+    />
   );
 }

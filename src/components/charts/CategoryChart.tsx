@@ -85,8 +85,6 @@ export function CategoryChart({ globalFilters }: CategoryChartProps) {
       .slice(0, 20); // Limit to top 20
   }, [resultSet]);
 
-
-
   return (
     <ChartWrapper
       title="Average Retail & Promo Prices by Category"
