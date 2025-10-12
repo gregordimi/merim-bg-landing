@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import { GlobalFilters, buildOptimizedQuery } from '@/utils/cube/filterUtils';
 import { useStableQuery } from '@/hooks/useStableQuery';
-import { ChartWrapper } from './ChartWrapper';
+import { ChartWrapper } from '../../config/ChartWrapper';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 interface CategoryTrendChartProps {

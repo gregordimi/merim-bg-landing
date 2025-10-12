@@ -11,7 +11,8 @@ The **Analytics Dashboard** (`/dashboard-sidebar`) is a comprehensive business i
 - **Relative Date Presets**: Quick date range selection (Today, Last 3/7/30 Days, etc.)
 - **Individual Chart Routes**: Each chart has its own URL for easy bookmarking and sharing
 - **Debug Mode**: Accessible via `?dev=1` URL parameter for development insights
-- **Professional Charts**: Modern styled components using shadcn/ui design patterns
+- **Professional Charts**: Modern styled components using enhanced ChartWrapper with centralized configuration
+- **Simplified Chart Creation**: Unified chart architecture with minimal code duplication
 
 ---
 
@@ -242,39 +243,85 @@ This memoization prevents unnecessary re-renders and ensures filters only trigge
 
 ### Adding New Charts
 
-To add a new chart to the dashboard:
+The enhanced ChartWrapper makes creating new charts incredibly simple. You have two approaches:
 
-#### 1. Create Chart Component
+#### Approach 1: Simple Charts (Recommended)
+
+For standard area or bar charts, use the built-in chart types:
 
 ```typescript
 // src/components/charts/MyNewChart.tsx
-import { FC } from 'react';
-import { GlobalFilters } from '@/utils/cube/filterUtils';
-import { useCubeQuery } from '@cubejs-client/react';
-import { buildOptimizedQuery } from '@/utils/cube/filterUtils';
+import { useMemo } from 'react';
+import { GlobalFilters, buildOptimizedQuery } from '@/utils/cube/filterUtils';
+import { useStableQuery } from '@/hooks/useStableQuery';
+import { ChartWrapper } from './ChartWrapper';
 
 interface MyNewChartProps {
   globalFilters: GlobalFilters;
 }
 
-export const MyNewChart: FC<MyNewChartProps> = ({ globalFilters }) => {
-  const query = buildOptimizedQuery(
-    ['prices.averageRetailPrice'],
+export const MyNewChart = ({ globalFilters }: MyNewChartProps) => {
+  const query = useMemo(() => buildOptimizedQuery(
+    ['prices.averageRetailPrice', 'prices.averagePromoPrice'],
     globalFilters,
     ['prices.some_dimension']
+  ), [globalFilters]);
+
+  const { resultSet, isLoading, error } = useStableQuery(
+    () => query,
+    [/* dependency array */],
+    'my-new-chart'
   );
 
-  const { resultSet, isLoading, error } = useCubeQuery(query);
-
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.toString()}</div>;
-
-  const data = resultSet?.tablePivot() || [];
+  const chartData = useMemo(() => {
+    if (!resultSet) return null;
+    // Transform your data here
+    return resultSet.tablePivot().map(row => ({
+      // Map to your chart structure
+      name: row['prices.some_dimension'],
+      retailPrice: Number(row['prices.averageRetailPrice'] || 0),
+      promoPrice: Number(row['prices.averagePromoPrice'] || 0),
+    }));
+  }, [resultSet]);
 
   return (
-    <div>
-      {/* Your chart implementation */}
-    </div>
+    <ChartWrapper
+      title="My New Chart"
+      description="Description of what this chart shows"
+      isLoading={isLoading}
+      error={error}
+      chartType="bar" // or "area"
+      data={chartData}
+      chartConfigType="category" // or "trend"
+      xAxisKey="name"
+      dataKeys={['retailPrice', 'promoPrice']}
+      height="medium"
+    />
+  );
+};
+```
+
+#### Approach 2: Custom Charts
+
+For complex charts that need custom rendering:
+
+```typescript
+export const MyCustomChart = ({ globalFilters }: MyNewChartProps) => {
+  // ... query logic same as above
+
+  return (
+    <ChartWrapper
+      title="My Custom Chart"
+      description="Custom chart implementation"
+      isLoading={isLoading}
+      error={error}
+      chartType="custom" // Use custom type
+    >
+      {/* Your custom chart JSX here */}
+      <div className="custom-chart">
+        {/* Custom implementation */}
+      </div>
+    </ChartWrapper>
   );
 };
 ```
@@ -376,6 +423,8 @@ const timeDimensions = buildTimeDimensions(globalFilters.datePreset);
 3. **Limit result sets**: Use TOP N, pagination, or filters to reduce data volume
 4. **Avoid time dimensions in aggregates**: For charts like CategoryRangeChart, remove time dimensions if not needed
 5. **Use WebSocket transport**: Enabled by default for real-time updates
+6. **Leverage ChartWrapper**: Built-in chart types (area/bar) are optimized and consistent
+7. **Use useStableQuery**: Prevents unnecessary re-queries with stable dependency arrays
 
 ### Debugging
 

@@ -4,17 +4,20 @@
 
 import { useMemo } from "react";
 import { useCubeQuery } from "@cubejs-client/react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChartWrapper } from "../../config/ChartWrapper";
+import { getChartConfig, CHART_HEIGHTS } from "@/config/chartConfig";
 import {
-  LineChart,
-  Line,
+  Area,
+  AreaChart,
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
 } from "recharts";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 import { GlobalFilters, buildOptimizedQuery } from "@/utils/cube/filterUtils";
 
 interface OptimizedTrendChartProps {
@@ -24,6 +27,9 @@ interface OptimizedTrendChartProps {
 export function OptimizedTrendChart({
   globalFilters,
 }: OptimizedTrendChartProps) {
+  // Get chart configuration for trend charts
+  const chartConfig = getChartConfig("trend");
+
   // Build optimized query that matches pre-aggregations
   const query = useMemo(
     () =>
@@ -73,76 +79,47 @@ export function OptimizedTrendChart({
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }, [resultSet, globalFilters.granularity]);
 
-  if (error) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="text-red-500">
-            Error loading trend data: {error.toString()}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  // Calculate trend for display
+  const trend = useMemo(() => {
+    if (!chartData || chartData.length < 2) return null;
+    const first = chartData[0].retailPrice;
+    const last = chartData[chartData.length - 1].retailPrice;
+    if (first === 0) return null;
+    const change = ((last - first) / first) * 100;
+    return {
+      value: change.toFixed(1),
+      direction: change > 0 ? ("up" as const) : ("down" as const),
+    };
+  }, [chartData]);
+
+  const formatDate = (dateStr: string) => {
+    try {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      });
+    } catch {
+      return dateStr;
+    }
+  };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>📈 Price Trends (Optimized)</CardTitle>
-        <div className="text-sm text-muted-foreground">
-          Retail and promotional price trends over time - uses pre-aggregations
-          for fast performance
-        </div>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="h-64 flex items-center justify-center">
-            <div className="text-muted-foreground">Loading trend data...</div>
-          </div>
-        ) : (
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="date"
-                  tick={{ fontSize: 12 }}
-                  tickFormatter={(value) =>
-                    new Date(value).toLocaleDateString("bg-BG", {
-                      month: "short",
-                      day: "numeric",
-                    })
-                  }
-                />
-                <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip
-                  labelFormatter={(value) =>
-                    new Date(value).toLocaleDateString("bg-BG")
-                  }
-                  formatter={(value: number) => [`${value.toFixed(2)} лв`, ""]}
-                />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="retailPrice"
-                  stroke="#2563eb"
-                  strokeWidth={2}
-                  name="Retail Price"
-                  connectNulls
-                />
-                <Line
-                  type="monotone"
-                  dataKey="promoPrice"
-                  stroke="#dc2626"
-                  strokeWidth={2}
-                  name="Promo Price"
-                  connectNulls
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+    <ChartWrapper
+      title="📈 Price Trends (Optimized)"
+      description="Retail and promotional price trends over time - uses pre-aggregations for fast performance"
+      isLoading={isLoading}
+      error={error}
+      trend={trend}
+      height="medium"
+      chartType="area"
+      data={chartData}
+      chartConfigType="trend"
+      xAxisKey="date"
+      xAxisFormatter={formatDate}
+      yAxisFormatter={(value) => `${value.toFixed(1)} лв`}
+      dataKeys={['retailPrice', 'promoPrice']}
+      showGradients={true}
+    />
   );
 }

@@ -3,7 +3,7 @@
  * Centralized theming and styling configuration for all charts
  */
 
-import { ChartConfig } from '@/components/ui/chart';
+import { ChartConfig } from "@/components/ui/chart";
 
 // Extended color palette
 export const CHART_COLORS = [
@@ -25,9 +25,11 @@ export const CHART_COLORS = [
 ];
 
 // Chart type configurations
-export const getChartConfig = (type: 'trend' | 'category' | 'comparison' | 'distribution'): ChartConfig => {
+export const getChartConfig = (
+  type: "trend" | "category" | "comparison" | "distribution"
+): ChartConfig => {
   switch (type) {
-    case 'trend':
+    case "trend":
       return {
         retailPrice: {
           label: "Retail Price",
@@ -42,19 +44,29 @@ export const getChartConfig = (type: 'trend' | 'category' | 'comparison' | 'dist
           color: CHART_COLORS[3],
         },
       } satisfies ChartConfig;
-    
-    case 'category':
-      return Object.fromEntries(
-        Array.from({ length: 10 }, (_, i) => [
-          `category${i}`,
-          {
-            label: `Category ${i + 1}`,
-            color: CHART_COLORS[i % CHART_COLORS.length],
-          },
-        ])
-      ) as ChartConfig;
-    
-    case 'comparison':
+
+    case "category":
+      return {
+        retailPrice: {
+          label: "Retail Price",
+          color: CHART_COLORS[0],
+        },
+        promoPrice: {
+          label: "Promo Price",
+          color: CHART_COLORS[1],
+        },
+        ...Object.fromEntries(
+          Array.from({ length: 8 }, (_, i) => [
+            `category${i}`,
+            {
+              label: `Category ${i + 1}`,
+              color: CHART_COLORS[(i + 2) % CHART_COLORS.length],
+            },
+          ])
+        )
+      } as ChartConfig;
+
+    case "comparison":
       return {
         value1: {
           label: "Value 1",
@@ -69,8 +81,8 @@ export const getChartConfig = (type: 'trend' | 'category' | 'comparison' | 'dist
           color: CHART_COLORS[4],
         },
       } satisfies ChartConfig;
-    
-    case 'distribution':
+
+    case "distribution":
       return Object.fromEntries(
         CHART_COLORS.map((color, i) => [
           `segment${i}`,
@@ -80,7 +92,7 @@ export const getChartConfig = (type: 'trend' | 'category' | 'comparison' | 'dist
           },
         ])
       ) as ChartConfig;
-    
+
     default:
       return {} as ChartConfig;
   }

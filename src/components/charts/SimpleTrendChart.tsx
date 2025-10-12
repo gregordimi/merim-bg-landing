@@ -12,7 +12,7 @@ import {
   buildTimeDimensions,
 } from "@/utils/cube/filterUtils";
 import { useStableQuery } from "@/hooks/useStableQuery";
-import { ChartWrapper } from "./ChartWrapper";
+import { ChartWrapper } from "../../config/ChartWrapper";
 import {
   LineChart,
   Line,
@@ -275,40 +275,6 @@ export function SimpleTrendChart({ globalFilters }: SimpleTrendChartProps) {
                   </div>
                 </div>
               )}
-
-              {/* Filter Information */}
-              <div>
-                <h4 className="font-semibold mb-2">Active Filters:</h4>
-                <div className="flex flex-wrap gap-2">
-                  <Badge variant="outline">
-                    Retailers: {globalFilters.retailers.length || "All"}
-                    {globalFilters.retailers.length > 0 &&
-                      ` (${globalFilters.retailers.join(", ")})`}
-                  </Badge>
-                  <Badge variant="outline">
-                    Settlements: {globalFilters.settlements.length || "All"}
-                    {globalFilters.settlements.length > 0 &&
-                      ` (${globalFilters.settlements.join(", ")})`}
-                  </Badge>
-                  <Badge variant="outline">
-                    Municipalities:{" "}
-                    {globalFilters.municipalities.length || "All"}
-                    {globalFilters.municipalities.length > 0 &&
-                      ` (${globalFilters.municipalities.join(", ")})`}
-                  </Badge>
-                  <Badge variant="outline">
-                    Categories: {globalFilters.categories.length || "All"}
-                    {globalFilters.categories.length > 0 &&
-                      ` (${globalFilters.categories.join(", ")})`}
-                  </Badge>
-                  <Badge variant="outline">
-                    Date:{" "}
-                    {globalFilters.dateRange
-                      ? globalFilters.dateRange.join(" to ")
-                      : "Last 30 days"}
-                  </Badge>
-                </div>
-              </div>
             </div>
           </CardContent>
         </Card>
