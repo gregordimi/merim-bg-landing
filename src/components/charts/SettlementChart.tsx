@@ -13,6 +13,27 @@ interface ChartDataPoint {
   promoPrice: number;
 }
 
+function processSettlementData(resultSet: any, limit: number = 20) {
+  if (!resultSet) return [];
+
+  try {
+    const pivot = resultSet.tablePivot();
+    if (!pivot || pivot.length === 0) return [];
+
+    return pivot
+      .map((row: any) => ({
+        settlement: row["prices.settlement_name"],
+        retailPrice: Number(row["prices.averageRetailPrice"] || 0),
+        promoPrice: Number(row["prices.averagePromoPrice"] || 0),
+      }))
+      .sort((a: ChartDataPoint, b: ChartDataPoint) => b.retailPrice - a.retailPrice)
+      .slice(0, limit);
+  } catch (error) {
+    console.error("Error processing settlement data:", error);
+    return [];
+  }
+}
+
 export function SettlementChart({ globalFilters }: SettlementChartProps) {
   const query = useMemo(() => buildOptimizedQuery(
     ["prices.averageRetailPrice", "prices.averagePromoPrice"],
@@ -32,20 +53,8 @@ export function SettlementChart({ globalFilters }: SettlementChartProps) {
     'settlement-chart'
   );
 
-  const chartData = useMemo(() => {
-    if (!resultSet) return null;
-
-    const pivot = resultSet.tablePivot();
-    if (!pivot || pivot.length === 0) return null;
-
-    return pivot
-      .map((row: any) => ({
-        settlement: row["prices.settlement_name"],
-        retailPrice: Number(row["prices.averageRetailPrice"] || 0),
-        promoPrice: Number(row["prices.averagePromoPrice"] || 0),
-      }))
-      .sort((a, b) => b.retailPrice - a.retailPrice) // Sort by retail price descending
-      .slice(0, 20); // Limit to top 20
+  const data = useMemo(() => {
+    return processSettlementData(resultSet, 20);
   }, [resultSet]);
 
   return (
@@ -56,7 +65,7 @@ export function SettlementChart({ globalFilters }: SettlementChartProps) {
       error={error}
       progress={progress}
       chartType="bar"
-      data={chartData}
+      data={data}
       chartConfigType="trend"
       xAxisKey="settlement"
       dataKeys={['retailPrice', 'promoPrice']}

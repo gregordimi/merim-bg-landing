@@ -97,6 +97,55 @@ interface StatsData {
   averageDiscountPercentage: number;
 }
 
+function processStatsData(resultSet: any): StatsData | null {
+  if (!resultSet) return null;
+
+  try {
+    const pivot = resultSet.tablePivot();
+    if (!pivot || pivot.length === 0) {
+      return {
+        count: 0,
+        minRetailPrice: 0,
+        maxRetailPrice: 0,
+        minPromoPrice: 0,
+        maxPromoPrice: 0,
+        avgRetailPrice: 0,
+        avgPromoPrice: 0,
+        totalRetailPrice: 0,
+        totalPromoPrice: 0,
+        retailPriceCount: 0,
+        promoPriceCount: 0,
+        medianRetailPrice: 0,
+        medianPromoPrice: 0,
+        averageDiscountPercentage: 0,
+      };
+    }
+
+    const data = pivot[0];
+    return {
+      count: Number(data?.["prices.count"] || 0),
+      minRetailPrice: Number(data?.["prices.minRetailPrice"] || 0),
+      maxRetailPrice: Number(data?.["prices.maxRetailPrice"] || 0),
+      minPromoPrice: Number(data?.["prices.minPromoPrice"] || 0),
+      maxPromoPrice: Number(data?.["prices.maxPromoPrice"] || 0),
+      avgRetailPrice: Number(data?.["prices.averageRetailPrice"] || 0),
+      avgPromoPrice: Number(data?.["prices.averagePromoPrice"] || 0),
+      totalRetailPrice: Number(data?.["prices.totalRetailPrice"] || 0),
+      totalPromoPrice: Number(data?.["prices.totalPromoPrice"] || 0),
+      retailPriceCount: Number(data?.["prices.retailPriceCount"] || 0),
+      promoPriceCount: Number(data?.["prices.promoPriceCount"] || 0),
+      medianRetailPrice: Number(data?.["prices.medianRetailPrice"] || 0),
+      medianPromoPrice: Number(data?.["prices.medianPromoPrice"] || 0),
+      averageDiscountPercentage: Number(
+        data?.["prices.averageDiscountPercentage"] || 0
+      ),
+    };
+  } catch (error) {
+    console.error("Error processing stats data:", error);
+    return null;
+  }
+}
+
 export function StatsCards({ globalFilters }: StatsCardsProps) {
   const { resultSet, isLoading, error } = useStableQuery(
     () => ({
@@ -117,77 +166,21 @@ export function StatsCards({ globalFilters }: StatsCardsProps) {
         "prices.averageDiscountPercentage",
       ],
       filters: buildFilters(globalFilters),
-      timeDimensions: buildTimeDimensions(globalFilters.dateConfig),
+      timeDimensions: buildTimeDimensions(globalFilters.datePreset),
     }),
     [
       (globalFilters.retailers || []).join(","),
       (globalFilters.settlements || []).join(","),
       (globalFilters.municipalities || []).join(","),
       (globalFilters.categories || []).join(","),
-      globalFilters.dateConfig || "last7days",
+      globalFilters.datePreset || "last7days",
     ],
     "stats-cards"
   );
 
   const statsData = useMemo(() => {
-    if (!resultSet) return null;
-
-    const pivot = resultSet.tablePivot();
-    if (!pivot || pivot.length === 0) {
-      // Return zeros when no data is found
-      return {
-        count: 0,
-        minRetailPrice: 0,
-        maxRetailPrice: 0,
-        minPromoPrice: 0,
-        maxPromoPrice: 0,
-        avgRetailPrice: 0,
-        avgPromoPrice: 0,
-        totalRetailPrice: 0,
-        totalPromoPrice: 0,
-        retailPriceCount: 0,
-        promoPriceCount: 0,
-        medianRetailPrice: 0,
-        medianPromoPrice: 0,
-        averageDiscountPercentage: 0,
-      };
-    }
-
-    const data = pivot[0];
-    const count = Number(data?.["prices.count"] || 0);
-    const minRetailPrice = Number(data?.["prices.minRetailPrice"] || 0);
-    const maxRetailPrice = Number(data?.["prices.maxRetailPrice"] || 0);
-    const minPromoPrice = Number(data?.["prices.minPromoPrice"] || 0);
-    const maxPromoPrice = Number(data?.["prices.maxPromoPrice"] || 0);
-    const avgRetailPrice = Number(data?.["prices.averageRetailPrice"] || 0);
-    const avgPromoPrice = Number(data?.["prices.averagePromoPrice"] || 0);
-    const totalRetailPrice = Number(data?.["prices.totalRetailPrice"] || 0);
-    const totalPromoPrice = Number(data?.["prices.totalPromoPrice"] || 0);
-    const retailPriceCount = Number(data?.["prices.retailPriceCount"] || 0);
-    const promoPriceCount = Number(data?.["prices.promoPriceCount"] || 0);
-    const medianRetailPrice = Number(data?.["prices.medianRetailPrice"] || 0);
-    const medianPromoPrice = Number(data?.["prices.medianPromoPrice"] || 0);
-    const averageDiscountPercentage = Number(
-      data?.["prices.averageDiscountPercentage"] || 0
-    );
-
-    return {
-      count,
-      minRetailPrice,
-      maxRetailPrice,
-      minPromoPrice,
-      maxPromoPrice,
-      avgRetailPrice,
-      avgPromoPrice,
-      totalRetailPrice,
-      totalPromoPrice,
-      retailPriceCount,
-      promoPriceCount,
-      medianRetailPrice,
-      medianPromoPrice,
-      averageDiscountPercentage,
-    };
-  }, [resultSet, globalFilters]);
+    return processStatsData(resultSet);
+  }, [resultSet]);
 
   // Helper function to format currency
   const formatCurrency = (value: number) => `${value.toFixed(2)} лв`;

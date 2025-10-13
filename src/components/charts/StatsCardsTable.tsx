@@ -38,7 +38,6 @@ interface StatsTableRow {
   promoPriceCount: number;
   minRetailPrice: number;
   minPromoPrice: number;
-
   maxRetailPrice: number;
   maxPromoPrice: number;
   medianRetailPrice: number;
@@ -46,8 +45,45 @@ interface StatsTableRow {
   averageDiscountPercentage: number;
 }
 
+function processStatsTableData(resultSet: any, granularity: string = "day"): StatsTableRow[] {
+  if (!resultSet) return [];
+
+  try {
+    const pivot = resultSet.tablePivot();
+    if (!pivot || pivot.length === 0) return [];
+
+    return pivot.map((row: any) => {
+      const dateKey = `prices.price_date.${granularity}`;
+      const dateValue = row[dateKey];
+      const formattedDate = dateValue
+        ? new Date(dateValue as string).toLocaleDateString()
+        : "N/A";
+
+      return {
+        date: formattedDate,
+        count: Number(row["prices.count"]),
+        avgRetailPrice: Number(row["prices.averageRetailPrice"]),
+        avgPromoPrice: Number(row["prices.averagePromoPrice"]),
+        totalRetailPrice: Number(row["prices.totalRetailPrice"]),
+        totalPromoPrice: Number(row["prices.totalPromoPrice"]),
+        retailPriceCount: Number(row["prices.retailPriceCount"]),
+        promoPriceCount: Number(row["prices.promoPriceCount"]),
+        minRetailPrice: Number(row["prices.minRetailPrice"]),
+        minPromoPrice: Number(row["prices.minPromoPrice"]),
+        maxRetailPrice: Number(row["prices.maxRetailPrice"]),
+        maxPromoPrice: Number(row["prices.maxPromoPrice"]),
+        medianRetailPrice: Number(row["prices.medianRetailPrice"]),
+        medianPromoPrice: Number(row["prices.medianPromoPrice"]),
+        averageDiscountPercentage: Number(row["prices.averageDiscountPercentage"]),
+      };
+    });
+  } catch (error) {
+    console.error("Error processing stats table data:", error);
+    return [];
+  }
+}
+
 export function StatsCardsTable({ globalFilters }: StatsCardsProps) {
-  console.log("🔍 StatsCardsTable globalFilters:", globalFilters);
   const { resultSet, isLoading, error } = useStableQuery(
     () => ({
       measures: [
@@ -85,39 +121,7 @@ export function StatsCardsTable({ globalFilters }: StatsCardsProps) {
   );
 
   const tableData = useMemo(() => {
-    if (!resultSet) return [];
-
-    const pivot = resultSet.tablePivot();
-    if (!pivot || pivot.length === 0) return [];
-
-    return pivot.map((row) => {
-      const granularity = globalFilters.granularity ?? "day";
-      const dateKey = `prices.price_date.${granularity}`;
-      const dateValue = row[dateKey];
-      const formattedDate = dateValue
-        ? new Date(dateValue as string).toLocaleDateString()
-        : "N/A";
-
-      return {
-        date: formattedDate,
-        count: Number(row["prices.count"]),
-        avgRetailPrice: Number(row["prices.averageRetailPrice"]),
-        avgPromoPrice: Number(row["prices.averagePromoPrice"]),
-        totalRetailPrice: Number(row["prices.totalRetailPrice"]),
-        totalPromoPrice: Number(row["prices.totalPromoPrice"]),
-        retailPriceCount: Number(row["prices.retailPriceCount"]),
-        promoPriceCount: Number(row["prices.promoPriceCount"]),
-        minRetailPrice: Number(row["prices.minRetailPrice"]),
-        minPromoPrice: Number(row["prices.minPromoPrice"]),
-        maxRetailPrice: Number(row["prices.maxRetailPrice"]),
-        maxPromoPrice: Number(row["prices.maxPromoPrice"]),
-        medianRetailPrice: Number(row["prices.medianRetailPrice"]),
-        medianPromoPrice: Number(row["prices.medianPromoPrice"]),
-        averageDiscountPercentage: Number(
-          row["prices.averageDiscountPercentage"]
-        ),
-      };
-    });
+    return processStatsTableData(resultSet, globalFilters.granularity);
   }, [resultSet, globalFilters.granularity]);
 
   // Helper functions for formatting

@@ -3,55 +3,82 @@
  * Uses shadcn/ui chart components for modern, professional appearance
  */
 
-import { useMemo } from 'react';
-import { useCubeQuery } from '@cubejs-client/react';
-import { GlobalFilters } from '@/utils/cube/filterUtils';
-import { buildOptimizedQuery } from '@/utils/cube/filterUtils';
-import { ChartWrapper } from '@/config/ChartWrapper';
+import { useMemo } from "react";
+import { GlobalFilters, buildOptimizedQuery } from "@/utils/cube/filterUtils";
+import { useStableQuery } from "@/hooks/useStableQuery";
+import { ChartWrapper } from "@/config/ChartWrapper";
 
 interface StyledTrendChartProps {
   globalFilters: GlobalFilters;
 }
 
-export function StyledTrendChart({ globalFilters }: StyledTrendChartProps) {
-  const query = useMemo(() => buildOptimizedQuery(
-    [
-      'prices.averageRetailPrice',
-      'prices.averagePromoPrice',
-    ],
-    globalFilters
-  ), [globalFilters]);
+function processStyledTrendData(resultSet: any, granularity: string = "day") {
+  if (!resultSet) return [];
 
-  const { isLoading, error, resultSet } = useCubeQuery(query, {
-    castNumerics: true,
-  });
+  try {
+    const pivot = resultSet.tablePivot();
+    if (!pivot || pivot.length === 0) return [];
 
-  const chartData = useMemo(() => {
-    if (!resultSet) return [];
-    const granularity = globalFilters.granularity ?? "day";
     const dateKey = `prices.price_date.${granularity}`;
-    return resultSet.tablePivot().map(row => ({
-      date: new Date(row[dateKey] as string).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
+    return pivot.map((row: any) => ({
+      date: new Date(row[dateKey] as string).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
       }),
-      retailPrice: Number(row['prices.averageRetailPrice']) || 0,
-      promoPrice: Number(row['prices.averagePromoPrice']) || 0,
+      retailPrice: Number(row["prices.averageRetailPrice"]) || 0,
+      promoPrice: Number(row["prices.averagePromoPrice"]) || 0,
     }));
+  } catch (error) {
+    console.error("Error processing styled trend data:", error);
+    return [];
+  }
+}
+
+function calculateTrend(data: any[]) {
+  if (data.length < 2) return undefined;
+
+  const first = data[0].retailPrice;
+  const last = data[data.length - 1].retailPrice;
+
+  if (first === 0) return undefined;
+
+  const change = ((last - first) / first) * 100;
+  return {
+    value: change.toFixed(1),
+    direction: change > 0 ? ("up" as const) : ("down" as const),
+  };
+}
+
+export function StyledTrendChart({ globalFilters }: StyledTrendChartProps) {
+  const query = useMemo(
+    () =>
+      buildOptimizedQuery(
+        ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+        globalFilters
+      ),
+    [globalFilters]
+  );
+
+  const { isLoading, error, resultSet, progress } = useStableQuery(
+    () => query,
+    [
+      globalFilters.retailers?.join(",") ?? "",
+      globalFilters.settlements?.join(",") ?? "",
+      globalFilters.municipalities?.join(",") ?? "",
+      globalFilters.categories?.join(",") ?? "",
+      globalFilters.datePreset ?? "last7days",
+      globalFilters.granularity ?? "day",
+    ],
+    "styled-trend-chart"
+  );
+
+  const data = useMemo(() => {
+    return processStyledTrendData(resultSet, globalFilters.granularity);
   }, [resultSet, globalFilters.granularity]);
 
-  // Calculate trend
   const trend = useMemo(() => {
-    if (chartData.length < 2) return null;
-    const first = chartData[0].retailPrice;
-    const last = chartData[chartData.length - 1].retailPrice;
-    if (first === 0) return null;
-    const change = ((last - first) / first) * 100;
-    return {
-      value: change.toFixed(1),
-      direction: change > 0 ? ('up' as const) : ('down' as const),
-    };
-  }, [chartData]);
+    return calculateTrend(data);
+  }, [data]);
 
   return (
     <ChartWrapper
@@ -61,10 +88,11 @@ export function StyledTrendChart({ globalFilters }: StyledTrendChartProps) {
       error={error}
       trend={trend}
       chartType="area"
-      data={chartData}
+      data={data}
+      progress={progress}
       chartConfigType="trend"
       xAxisKey="date"
-      dataKeys={['retailPrice', 'promoPrice']}
+      dataKeys={["retailPrice", "promoPrice"]}
       showGradients={true}
       yAxisFormatter={(value) => `${value.toFixed(1)} лв`}
       query={query}

@@ -12,6 +12,42 @@ interface ChartDataPoint {
   discount: number;
 }
 
+function processDiscountData(resultSet: any) {
+  if (!resultSet) return [];
+
+  try {
+    const pivot = resultSet.tablePivot();
+    if (!pivot || pivot.length === 0) return [];
+
+    const retailerMap = new Map<string, { discount: number; count: number }>();
+    
+    pivot.forEach((row: any) => {
+      const retailer = row["prices.retailer_name"];
+      const discount = Number(row["prices.averageDiscountPercentage"] || 0);
+      
+      if (!retailer) return;
+      
+      if (retailerMap.has(retailer)) {
+        const existing = retailerMap.get(retailer)!;
+        existing.discount = (existing.discount * existing.count + discount) / (existing.count + 1);
+        existing.count += 1;
+      } else {
+        retailerMap.set(retailer, { discount, count: 1 });
+      }
+    });
+
+    return Array.from(retailerMap.entries())
+      .map(([retailer, data]) => ({
+        retailer,
+        discount: data.discount,
+      }))
+      .sort((a: ChartDataPoint, b: ChartDataPoint) => b.discount - a.discount);
+  } catch (error) {
+    console.error("Error processing discount data:", error);
+    return [];
+  }
+}
+
 export function DiscountChart({ globalFilters }: DiscountChartProps) {
   const query = useMemo(() => {
     // For DiscountChart, we need to ensure retailer dimension is always included
@@ -45,37 +81,8 @@ export function DiscountChart({ globalFilters }: DiscountChartProps) {
     'discount-chart'
   );
 
-  const chartData = useMemo(() => {
-    if (!resultSet) return null;
-
-    const pivot = resultSet.tablePivot();
-    if (!pivot || pivot.length === 0) return null;
-
-    // Group by retailer to handle any potential duplicates
-    const retailerMap = new Map<string, { discount: number; count: number }>();
-    
-    pivot.forEach((row: any) => {
-      const retailer = row["prices.retailer_name"];
-      const discount = Number(row["prices.averageDiscountPercentage"] || 0);
-      
-      if (!retailer) return; // Skip rows without retailer
-      
-      if (retailerMap.has(retailer)) {
-        // If duplicate, average the values
-        const existing = retailerMap.get(retailer)!;
-        existing.discount = (existing.discount * existing.count + discount) / (existing.count + 1);
-        existing.count += 1;
-      } else {
-        retailerMap.set(retailer, { discount, count: 1 });
-      }
-    });
-
-    return Array.from(retailerMap.entries())
-      .map(([retailer, data]) => ({
-        retailer,
-        discount: data.discount,
-      }))
-      .sort((a, b) => b.discount - a.discount); // Sort by discount descending
+  const data = useMemo(() => {
+    return processDiscountData(resultSet);
   }, [resultSet]);
 
   return (
@@ -86,7 +93,7 @@ export function DiscountChart({ globalFilters }: DiscountChartProps) {
       error={error}
       progress={progress}
       chartType="bar"
-      data={chartData}
+      data={data}
       chartConfigType="category"
       xAxisKey="retailer"
       dataKeys={['discount']}

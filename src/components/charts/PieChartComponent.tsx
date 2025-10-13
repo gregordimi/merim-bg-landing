@@ -5,9 +5,8 @@
 
 import { useMemo } from 'react';
 import { Pie, PieChart, Cell } from 'recharts';
-import { useCubeQuery } from '@cubejs-client/react';
-import { GlobalFilters } from '@/utils/cube/filterUtils';
-import { buildOptimizedQuery } from '@/utils/cube/filterUtils';
+import { GlobalFilters, buildOptimizedQuery } from '@/utils/cube/filterUtils';
+import { useStableQuery } from '@/hooks/useStableQuery';
 import { ChartWrapper } from '@/config/ChartWrapper';
 import {
   ChartConfig,
@@ -23,32 +22,25 @@ interface PieChartComponentProps {
   globalFilters: GlobalFilters;
 }
 
-export function PieChartComponent({ globalFilters }: PieChartComponentProps) {
-  const query = useMemo(() => buildOptimizedQuery(
-    ['prices.averageRetailPrice'],
-    globalFilters,
-    ['prices.category_group_name']
-  ), [globalFilters]);
+function processPieData(resultSet: any, limit: number = 8) {
+  if (!resultSet) return { chartData: [], chartConfig: {} };
 
-  const { isLoading, error, resultSet } = useCubeQuery(query, {
-    castNumerics: true,
-  });
-
-  const { chartData, chartConfig } = useMemo(() => {
-    if (!resultSet) return { chartData: [], chartConfig: {} };
+  try {
+    const pivot = resultSet.tablePivot();
+    if (!pivot || pivot.length === 0) return { chartData: [], chartConfig: {} };
     
-    const data = resultSet.tablePivot()
-      .map((row, index) => ({
+    const data = pivot
+      .map((row: any, index: number) => ({
         name: (row['prices.category_group_name'] as string) || 'Unknown',
         value: Number(row['prices.averageRetailPrice']) || 0,
         fill: CHART_COLORS[index % CHART_COLORS.length],
       }))
-      .filter(item => item.value > 0)
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 8); // Limit to top 8 categories for better readability
+      .filter((item: any) => item.value > 0)
+      .sort((a: any, b: any) => b.value - a.value)
+      .slice(0, limit);
 
     const config: ChartConfig = {};
-    data.forEach((item, index) => {
+    data.forEach((item: any, index: number) => {
       const key = item.name.toLowerCase().replace(/\s+/g, '_');
       config[key] = {
         label: item.name,
@@ -57,6 +49,33 @@ export function PieChartComponent({ globalFilters }: PieChartComponentProps) {
     });
 
     return { chartData: data, chartConfig: config };
+  } catch (error) {
+    console.error("Error processing pie data:", error);
+    return { chartData: [], chartConfig: {} };
+  }
+}
+
+export function PieChartComponent({ globalFilters }: PieChartComponentProps) {
+  const query = useMemo(() => buildOptimizedQuery(
+    ['prices.averageRetailPrice'],
+    globalFilters,
+    ['prices.category_group_name']
+  ), [globalFilters]);
+
+  const { isLoading, error, resultSet, progress } = useStableQuery(
+    () => query,
+    [
+      globalFilters.retailers?.join(",") ?? "",
+      globalFilters.settlements?.join(",") ?? "",
+      globalFilters.municipalities?.join(",") ?? "",
+      globalFilters.categories?.join(",") ?? "",
+      globalFilters.datePreset ?? "last7days",
+    ],
+    "pie-chart"
+  );
+
+  const { chartData, chartConfig } = useMemo(() => {
+    return processPieData(resultSet, 8);
   }, [resultSet]);
 
   return (
@@ -65,6 +84,7 @@ export function PieChartComponent({ globalFilters }: PieChartComponentProps) {
       description={`Average retail prices by category (top ${chartData.length} categories)`}
       isLoading={isLoading}
       error={error}
+      progress={progress}
       chartType="custom"
       height="large"
       query={query}
@@ -89,7 +109,7 @@ export function PieChartComponent({ globalFilters }: PieChartComponentProps) {
             dataKey="value"
             paddingAngle={2}
           >
-            {chartData.map((entry, index) => (
+            {chartData.map((entry: any, index: number) => (
               <Cell key={`cell-${index}`} fill={entry.fill} />
             ))}
           </Pie>
@@ -110,7 +130,7 @@ export function PieChartComponent({ globalFilters }: PieChartComponentProps) {
           <p className="text-muted-foreground">Avg Price</p>
           <p className="text-2xl font-bold">
             {chartData.length > 0 
-              ? (chartData.reduce((sum, item) => sum + item.value, 0) / chartData.length).toFixed(2)
+              ? (chartData.reduce((sum: number, item: any) => sum + item.value, 0) / chartData.length).toFixed(2)
               : '0.00'
             } лв
           </p>

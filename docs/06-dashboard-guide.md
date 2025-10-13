@@ -620,11 +620,66 @@ Or use hash parameters:
 
 ---
 
+## Refactored Chart Architecture
+
+All charts in the dashboard have been refactored to follow a consistent, clean architecture pattern:
+
+### Key Improvements
+
+1. **Extracted Data Processing Functions**: Each chart now has dedicated helper functions for data transformation
+2. **Error Handling**: All data processing wrapped in try-catch blocks
+3. **Consistent Returns**: Always return empty arrays instead of null
+4. **Simplified Logic**: Removed complex state management and caching
+5. **Better Maintainability**: Separate concerns between data processing and rendering
+
+### Example Pattern
+
+```typescript
+// Helper function for data processing
+function processChartData(resultSet: any, options?: any) {
+  if (!resultSet) return [];
+  
+  try {
+    const pivot = resultSet.tablePivot();
+    if (!pivot || pivot.length === 0) return [];
+    
+    // Data transformation logic
+    return pivot.map(row => ({
+      // Transform data
+    }));
+  } catch (error) {
+    console.error("Error processing data:", error);
+    return [];
+  }
+}
+
+// Component uses the helper
+export function MyChart({ globalFilters }: Props) {
+  const { resultSet, isLoading, error } = useStableQuery(/* ... */);
+  
+  const data = useMemo(() => {
+    return processChartData(resultSet, options);
+  }, [resultSet, options]);
+  
+  return <ChartWrapper data={data} /* ... */ />;
+}
+```
+
+### Benefits
+
+- **Testability**: Helper functions can be unit tested independently
+- **Reusability**: Same processing logic can be shared across charts
+- **Debugging**: Easier to identify where data transformation fails
+- **Performance**: Cleaner memoization dependencies
+- **Consistency**: All charts follow the same pattern
+
 ## Conclusion
 
-The Analytics Dashboard provides a powerful, user-friendly interface for retail price intelligence. With its advanced filtering, professional charts, and intuitive navigation, it enables users to gain deep insights into pricing trends and competitive positioning.
+The Analytics Dashboard provides a powerful, user-friendly interface for retail price intelligence. With its advanced filtering, professional charts, intuitive navigation, and clean refactored architecture, it enables users to gain deep insights into pricing trends and competitive positioning.
+
+The recent refactoring has made the codebase more maintainable, testable, and consistent across all 23 chart components.
 
 For questions or support, refer to the codebase documentation or contact the development team.
 
 **Last Updated**: January 2025  
-**Version**: 2.0 (Dashboard Sidebar)
+**Version**: 2.1 (Refactored Architecture)

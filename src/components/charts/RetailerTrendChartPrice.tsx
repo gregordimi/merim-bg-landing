@@ -12,6 +12,88 @@ interface ChartDataPoint {
   [retailer: string]: any;
 }
 
+function processRetailerPriceData(resultSet: any, granularity: string = "day") {
+  if (!resultSet) return [];
+
+  try {
+    const pivot = resultSet.tablePivot();
+    if (!pivot || pivot.length === 0) return [];
+
+    const dataMap = new Map();
+
+    pivot.forEach((row: any) => {
+      const dateKey = `prices.price_date.${granularity}`;
+      const date = row[dateKey] || row["prices.price_date"];
+      const retailer = row["prices.retailer_name"];
+      const price = Number(row["prices.averageRetailPrice"] || 0);
+
+      if (!date || !retailer) return;
+
+      if (!dataMap.has(date)) {
+        dataMap.set(date, { date });
+      }
+
+      const dateEntry = dataMap.get(date);
+      dateEntry[retailer] = price > 0 ? price : null;
+    });
+
+    return Array.from(dataMap.values()).sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+  } catch (error) {
+    console.error("Error processing retailer price data:", error);
+    return [];
+  }
+}
+
+function extractRetailers(resultSet: any): string[] {
+  if (!resultSet) return [];
+  
+  try {
+    const pivot = resultSet.tablePivot();
+    if (!pivot || pivot.length === 0) return [];
+
+    const retailerSet = new Set<string>();
+    pivot.forEach((row: any) => {
+      if (row["prices.retailer_name"]) {
+        retailerSet.add(row["prices.retailer_name"]);
+      }
+    });
+    return Array.from(retailerSet);
+  } catch (error) {
+    console.error("Error extracting retailers:", error);
+    return [];
+  }
+}
+
+function calculateRetailerTrend(data: any[], retailers: string[]) {
+  if (data.length < 2 || retailers.length === 0) return undefined;
+  
+  const firstRetailer = retailers[0];
+  const first = data[0][firstRetailer];
+  const last = data[data.length - 1][firstRetailer];
+  
+  if (!first || first === 0) return undefined;
+  
+  const change = ((last - first) / first) * 100;
+  return {
+    value: change.toFixed(1),
+    direction: change > 0 ? "up" as const : "down" as const,
+  };
+}
+
+function formatDate(dateStr: string): string {
+  try {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+  } catch {
+    return dateStr;
+  }
+}
+
 export function RetailerTrendChartPrice({
   globalFilters,
 }: RetailerTrendChartProps) {
@@ -53,87 +135,17 @@ export function RetailerTrendChartPrice({
     "retailer-trend-price-chart"
   );
 
-  const chartData = useMemo(() => {
-    if (!resultSet) return null;
-
-    const pivot = resultSet.tablePivot();
-    if (!pivot || pivot.length === 0) return null;
-
-    // Group data by date and aggregate multiple retailer values
-    const dataMap = new Map();
-
-    pivot.forEach((row: any) => {
-      const granularity = globalFilters.granularity ?? "day";
-      const dateKey = `prices.price_date.${granularity}`;
-      const date = row[dateKey] || row["prices.price_date"];
-      const retailer = row["prices.retailer_name"];
-      const price = Number(row["prices.averageRetailPrice"] || 0);
-
-      if (!date || !retailer) return; // Skip rows without date or retailer
-
-      if (!dataMap.has(date)) {
-        dataMap.set(date, { date });
-      }
-
-      const dateEntry = dataMap.get(date);
-      dateEntry[retailer] = price > 0 ? price : null;
-    });
-
-    // Convert to array and sort by date
-    return Array.from(dataMap.values()).sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-    );
+  const data = useMemo(() => {
+    return processRetailerPriceData(resultSet, globalFilters.granularity);
   }, [resultSet, globalFilters.granularity]);
 
-  // Get unique retailers for line colors
   const retailers = useMemo(() => {
-    if (!resultSet) return [];
-    const pivot = resultSet.tablePivot();
-    if (!pivot || pivot.length === 0) return [];
-
-    const retailerSet = new Set();
-    pivot.forEach((row: any) => {
-      if (row["prices.retailer_name"]) {
-        retailerSet.add(row["prices.retailer_name"]);
-      }
-    });
-    return Array.from(retailerSet) as string[];
+    return extractRetailers(resultSet);
   }, [resultSet]);
 
-  // Use chart data directly
-  const displayData = chartData;
-
-  const formatDate = (dateStr: string) => {
-    try {
-      const date = new Date(dateStr);
-      return date.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      });
-    } catch {
-      return dateStr;
-    }
-  };
-
-  // Calculate trend for the first retailer (if available)
   const trend = useMemo(() => {
-    if (
-      !displayData ||
-      displayData.length < 2 ||
-      !retailers ||
-      retailers.length === 0
-    )
-      return null;
-    const firstRetailer = retailers[0];
-    const first = displayData[0][firstRetailer];
-    const last = displayData[displayData.length - 1][firstRetailer];
-    if (!first || first === 0) return null;
-    const change = ((last - first) / first) * 100;
-    return {
-      value: change.toFixed(1),
-      direction: change > 0 ? ("up" as const) : ("down" as const),
-    };
-  }, [displayData, retailers]);
+    return calculateRetailerTrend(data, retailers);
+  }, [data, retailers]);
 
   return (
     <ChartWrapper
@@ -145,7 +157,7 @@ export function RetailerTrendChartPrice({
       trend={trend}
       height="medium"
       chartType="multiline"
-      data={displayData}
+      data={data}
       xAxisKey="date"
       xAxisFormatter={formatDate}
       yAxisFormatter={(value) => `${value.toFixed(1)} лв`}

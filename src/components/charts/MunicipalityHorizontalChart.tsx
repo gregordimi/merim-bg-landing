@@ -14,6 +14,27 @@ interface ChartDataPoint {
   promoPrice: number;
 }
 
+function processMunicipalityData(resultSet: any, limit: number = 15) {
+  if (!resultSet) return [];
+
+  try {
+    const pivot = resultSet.tablePivot();
+    if (!pivot || pivot.length === 0) return [];
+
+    return pivot
+      .map((row: any) => ({
+        municipality: row["prices.municipality_name"],
+        retailPrice: Number(row["prices.averageRetailPrice"] || 0),
+        promoPrice: Number(row["prices.averagePromoPrice"] || 0),
+      }))
+      .sort((a, b) => b.retailPrice - a.retailPrice)
+      .slice(0, limit);
+  } catch (error) {
+    console.error("Error processing municipality data:", error);
+    return [];
+  }
+}
+
 export function MunicipalityHorizontalChart({ globalFilters }: MunicipalityHorizontalChartProps) {
   const query = useMemo(() => {
     const query = buildOptimizedQuery(
@@ -40,20 +61,8 @@ export function MunicipalityHorizontalChart({ globalFilters }: MunicipalityHoriz
     'municipality-horizontal-chart'
   );
 
-  const chartData = useMemo(() => {
-    if (!resultSet) return null;
-
-    const pivot = resultSet.tablePivot();
-    if (!pivot || pivot.length === 0) return null;
-
-    return pivot
-      .map((row: any) => ({
-        municipality: row["prices.municipality_name"],
-        retailPrice: Number(row["prices.averageRetailPrice"] || 0),
-        promoPrice: Number(row["prices.averagePromoPrice"] || 0),
-      }))
-      .sort((a, b) => b.retailPrice - a.retailPrice) // Sort by retail price descending
-      .slice(0, 15); // Limit to top 15
+  const data = useMemo(() => {
+    return processMunicipalityData(resultSet, 15);
   }, [resultSet]);
 
   return (
@@ -69,10 +78,10 @@ export function MunicipalityHorizontalChart({ globalFilters }: MunicipalityHoriz
       resultSet={resultSet}
       globalFilters={globalFilters}
     >
-      {chartData && chartData.length > 0 ? (
+      {data && data.length > 0 ? (
         <ResponsiveContainer width="100%" height={500}>
           <BarChart
-            data={chartData}
+            data={data}
             layout="vertical"
             margin={{ top: 20, right: 80, left: 150, bottom: 20 }}
           >

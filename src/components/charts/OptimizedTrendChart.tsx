@@ -3,53 +3,24 @@
  */
 
 import { useMemo } from "react";
-import { useCubeQuery } from "@cubejs-client/react";
-import { ChartWrapper } from "../../config/ChartWrapper";
-import { getChartConfig, CHART_HEIGHTS } from "@/config/chartConfig";
-import {
-  Area,
-  AreaChart,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-} from "recharts";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
 import { GlobalFilters, buildOptimizedQuery } from "@/utils/cube/filterUtils";
+import { useStableQuery } from "@/hooks/useStableQuery";
+import { ChartWrapper } from "../../config/ChartWrapper";
 
 interface OptimizedTrendChartProps {
   globalFilters: GlobalFilters;
 }
 
-export function OptimizedTrendChart({
-  globalFilters,
-}: OptimizedTrendChartProps) {
-  // Get chart configuration for trend charts
-  const chartConfig = getChartConfig("trend");
+function processOptimizedData(resultSet: any, granularity: string = "day") {
+  if (!resultSet) return [];
 
-  // Build optimized query that matches pre-aggregations
-  const query = useMemo(
-    () =>
-      buildOptimizedQuery(
-        ["prices.averageRetailPrice", "prices.averagePromoPrice"],
-        globalFilters
-      ),
-    [globalFilters]
-  );
-
-  const { resultSet, isLoading, error } = useCubeQuery(query);
-
-  const chartData = useMemo(() => {
-    if (!resultSet) return [];
-
+  try {
     const pivot = resultSet.tablePivot();
+    if (!pivot || pivot.length === 0) return [];
+
     const dataMap = new Map();
 
     pivot.forEach((row: any) => {
-      const granularity = globalFilters.granularity ?? "day";
       const dateKey = `prices.price_date.${granularity}`;
       const date = row[dateKey] || row["prices.price_date"];
       const retailPrice = Number(row["prices.averageRetailPrice"] || 0);
@@ -77,32 +48,71 @@ export function OptimizedTrendChart({
         promoPrice: item.count > 0 ? item.promoPrice / item.count : 0,
       }))
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  } catch (error) {
+    console.error("Error processing optimized data:", error);
+    return [];
+  }
+}
+
+function calculateTrend(data: any[]) {
+  if (data.length < 2) return undefined;
+
+  const first = data[0].retailPrice;
+  const last = data[data.length - 1].retailPrice;
+
+  if (first === 0) return undefined;
+
+  const change = ((last - first) / first) * 100;
+  return {
+    value: change.toFixed(1),
+    direction: change > 0 ? ("up" as const) : ("down" as const),
+  };
+}
+
+function formatDate(dateStr: string): string {
+  try {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+  } catch {
+    return dateStr;
+  }
+}
+
+export function OptimizedTrendChart({
+  globalFilters,
+}: OptimizedTrendChartProps) {
+  const query = useMemo(
+    () =>
+      buildOptimizedQuery(
+        ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+        globalFilters
+      ),
+    [globalFilters]
+  );
+
+  const { resultSet, isLoading, error, progress } = useStableQuery(
+    () => query,
+    [
+      globalFilters.retailers?.join(",") ?? "",
+      globalFilters.settlements?.join(",") ?? "",
+      globalFilters.municipalities?.join(",") ?? "",
+      globalFilters.categories?.join(",") ?? "",
+      globalFilters.datePreset ?? "last7days",
+      globalFilters.granularity ?? "day",
+    ],
+    "optimized-trend-chart"
+  );
+
+  const data = useMemo(() => {
+    return processOptimizedData(resultSet, globalFilters.granularity);
   }, [resultSet, globalFilters.granularity]);
 
-  // Calculate trend for display
   const trend = useMemo(() => {
-    if (!chartData || chartData.length < 2) return null;
-    const first = chartData[0].retailPrice;
-    const last = chartData[chartData.length - 1].retailPrice;
-    if (first === 0) return null;
-    const change = ((last - first) / first) * 100;
-    return {
-      value: change.toFixed(1),
-      direction: change > 0 ? ("up" as const) : ("down" as const),
-    };
-  }, [chartData]);
-
-  const formatDate = (dateStr: string) => {
-    try {
-      const date = new Date(dateStr);
-      return date.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      });
-    } catch {
-      return dateStr;
-    }
-  };
+    return calculateTrend(data);
+  }, [data]);
 
   return (
     <ChartWrapper
@@ -110,16 +120,20 @@ export function OptimizedTrendChart({
       description="Retail and promotional price trends over time - uses pre-aggregations for fast performance"
       isLoading={isLoading}
       error={error}
+      progress={progress}
       trend={trend}
       height="medium"
       chartType="area"
-      data={chartData}
+      data={data}
       chartConfigType="trend"
       xAxisKey="date"
       xAxisFormatter={formatDate}
       yAxisFormatter={(value) => `${value.toFixed(1)} лв`}
-      dataKeys={['retailPrice', 'promoPrice']}
+      dataKeys={["retailPrice", "promoPrice"]}
       showGradients={true}
+      query={query}
+      resultSet={resultSet}
+      globalFilters={globalFilters}
     />
   );
 }

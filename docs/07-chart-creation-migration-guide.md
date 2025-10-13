@@ -893,5 +893,166 @@ To add new debug features, modify `ChartWrapperDebug.tsx`:
 
 All charts using ChartWrapper will automatically get the new debug features.
 
+## Refactored Chart Pattern
+
+### The New Standard Pattern
+
+All charts now follow a consistent refactored pattern with extracted helper functions:
+
+```typescript
+// 1. Extract data processing into helper functions
+function processMyChartData(resultSet: any, options?: any) {
+  if (!resultSet) return [];
+  
+  try {
+    const pivot = resultSet.tablePivot();
+    if (!pivot || pivot.length === 0) return [];
+    
+    // Data transformation logic
+    return pivot
+      .map((row: any) => ({
+        name: row["dimension"],
+        value: Number(row["measure"] || 0),
+      }))
+      .filter((item: any) => item.value > 0)
+      .sort((a: any, b: any) => b.value - a.value);
+  } catch (error) {
+    console.error("Error processing chart data:", error);
+    return [];
+  }
+}
+
+// 2. Use the helper in your component
+export function MyChart({ globalFilters }: Props) {
+  const query = useMemo(() => buildOptimizedQuery(
+    ['prices.measure'],
+    globalFilters
+  ), [globalFilters]);
+
+  const { resultSet, isLoading, error } = useStableQuery(
+    () => query,
+    [/* dependencies */],
+    'my-chart'
+  );
+
+  const data = useMemo(() => {
+    return processMyChartData(resultSet, options);
+  }, [resultSet, options]);
+
+  return (
+    <ChartWrapper
+      title="My Chart"
+      isLoading={isLoading}
+      error={error}
+      chartType="bar"
+      data={data}
+      chartConfigType="category"
+      xAxisKey="name"
+      dataKeys={['value']}
+      query={query}
+      resultSet={resultSet}
+      globalFilters={globalFilters}
+    />
+  );
+}
+```
+
+### Benefits of This Pattern
+
+1. **Separation of Concerns**: Data processing logic is separate from component logic
+2. **Testability**: Helper functions can be unit tested independently
+3. **Error Handling**: Consistent try-catch blocks prevent crashes
+4. **Reusability**: Helper functions can be shared across similar charts
+5. **Debugging**: Easier to identify where data transformation fails
+6. **Consistency**: All charts follow the same pattern
+
+### Helper Function Guidelines
+
+**Always include:**
+- Null/undefined checks at the start
+- Try-catch error handling
+- Empty array returns (never null)
+- Console.error for debugging
+- TypeScript type annotations where helpful
+
+**Example with multiple helpers:**
+
+```typescript
+// Process main data
+function processData(resultSet: any) {
+  if (!resultSet) return [];
+  try {
+    // Processing logic
+  } catch (error) {
+    console.error("Error processing data:", error);
+    return [];
+  }
+}
+
+// Extract dimension values
+function extractDimensions(resultSet: any): string[] {
+  if (!resultSet) return [];
+  try {
+    // Extraction logic
+  } catch (error) {
+    console.error("Error extracting dimensions:", error);
+    return [];
+  }
+}
+
+// Calculate metrics
+function calculateMetrics(data: any[]) {
+  if (data.length === 0) return undefined;
+  try {
+    // Calculation logic
+  } catch (error) {
+    console.error("Error calculating metrics:", error);
+    return undefined;
+  }
+}
+```
+
+### Migration to Refactored Pattern
+
+When refactoring existing charts:
+
+1. **Identify data processing logic** in useMemo hooks
+2. **Extract to helper functions** above the component
+3. **Add error handling** with try-catch blocks
+4. **Return empty arrays** instead of null
+5. **Simplify component** to just call helpers
+6. **Test thoroughly** with various filter combinations
+
+**Before:**
+```typescript
+const data = useMemo(() => {
+  if (!resultSet) return null;
+  const pivot = resultSet.tablePivot();
+  if (!pivot) return null;
+  // Complex inline processing...
+  return processed;
+}, [resultSet]);
+```
+
+**After:**
+```typescript
+const data = useMemo(() => {
+  return processChartData(resultSet, options);
+}, [resultSet, options]);
+```
+
+### Real-World Examples
+
+All 23 charts in the dashboard have been refactored to this pattern:
+
+- **TrendChart**: `processTrendData()`, `calculateTrend()`, `formatDate()`
+- **CategoryChart**: `processCategoryData()`
+- **RegionalTrendChart**: `processRegionalData()`, `extractMunicipalities()`, `calculateRegionalTrend()`
+- **RetailerTrendChartDiscount**: `processRetailerDiscountData()`, `extractRetailers()`, `calculateRetailerTrend()`
+- **StatsCards**: `processStatsData()`
+- **StatsCardsTable**: `processStatsTableData()`
+
+Refer to these implementations for guidance when creating new charts.
+
 **Last Updated**: January 2025  
-**Version**: 1.1 (Enhanced ChartWrapper with Centralized Debug)
+**Version**: 2.0 (Refactored Architecture with Helper Functions)

@@ -1,46 +1,34 @@
-import { useMemo } from 'react';
-import { useCubeQuery } from '@cubejs-client/react';
+import { useMemo } from "react";
+import { useCubeQuery, UseCubeQueryResult } from "@cubejs-client/react";
+import { Query } from "@cubejs-client/core";
 
-// Global cache to prevent duplicate queries across all components
-const queryCache = new Map<string, any>();
-let queryBuildCount = 0;
-
-export function useStableQuery(queryBuilder: () => any, dependencies: any[], componentId?: string) {
-  // Create a single stable string from all dependencies, including component ID to prevent cache collisions
-  const stableKey = `${componentId || 'unknown'}:${dependencies.map(d => d ?? 'null').join('|')}`;
-  
-  // Only rebuild query when the stable key actually changes
+export function useStableQuery(
+  queryBuilder: () => Query,
+  dependencies: any[],
+  componentId?: string
+): UseCubeQueryResult<Query, any> {
+  // Simple memoization based on dependencies only
   const query = useMemo(() => {
-    // Check if we already have this query cached
-    if (queryCache.has(stableKey)) {
-      console.log(`🔄 [${++queryBuildCount}] Using CACHED query for key: "${stableKey}"`);
-      return queryCache.get(stableKey);
-    }
-    
-    // Build new query and cache it
     const builtQuery = queryBuilder();
-    console.log(`🆕 [${++queryBuildCount}] Building NEW query for key: "${stableKey}"`);
-    console.log('Query:', JSON.stringify(builtQuery, null, 2));
-    
-    queryCache.set(stableKey, builtQuery);
+    console.log(
+      `🆕 Building query for ${componentId}:`,
+      JSON.stringify(builtQuery, null, 2)
+    );
     return builtQuery;
-  }, [stableKey]);
-  
+  }, dependencies);
+
   const result = useCubeQuery(query, {
     castNumerics: true,
     resetResultSetOnChange: false,
     subscribe: false,
-    // Let Cube.js handle retries - don't artificially interrupt
   });
-  
-  // Debug the actual query result
-  console.log('🔍 Query result:', {
-    componentId,
+
+  console.log(`🔍 ${componentId} result:`, {
     isLoading: result.isLoading,
-    error: result.error,
-    resultSet: result.resultSet ? 'HAS_DATA' : 'NO_DATA',
-    progress: result.progress
+    error: result.error?.message,
+    hasData: !!result.resultSet,
+    progress: result.progress,
   });
-  
+
   return result;
 }

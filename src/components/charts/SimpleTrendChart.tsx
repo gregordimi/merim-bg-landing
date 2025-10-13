@@ -24,6 +24,52 @@ interface ChartDataPoint {
   promoPrice: number;
 }
 
+function processSimpleData(resultSet: any, granularity: string = "day") {
+  if (!resultSet) return [];
+
+  try {
+    const pivot = resultSet.tablePivot();
+    if (!pivot || pivot.length === 0) return [];
+
+    const dateKey = `prices.price_date.${granularity}`;
+    return pivot.map((row: any) => ({
+      date: row[dateKey] || row["prices.price_date"],
+      retailPrice: Number(row["prices.averageRetailPrice"] || 0),
+      promoPrice: Number(row["prices.averagePromoPrice"] || 0),
+    }));
+  } catch (error) {
+    console.error("Error processing simple data:", error);
+    return [];
+  }
+}
+
+function calculateTrend(data: any[]) {
+  if (data.length < 2) return undefined;
+  
+  const first = data[0].retailPrice;
+  const last = data[data.length - 1].retailPrice;
+  
+  if (first === 0) return undefined;
+  
+  const change = ((last - first) / first) * 100;
+  return {
+    value: change.toFixed(1),
+    direction: change > 0 ? "up" as const : "down" as const,
+  };
+}
+
+function formatDate(dateStr: string): string {
+  try {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+  } catch {
+    return dateStr;
+  }
+}
+
 export function SimpleTrendChart({ globalFilters }: SimpleTrendChartProps) {
   // Build a simple query without filtered dimensions
   const query = useMemo(
@@ -52,47 +98,13 @@ export function SimpleTrendChart({ globalFilters }: SimpleTrendChartProps) {
     "simple-trend-chart"
   );
 
-  const chartData = useMemo(() => {
-    if (!resultSet) return null;
+  const data = useMemo(() => {
+    return processSimpleData(resultSet, globalFilters.granularity);
+  }, [resultSet, globalFilters.granularity]);
 
-    const pivot = resultSet.tablePivot();
-    if (!pivot || pivot.length === 0) return null;
-
-    return pivot.map((row: any) => {
-      const granularity = globalFilters.granularity ?? "day";
-      const dateKey = `prices.price_date.${granularity}`;
-      return {
-        date: row[dateKey] || row["prices.price_date"],
-        retailPrice: Number(row["prices.averageRetailPrice"] || 0),
-        promoPrice: Number(row["prices.averagePromoPrice"] || 0),
-      };
-    });
-  }, [resultSet, globalFilters]);
-
-  const formatDate = (dateStr: string) => {
-    try {
-      const date = new Date(dateStr);
-      return date.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      });
-    } catch {
-      return dateStr;
-    }
-  };
-
-  // Calculate trend for display
   const trend = useMemo(() => {
-    if (!chartData || chartData.length < 2) return null;
-    const first = chartData[0].retailPrice;
-    const last = chartData[chartData.length - 1].retailPrice;
-    if (first === 0) return null;
-    const change = ((last - first) / first) * 100;
-    return {
-      value: change.toFixed(1),
-      direction: change > 0 ? ("up" as const) : ("down" as const),
-    };
-  }, [chartData]);
+    return calculateTrend(data);
+  }, [data]);
 
   return (
     <ChartWrapper
@@ -103,7 +115,7 @@ export function SimpleTrendChart({ globalFilters }: SimpleTrendChartProps) {
       progress={progress}
       trend={trend}
       chartType="area"
-      data={chartData}
+      data={data}
       chartConfigType="trend"
       xAxisKey="date"
       xAxisFormatter={formatDate}

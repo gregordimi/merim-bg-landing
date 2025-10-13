@@ -12,6 +12,86 @@ interface ChartDataPoint {
   [category: string]: any;
 }
 
+function processCategoryData(resultSet: any, granularity: string = "day") {
+  if (!resultSet) return [];
+
+  try {
+    const pivot = resultSet.tablePivot();
+    if (!pivot || pivot.length === 0) return [];
+
+    const dataMap = new Map();
+
+    pivot.forEach((row: any) => {
+      const dateKey = `prices.price_date.${granularity}`;
+      const date = row[dateKey] || row["prices.price_date"];
+      const category = row["prices.category_group_name"];
+      const price = Number(row["prices.averageRetailPrice"] || 0);
+
+      if (!dataMap.has(date)) {
+        dataMap.set(date, { date });
+      }
+
+      const dateEntry = dataMap.get(date);
+      dateEntry[category] = price > 0 ? price : null;
+    });
+
+    return Array.from(dataMap.values()).sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+  } catch (error) {
+    console.error("Error processing category data:", error);
+    return [];
+  }
+}
+
+function extractCategories(resultSet: any): string[] {
+  if (!resultSet) return [];
+  
+  try {
+    const pivot = resultSet.tablePivot();
+    if (!pivot || pivot.length === 0) return [];
+
+    const categorySet = new Set<string>();
+    pivot.forEach((row: any) => {
+      if (row["prices.category_group_name"]) {
+        categorySet.add(row["prices.category_group_name"]);
+      }
+    });
+    return Array.from(categorySet);
+  } catch (error) {
+    console.error("Error extracting categories:", error);
+    return [];
+  }
+}
+
+function calculateCategoryTrend(data: any[], categories: string[]) {
+  if (data.length < 2 || categories.length === 0) return undefined;
+  
+  const firstCategory = categories[0];
+  const first = data[0][firstCategory];
+  const last = data[data.length - 1][firstCategory];
+  
+  if (!first || first === 0) return undefined;
+  
+  const change = ((last - first) / first) * 100;
+  return {
+    value: change.toFixed(1),
+    direction: change > 0 ? "up" as const : "down" as const,
+  };
+}
+
+function formatDate(dateStr: string): string {
+  try {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+  } catch {
+    return dateStr;
+  }
+}
+
 export function CategoryTrendChart({ globalFilters }: CategoryTrendChartProps) {
   // Build the query
   const query = useMemo(() => {
@@ -39,85 +119,17 @@ export function CategoryTrendChart({ globalFilters }: CategoryTrendChartProps) {
     "category-trend-chart"
   );
 
-  const chartData = useMemo(() => {
-    if (!resultSet) return null;
-
-    const pivot = resultSet.tablePivot();
-    if (!pivot || pivot.length === 0) return null;
-
-    // Group data by date and aggregate multiple category values
-    const dataMap = new Map();
-
-    pivot.forEach((row: any) => {
-      const granularity = globalFilters.granularity ?? "day";
-      const dateKey = `prices.price_date.${granularity}`;
-      const date = row[dateKey] || row["prices.price_date"];
-      const category = row["prices.category_group_name"];
-      const price = Number(row["prices.averageRetailPrice"] || 0);
-
-      if (!dataMap.has(date)) {
-        dataMap.set(date, { date });
-      }
-
-      const dateEntry = dataMap.get(date);
-      dateEntry[category] = price > 0 ? price : null;
-    });
-
-    // Convert to array and sort by date
-    return Array.from(dataMap.values()).sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-    );
+  const data = useMemo(() => {
+    return processCategoryData(resultSet, globalFilters.granularity);
   }, [resultSet, globalFilters.granularity]);
 
-  // Get unique categories for line colors
   const categories = useMemo(() => {
-    if (!resultSet) return [];
-    const pivot = resultSet.tablePivot();
-    if (!pivot || pivot.length === 0) return [];
-
-    const categorySet = new Set();
-    pivot.forEach((row: any) => {
-      if (row["prices.category_group_name"]) {
-        categorySet.add(row["prices.category_group_name"]);
-      }
-    });
-    return Array.from(categorySet) as string[];
+    return extractCategories(resultSet);
   }, [resultSet]);
 
-  // Use chart data directly
-  const displayData = chartData;
-
-  const formatDate = (dateStr: string) => {
-    try {
-      const date = new Date(dateStr);
-      return date.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      });
-    } catch {
-      return dateStr;
-    }
-  };
-
-  // Calculate trend for the first category (if available)
   const trend = useMemo(() => {
-    if (
-      !displayData ||
-      displayData.length < 2 ||
-      !categories ||
-      categories.length === 0
-    )
-      return null;
-    const firstCategory = categories[0];
-    const first = displayData[0][firstCategory];
-    const last = displayData[displayData.length - 1][firstCategory];
-    if (!first || first === 0) return null;
-    const change = ((last - first) / first) * 100;
-    return {
-      value: change.toFixed(1),
-      direction: change > 0 ? ("up" as const) : ("down" as const),
-    };
-  }, [displayData, categories]);
+    return calculateCategoryTrend(data, categories);
+  }, [data, categories]);
 
   return (
     <ChartWrapper
@@ -129,7 +141,7 @@ export function CategoryTrendChart({ globalFilters }: CategoryTrendChartProps) {
       trend={trend}
       height="medium"
       chartType="multiline"
-      data={displayData}
+      data={data}
       xAxisKey="date"
       xAxisFormatter={formatDate}
       yAxisFormatter={(value) => `${value.toFixed(1)} лв`}

@@ -12,6 +12,86 @@ interface ChartDataPoint {
   [municipality: string]: any;
 }
 
+function processRegionalData(resultSet: any, granularity: string = "day") {
+  if (!resultSet) return [];
+
+  try {
+    const pivot = resultSet.tablePivot();
+    if (!pivot || pivot.length === 0) return [];
+
+    const dataMap = new Map();
+
+    pivot.forEach((row: any) => {
+      const dateKey = `prices.price_date.${granularity}`;
+      const date = row[dateKey] || row["prices.price_date"];
+      const municipality = row["prices.municipality_name"];
+      const price = Number(row["prices.averageRetailPrice"] || 0);
+
+      if (!dataMap.has(date)) {
+        dataMap.set(date, { date });
+      }
+
+      const dateEntry = dataMap.get(date);
+      dateEntry[municipality] = price > 0 ? price : null;
+    });
+
+    return Array.from(dataMap.values()).sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+  } catch (error) {
+    console.error("Error processing regional data:", error);
+    return [];
+  }
+}
+
+function extractMunicipalities(resultSet: any): string[] {
+  if (!resultSet) return [];
+  
+  try {
+    const pivot = resultSet.tablePivot();
+    if (!pivot || pivot.length === 0) return [];
+
+    const municipalitySet = new Set<string>();
+    pivot.forEach((row: any) => {
+      if (row["prices.municipality_name"]) {
+        municipalitySet.add(row["prices.municipality_name"]);
+      }
+    });
+    return Array.from(municipalitySet);
+  } catch (error) {
+    console.error("Error extracting municipalities:", error);
+    return [];
+  }
+}
+
+function calculateRegionalTrend(data: any[], municipalities: string[]) {
+  if (data.length < 2 || municipalities.length === 0) return undefined;
+  
+  const firstMunicipality = municipalities[0];
+  const first = data[0][firstMunicipality];
+  const last = data[data.length - 1][firstMunicipality];
+  
+  if (!first || first === 0) return undefined;
+  
+  const change = ((last - first) / first) * 100;
+  return {
+    value: change.toFixed(1),
+    direction: change > 0 ? "up" as const : "down" as const,
+  };
+}
+
+function formatDate(dateStr: string): string {
+  try {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+  } catch {
+    return dateStr;
+  }
+}
+
 export function RegionalTrendChart({ globalFilters }: RegionalTrendChartProps) {
   // Build the query
   const query = useMemo(() => {
@@ -39,85 +119,17 @@ export function RegionalTrendChart({ globalFilters }: RegionalTrendChartProps) {
     "regional-trend-chart"
   );
 
-  const chartData = useMemo(() => {
-    if (!resultSet) return null;
-
-    const pivot = resultSet.tablePivot();
-    if (!pivot || pivot.length === 0) return null;
-
-    // Group data by date and aggregate multiple municipality values
-    const dataMap = new Map();
-
-    pivot.forEach((row: any) => {
-      const granularity = globalFilters.granularity ?? "day";
-      const dateKey = `prices.price_date.${granularity}`;
-      const date = row[dateKey] || row["prices.price_date"];
-      const municipality = row["prices.municipality_name"];
-      const price = Number(row["prices.averageRetailPrice"] || 0);
-
-      if (!dataMap.has(date)) {
-        dataMap.set(date, { date });
-      }
-
-      const dateEntry = dataMap.get(date);
-      dateEntry[municipality] = price > 0 ? price : null;
-    });
-
-    // Convert to array and sort by date
-    return Array.from(dataMap.values()).sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-    );
+  const data = useMemo(() => {
+    return processRegionalData(resultSet, globalFilters.granularity);
   }, [resultSet, globalFilters.granularity]);
 
-  // Get unique municipalities for line colors
   const municipalities = useMemo(() => {
-    if (!resultSet) return [];
-    const pivot = resultSet.tablePivot();
-    if (!pivot || pivot.length === 0) return [];
-
-    const municipalitySet = new Set();
-    pivot.forEach((row: any) => {
-      if (row["prices.municipality_name"]) {
-        municipalitySet.add(row["prices.municipality_name"]);
-      }
-    });
-    return Array.from(municipalitySet) as string[];
+    return extractMunicipalities(resultSet);
   }, [resultSet]);
 
-  // Use chart data directly
-  const displayData = chartData;
-
-  const formatDate = (dateStr: string) => {
-    try {
-      const date = new Date(dateStr);
-      return date.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      });
-    } catch {
-      return dateStr;
-    }
-  };
-
-  // Calculate trend for the first municipality (if available)
   const trend = useMemo(() => {
-    if (
-      !displayData ||
-      displayData.length < 2 ||
-      !municipalities ||
-      municipalities.length === 0
-    )
-      return null;
-    const firstMunicipality = municipalities[0];
-    const first = displayData[0][firstMunicipality];
-    const last = displayData[displayData.length - 1][firstMunicipality];
-    if (!first || first === 0) return null;
-    const change = ((last - first) / first) * 100;
-    return {
-      value: change.toFixed(1),
-      direction: change > 0 ? ("up" as const) : ("down" as const),
-    };
-  }, [displayData, municipalities]);
+    return calculateRegionalTrend(data, municipalities);
+  }, [data, municipalities]);
 
   return (
     <ChartWrapper
@@ -129,7 +141,7 @@ export function RegionalTrendChart({ globalFilters }: RegionalTrendChartProps) {
       trend={trend}
       height="medium"
       chartType="multiline"
-      data={displayData}
+      data={data}
       xAxisKey="date"
       xAxisFormatter={formatDate}
       yAxisFormatter={(value) => `${value.toFixed(1)} лв`}

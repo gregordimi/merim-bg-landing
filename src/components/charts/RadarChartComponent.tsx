@@ -5,9 +5,8 @@
 
 import { useMemo } from 'react';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts';
-import { useCubeQuery } from '@cubejs-client/react';
-import { GlobalFilters } from '@/utils/cube/filterUtils';
-import { buildOptimizedQuery } from '@/utils/cube/filterUtils';
+import { GlobalFilters, buildOptimizedQuery } from '@/utils/cube/filterUtils';
+import { useStableQuery } from '@/hooks/useStableQuery';
 import { ChartWrapper } from '@/config/ChartWrapper';
 import {
   ChartConfig,
@@ -37,6 +36,25 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
+function processRadarData(resultSet: any) {
+  if (!resultSet) return [];
+
+  try {
+    const pivot = resultSet.tablePivot();
+    if (!pivot || pivot.length === 0) return [];
+    
+    return pivot.map((row: any) => ({
+      retailer: (row['prices.retailer_name'] as string)?.slice(0, 20) || 'Unknown',
+      retailPrice: Number(row['prices.averageRetailPrice']) || 0,
+      promoPrice: Number(row['prices.averagePromoPrice']) || 0,
+      discountRate: Number(row['prices.averageDiscountPercentage']) || 0,
+    })).filter((item: any) => item.retailPrice > 0);
+  } catch (error) {
+    console.error("Error processing radar data:", error);
+    return [];
+  }
+}
+
 export function RadarChartComponent({ globalFilters }: RadarChartComponentProps) {
   const query = useMemo(() => buildOptimizedQuery(
     [
@@ -48,21 +66,20 @@ export function RadarChartComponent({ globalFilters }: RadarChartComponentProps)
     ['prices.retailer_name']
   ), [globalFilters]);
 
-  const { isLoading, error, resultSet } = useCubeQuery(query, {
-    castNumerics: true,
-  });
+  const { isLoading, error, resultSet, progress } = useStableQuery(
+    () => query,
+    [
+      globalFilters.retailers?.join(",") ?? "",
+      globalFilters.settlements?.join(",") ?? "",
+      globalFilters.municipalities?.join(",") ?? "",
+      globalFilters.categories?.join(",") ?? "",
+      globalFilters.datePreset ?? "last7days",
+    ],
+    "radar-chart"
+  );
 
   const chartData = useMemo(() => {
-    if (!resultSet) return [];
-    
-    const data = resultSet.tablePivot().map(row => ({
-      retailer: (row['prices.retailer_name'] as string)?.slice(0, 20) || 'Unknown',
-      retailPrice: Number(row['prices.averageRetailPrice']) || 0,
-      promoPrice: Number(row['prices.averagePromoPrice']) || 0,
-      discountRate: Number(row['prices.averageDiscountPercentage']) || 0,
-    })).filter(item => item.retailPrice > 0);
-
-    return data;
+    return processRadarData(resultSet);
   }, [resultSet]);
 
   return (
@@ -71,6 +88,7 @@ export function RadarChartComponent({ globalFilters }: RadarChartComponentProps)
       description="Multi-dimensional view of pricing metrics across retailers"
       isLoading={isLoading}
       error={error}
+      progress={progress}
       chartType="custom"
       height="xl"
       query={query}

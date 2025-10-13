@@ -14,6 +14,51 @@ interface ChartDataPoint {
   maximum: number;
 }
 
+function processCategoryRangeData(resultSet: any, limit: number = 50) {
+  if (!resultSet) return [];
+
+  try {
+    const pivot = resultSet.tablePivot();
+    if (!pivot || pivot.length === 0) return [];
+
+    const categoryMap = new Map<string, ChartDataPoint>();
+    
+    pivot.forEach((row: any) => {
+      const category = row["prices.category_group_name"];
+      if (!category) return;
+      
+      const average = Number(row["prices.averageRetailPrice"] || 0);
+      const minimum = Number(row["prices.minRetailPrice"] || 0);
+      const maximum = Number(row["prices.maxRetailPrice"] || 0);
+      
+      if (categoryMap.has(category)) {
+        const existing = categoryMap.get(category)!;
+        categoryMap.set(category, {
+          category,
+          average: Math.max(existing.average, average),
+          minimum: Math.min(existing.minimum, minimum),
+          maximum: Math.max(existing.maximum, maximum),
+        });
+      } else {
+        categoryMap.set(category, {
+          category,
+          average,
+          minimum,
+          maximum,
+        });
+      }
+    });
+
+    return Array.from(categoryMap.values())
+      .filter(item => item.average > 0 || item.minimum > 0 || item.maximum > 0)
+      .sort((a: ChartDataPoint, b: ChartDataPoint) => b.average - a.average)
+      .slice(0, limit);
+  } catch (error) {
+    console.error("Error processing category range data:", error);
+    return [];
+  }
+}
+
 export function CategoryRangeChart({ globalFilters }: CategoryRangeChartProps) {
   const query = useMemo(() => {
     // Build a query without time dimensions for aggregated stats
@@ -45,46 +90,8 @@ export function CategoryRangeChart({ globalFilters }: CategoryRangeChartProps) {
     'category-range-chart'
   );
 
-  const chartData = useMemo(() => {
-    if (!resultSet) return null;
-
-    const pivot = resultSet.tablePivot();
-    if (!pivot || pivot.length === 0) return null;
-
-    // Deduplicate by category name
-    const categoryMap = new Map<string, ChartDataPoint>();
-    
-    pivot.forEach((row: any) => {
-      const category = row["prices.category_group_name"];
-      if (!category) return;
-      
-      const average = Number(row["prices.averageRetailPrice"] || 0);
-      const minimum = Number(row["prices.minRetailPrice"] || 0);
-      const maximum = Number(row["prices.maxRetailPrice"] || 0);
-      
-      // If category already exists, take the max values (or could aggregate differently)
-      if (categoryMap.has(category)) {
-        const existing = categoryMap.get(category)!;
-        categoryMap.set(category, {
-          category,
-          average: Math.max(existing.average, average),
-          minimum: Math.min(existing.minimum, minimum),
-          maximum: Math.max(existing.maximum, maximum),
-        });
-      } else {
-        categoryMap.set(category, {
-          category,
-          average,
-          minimum,
-          maximum,
-        });
-      }
-    });
-
-    return Array.from(categoryMap.values())
-      .filter(item => item.average > 0 || item.minimum > 0 || item.maximum > 0) // Filter out zero entries
-      .sort((a, b) => b.average - a.average) // Sort by average price descending
-      .slice(0, 50); // Limit to top 50 categories to avoid overcrowding
+  const data = useMemo(() => {
+    return processCategoryRangeData(resultSet, 50);
   }, [resultSet]);
 
   return (
@@ -95,7 +102,7 @@ export function CategoryRangeChart({ globalFilters }: CategoryRangeChartProps) {
       error={error}
       progress={progress}
       chartType="bar"
-      data={chartData}
+      data={data}
       chartConfigType="category"
       xAxisKey="category"
       dataKeys={['minimum', 'average', 'maximum']}
