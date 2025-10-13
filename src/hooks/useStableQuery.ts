@@ -9,6 +9,7 @@ export function useStableQuery(
 ): UseCubeQueryResult<Query, any> {
   // Track if we've ever successfully loaded data
   const hasLoadedOnce = useRef(false);
+  const lastValidResultSet = useRef<any>(null);
   
   // Simple memoization based on dependencies only
   const query = useMemo(() => {
@@ -26,10 +27,11 @@ export function useStableQuery(
     subscribe: false,
   });
 
-  // Track successful loads
+  // Keep the last valid resultSet to prevent data loss
   useEffect(() => {
     if (result.resultSet && !result.isLoading && !result.error) {
       hasLoadedOnce.current = true;
+      lastValidResultSet.current = result.resultSet;
     }
   }, [result.resultSet, result.isLoading, result.error]);
 
@@ -41,5 +43,9 @@ export function useStableQuery(
     hasLoadedOnce: hasLoadedOnce.current,
   });
 
-  return result;
+  // Return result with stable resultSet
+  return {
+    ...result,
+    resultSet: result.resultSet || (hasLoadedOnce.current ? lastValidResultSet.current : null)
+  };
 }
