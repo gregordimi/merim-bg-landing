@@ -13,7 +13,8 @@ export const content = {
       aboutUs: "За нас", 
       blog: "Новини",
       terms: "Общи условия",
-      privacy: "Поверителност"
+      privacy: "Поверителност",
+      dashboard: "Цените"
     },
     ctaButton: "Свали безплатно",
   },
