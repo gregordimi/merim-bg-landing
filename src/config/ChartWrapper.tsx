@@ -1,7 +1,8 @@
 import { ReactNode, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertCircle, TrendingUp } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { AlertCircle, TrendingUp, RefreshCw } from 'lucide-react';
 import { CHART_HEIGHTS, getChartConfig, CHART_COLORS } from '@/config/chartConfig';
 import {
   Area,
@@ -16,11 +17,21 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  RadarChart,
+  Radar,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
 } from "recharts";
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
 } from "@/components/ui/chart";
 import { ChartWrapperDebug } from './ChartWrapperDebug';
 import { GlobalFilters } from '@/utils/cube/filterUtils';
@@ -30,7 +41,7 @@ interface TrendData {
   direction: 'up' | 'down';
 }
 
-type ChartType = 'area' | 'bar' | 'multiline' | 'custom';
+type ChartType = 'area' | 'bar' | 'horizontal-bar' | 'multiline' | 'pie' | 'radar' | 'custom';
 
 interface ChartWrapperProps {
   title: string;
@@ -57,6 +68,22 @@ interface ChartWrapperProps {
   
   // Multi-line chart specific props
   dynamicKeys?: string[]; // For multi-line charts where keys are dynamic (e.g., retailer names)
+  
+  // Horizontal bar specific props
+  layout?: 'horizontal' | 'vertical';
+  yAxisWidth?: number;
+  
+  // Pie chart specific props
+  innerRadius?: number;
+  outerRadius?: number;
+  pieDataKey?: string;
+  showPercentage?: boolean;
+  
+  // Radar chart specific props
+  radarDataKey?: string;
+  
+  // Reload functionality
+  onReload?: () => void;
   
   // Debug props (optional - automatically enabled with ?dev=1)
   query?: any;
@@ -87,6 +114,22 @@ export function ChartWrapper({
   
   // Multi-line chart specific props
   dynamicKeys = [],
+  
+  // Horizontal bar specific props
+  layout = 'horizontal',
+  yAxisWidth = 130,
+  
+  // Pie chart specific props
+  innerRadius = 60,
+  outerRadius = 120,
+  pieDataKey = 'value',
+  showPercentage = true,
+  
+  // Radar chart specific props
+  radarDataKey = 'subject',
+  
+  // Reload functionality
+  onReload,
   
   // Debug props
   query,
@@ -129,7 +172,13 @@ export function ChartWrapper({
         <CardContent>
           <div className={`flex flex-col items-center justify-center h-[${chartHeight}px] text-muted-foreground`}>
             <AlertCircle className="h-12 w-12 mb-4" />
-            <p className="text-sm">{error.message || 'Failed to load data'}</p>
+            <p className="text-sm mb-4">{error.message || 'Failed to load data'}</p>
+            {onReload && (
+              <Button onClick={onReload} variant="outline" size="sm">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Retry
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -144,8 +193,14 @@ export function ChartWrapper({
 
     if (!data || data.length === 0) {
       return (
-        <div className={`w-full h-[${chartHeight}px] flex items-center justify-center text-muted-foreground`}>
-          No data available for the selected filters
+        <div className={`w-full h-[${chartHeight}px] flex flex-col items-center justify-center text-muted-foreground`}>
+          <p className="mb-4">No data available for the selected filters</p>
+          {onReload && (
+            <Button onClick={onReload} variant="outline" size="sm">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Reload
+            </Button>
+          )}
         </div>
       );
     }
@@ -251,6 +306,51 @@ export function ChartWrapper({
       );
     }
 
+    if (chartType === 'horizontal-bar') {
+      return (
+        <ResponsiveContainer width="100%" height={chartHeight}>
+          <BarChart
+            data={data}
+            layout="vertical"
+            margin={{ top: 20, right: 80, left: yAxisWidth + 20, bottom: 20 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis 
+              type="number" 
+              tickFormatter={yAxisFormatter}
+              tickLine={false}
+              axisLine={false}
+            />
+            <YAxis 
+              type="category" 
+              dataKey={xAxisKey}
+              width={yAxisWidth}
+              tick={{ fontSize: 12 }}
+              tickLine={false}
+              axisLine={false}
+            />
+            <Tooltip
+              formatter={(value: number, name: string) => {
+                const label = chartConfig[name]?.label || name;
+                return [yAxisFormatter(value), label];
+              }}
+              labelStyle={{ color: "#000" }}
+            />
+            <Legend />
+            {dataKeys.map((key) => (
+              <Bar
+                key={key}
+                dataKey={key}
+                fill={chartConfig[key]?.color || CHART_COLORS[0]}
+                name={String(chartConfig[key]?.label || key)}
+                radius={[0, 4, 4, 0]}
+              />
+            ))}
+          </BarChart>
+        </ResponsiveContainer>
+      );
+    }
+
     if (chartType === 'multiline') {
       return (
         <ResponsiveContainer width="100%" height={chartHeight}>
@@ -299,6 +399,71 @@ export function ChartWrapper({
             ))}
           </LineChart>
         </ResponsiveContainer>
+      );
+    }
+
+    if (chartType === 'pie') {
+      return (
+        <ChartContainer config={chartConfig} className={`h-[${chartHeight}px] w-full`}>
+          <PieChart>
+            <ChartTooltip
+              content={<ChartTooltipContent hideLabel />}
+            />
+            <Pie
+              data={data}
+              cx="50%"
+              cy="50%"
+              labelLine={false}
+              label={showPercentage ? ({ name, percent }) => 
+                `${name}: ${((percent || 0) * 100).toFixed(0)}%`
+                : undefined
+              }
+              outerRadius={outerRadius}
+              innerRadius={innerRadius}
+              dataKey={pieDataKey}
+              paddingAngle={2}
+            >
+              {data.map((entry: any, index: number) => (
+                <Cell key={`cell-${index}`} fill={entry.fill || CHART_COLORS[index % CHART_COLORS.length]} />
+              ))}
+            </Pie>
+            <ChartLegend
+              content={<ChartLegendContent />}
+              className="flex-wrap gap-2"
+            />
+          </PieChart>
+        </ChartContainer>
+      );
+    }
+
+    if (chartType === 'radar') {
+      return (
+        <ChartContainer config={chartConfig} className={`h-[${chartHeight}px] w-full`}>
+          <RadarChart data={data}>
+            <PolarGrid gridType="circle" />
+            <PolarAngleAxis 
+              dataKey={radarDataKey}
+              tick={{ fontSize: 12 }}
+            />
+            <PolarRadiusAxis 
+              angle={90} 
+              domain={[0, 'dataMax']}
+              tick={{ fontSize: 10 }}
+            />
+            <ChartTooltip content={<ChartTooltipContent />} />
+            <ChartLegend content={<ChartLegendContent />} />
+            {dataKeys.map((key) => (
+              <Radar
+                key={key}
+                name={String(chartConfig[key]?.label || key)}
+                dataKey={key}
+                stroke={chartConfig[key]?.color || CHART_COLORS[0]}
+                fill={chartConfig[key]?.color || CHART_COLORS[0]}
+                fillOpacity={0.6}
+              />
+            ))}
+          </RadarChart>
+        </ChartContainer>
       );
     }
 
