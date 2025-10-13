@@ -21,8 +21,12 @@ This guide covers how to create new charts and migrate existing charts to use th
 ### Supported Chart Types
 
 1. **`area`**: Area charts with gradients (perfect for trends)
-2. **`bar`**: Bar charts with rounded corners (perfect for categories)
-3. **`custom`**: Fallback for complex custom implementations
+2. **`bar`**: Vertical bar charts with rounded corners (perfect for categories)
+3. **`horizontal-bar`**: Horizontal bar charts (perfect for ranking/comparison with long labels)
+4. **`multiline`**: Multi-line charts for comparing trends across dimensions
+5. **`pie`**: Pie charts for distribution visualization
+6. **`radar`**: Radar/spider charts for multi-dimensional comparisons
+7. **`custom`**: Fallback for complex custom implementations
 
 ---
 
@@ -123,6 +127,177 @@ export function MyCategoryChart({ globalFilters }: CategoryChartProps) {
       xAxisKey="category"
       dataKeys={["retailPrice", "promoPrice"]}
       height="large" // More space for category labels
+      query={query}
+      resultSet={resultSet}
+      globalFilters={globalFilters}
+    />
+  );
+}
+```
+
+### Horizontal Bar Chart (Rankings/Long Labels)
+
+```typescript
+export function MyHorizontalChart({ globalFilters }: HorizontalChartProps) {
+  // ... query logic
+
+  const chartData = useMemo(() => {
+    if (!resultSet) return null;
+    return resultSet.tablePivot()
+      .map((row) => ({
+        municipality: row["prices.municipality_name"],
+        retailPrice: Number(row["prices.averageRetailPrice"] || 0),
+        promoPrice: Number(row["prices.averagePromoPrice"] || 0),
+      }))
+      .sort((a, b) => b.retailPrice - a.retailPrice)
+      .slice(0, 15);
+  }, [resultSet]);
+
+  return (
+    <ChartWrapper
+      title="Top 15 Municipalities"
+      description="Compare prices across municipalities"
+      isLoading={isLoading}
+      error={error}
+      chartType="horizontal-bar"
+      data={chartData}
+      chartConfigType="trend"
+      xAxisKey="municipality"
+      dataKeys={["retailPrice", "promoPrice"]}
+      yAxisWidth={130} // Space for long labels
+      height="xl"
+      query={query}
+      resultSet={resultSet}
+      globalFilters={globalFilters}
+    />
+  );
+}
+```
+
+### Multi-Line Chart (Comparing Trends)
+
+```typescript
+export function MyMultiLineChart({ globalFilters }: MultiLineChartProps) {
+  // ... query logic
+
+  const { chartData, dimensionKeys } = useMemo(() => {
+    if (!resultSet) return { chartData: null, dimensionKeys: [] };
+    
+    // Process data to create one line per retailer/dimension
+    const dataMap = new Map();
+    const keys = new Set();
+    
+    resultSet.tablePivot().forEach((row) => {
+      const date = row["prices.price_date.day"];
+      const retailer = row["prices.retailer_name"];
+      const price = Number(row["prices.averageRetailPrice"] || 0);
+      
+      if (!dataMap.has(date)) {
+        dataMap.set(date, { date });
+      }
+      
+      const dateEntry = dataMap.get(date);
+      dateEntry[retailer] = price;
+      keys.add(retailer);
+    });
+    
+    return {
+      chartData: Array.from(dataMap.values()),
+      dimensionKeys: Array.from(keys)
+    };
+  }, [resultSet]);
+
+  return (
+    <ChartWrapper
+      title="Price Trends by Retailer"
+      description="Compare price trends across different retailers"
+      isLoading={isLoading}
+      error={error}
+      chartType="multiline"
+      data={chartData}
+      xAxisKey="date"
+      dynamicKeys={dimensionKeys} // Pass array of retailer names
+      yAxisFormatter={(value) => `${value.toFixed(2)} лв`}
+      height="large"
+      query={query}
+      resultSet={resultSet}
+      globalFilters={globalFilters}
+    />
+  );
+}
+```
+
+### Pie Chart (Distribution)
+
+```typescript
+export function MyPieChart({ globalFilters }: PieChartProps) {
+  // ... query logic
+
+  const chartData = useMemo(() => {
+    if (!resultSet) return null;
+    
+    return resultSet.tablePivot()
+      .map((row, index) => ({
+        name: row["prices.category_group_name"],
+        value: Number(row["prices.averageRetailPrice"] || 0),
+        fill: CHART_COLORS[index % CHART_COLORS.length],
+      }))
+      .filter((item) => item.value > 0)
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 8);
+  }, [resultSet]);
+
+  return (
+    <ChartWrapper
+      title="Category Distribution"
+      description="Price distribution across top categories"
+      isLoading={isLoading}
+      error={error}
+      chartType="pie"
+      data={chartData}
+      chartConfigType="distribution"
+      pieDataKey="value"
+      innerRadius={60}
+      outerRadius={120}
+      showPercentage={true}
+      height="large"
+      query={query}
+      resultSet={resultSet}
+      globalFilters={globalFilters}
+    />
+  );
+}
+```
+
+### Radar Chart (Multi-Dimensional Comparison)
+
+```typescript
+export function MyRadarChart({ globalFilters }: RadarChartProps) {
+  // ... query logic
+
+  const chartData = useMemo(() => {
+    if (!resultSet) return null;
+    
+    return resultSet.tablePivot().map((row) => ({
+      retailer: row["prices.retailer_name"]?.slice(0, 20),
+      retailPrice: Number(row["prices.averageRetailPrice"] || 0),
+      promoPrice: Number(row["prices.averagePromoPrice"] || 0),
+      discountRate: Number(row["prices.averageDiscountPercentage"] || 0),
+    }));
+  }, [resultSet]);
+
+  return (
+    <ChartWrapper
+      title="Retailer Performance"
+      description="Multi-dimensional view of pricing metrics"
+      isLoading={isLoading}
+      error={error}
+      chartType="radar"
+      data={chartData}
+      chartConfigType="trend"
+      radarDataKey="retailer"
+      dataKeys={["retailPrice", "promoPrice", "discountRate"]}
+      height="xl"
       query={query}
       resultSet={resultSet}
       globalFilters={globalFilters}
@@ -566,6 +741,56 @@ const formatPrice = (value: number) => {
 />
 ```
 
+### Reload Functionality
+
+ChartWrapper now includes built-in reload functionality for error and no-data states. To enable it, pass an `onReload` callback:
+
+```typescript
+export function MyChart({ globalFilters }: ChartProps) {
+  const [refreshKey, setRefreshKey] = useState(0);
+  
+  const query = useMemo(() => buildOptimizedQuery(
+    ['prices.averageRetailPrice'],
+    globalFilters
+  ), [globalFilters, refreshKey]);
+
+  const { resultSet, isLoading, error } = useStableQuery(
+    () => query,
+    [/* dependencies */, refreshKey],
+    'my-chart'
+  );
+
+  const handleReload = () => {
+    setRefreshKey(prev => prev + 1);
+  };
+
+  const chartData = useMemo(() => {
+    // Data transformation logic
+  }, [resultSet]);
+
+  return (
+    <ChartWrapper
+      title="My Chart"
+      isLoading={isLoading}
+      error={error}
+      chartType="area"
+      data={chartData}
+      onReload={handleReload} // Enables reload button
+      // ... other props
+    />
+  );
+}
+```
+
+**When reload button appears:**
+- When there's an error loading data
+- When no data is available for the selected filters
+
+**Benefits:**
+- Users can retry failed requests without refreshing the page
+- Helpful for transient network errors
+- Improves user experience with large datasets
+
 ---
 
 ## Chart Configuration System
@@ -680,9 +905,11 @@ const chartData = useMemo(() => {
 
 ### Issue: Loading State Not Working
 
-**Problem**: Chart doesn't show loading skeleton
+**Problem**: Chart doesn't show loading skeleton or shows "No data available" immediately
 
-**Solution**: Ensure you're passing `isLoading` from your query hook:
+**Solution**: 
+
+1. Ensure you're passing `isLoading` from your query hook:
 
 ```typescript
 const { resultSet, isLoading, error } = useStableQuery(/* ... */);
@@ -692,6 +919,38 @@ const { resultSet, isLoading, error } = useStableQuery(/* ... */);
   // ... other props
 />;
 ```
+
+2. The improved `useStableQuery` hook now tracks loading states better to prevent race conditions where data hasn't arrived yet.
+
+3. For transient failures or race conditions, use the reload functionality:
+
+```typescript
+const handleReload = () => {
+  // Trigger a refresh
+  setRefreshKey(prev => prev + 1);
+};
+
+<ChartWrapper
+  onReload={handleReload} // Enables reload button
+  // ... other props
+/>
+```
+
+### Issue: Race Conditions with Large Datasets
+
+**Problem**: "No data available" appears even though network shows data was returned
+
+**Solution**: 
+
+The improved `useStableQuery` hook now better handles:
+- Tracking when data has successfully loaded at least once
+- Preventing premature "no data" messages
+- Better logging for debugging
+
+**Best Practices:**
+- Always use `useStableQuery` instead of raw `useCubeQuery`
+- Include proper dependency arrays to prevent unnecessary re-queries
+- Add reload functionality for users to retry if needed
 
 ---
 
@@ -803,15 +1062,24 @@ When migrating an existing chart:
 - [ ] Remove `useState` for data caching
 - [ ] Remove `useEffect` for loading state management
 - [ ] Remove manual loading/error JSX
-- [ ] Remove manual chart component setup
+- [ ] Remove manual chart component setup (BarChart, LineChart, etc.)
 - [ ] Replace with `<ChartWrapper>` component
-- [ ] Configure appropriate `chartType` and `chartConfigType`
+- [ ] Choose appropriate `chartType`:
+  - `area` for trend data
+  - `bar` for categorical comparisons
+  - `horizontal-bar` for rankings/long labels
+  - `multiline` for comparing trends across dimensions
+  - `pie` for distribution data
+  - `radar` for multi-dimensional comparisons
+  - `custom` only if none of the above fit
+- [ ] Configure correct `chartConfigType` (trend/category/comparison/distribution)
 - [ ] Define correct `xAxisKey` and `dataKeys`
+- [ ] Add `onReload` callback for retry functionality
 - [ ] Test with various filter combinations
 - [ ] Verify colors and styling
 - [ ] Check responsive behavior
 - [ ] Update any custom formatters
-- [ ] Remove unused imports
+- [ ] Remove unused imports (especially Recharts components)
 - [ ] Add debug props (`query`, `resultSet`, `globalFilters`) for debug support
 
 ---
@@ -824,15 +1092,24 @@ The enhanced ChartWrapper architecture dramatically simplifies chart creation wh
 - Maintain consistent user experience across all charts
 - Focus on data logic instead of UI boilerplate
 - Easily extend and customize chart behavior
+- Handle errors gracefully with built-in reload functionality
+- Avoid race conditions with improved loading state management
 
-For complex charts that don't fit the standard patterns, you can always use `chartType="custom"` while still benefiting from the wrapper's loading states, error handling, and consistent card styling.
+**Available Chart Types**: The ChartWrapper now supports 7 different chart types (area, bar, horizontal-bar, multiline, pie, radar, custom), covering virtually all common data visualization needs. You should only need `chartType="custom"` for truly unique visualizations.
+
+**Key Improvements in 2.0**:
+- Added 4 new chart types (horizontal-bar, pie, radar, multiline built-in support)
+- Reload functionality for error and no-data states
+- Improved `useStableQuery` hook prevents race conditions
+- Better loading state tracking
+- All existing custom charts migrated to specific types
 
 **Next Steps**:
 
-1. Review the existing charts that need migration
-2. Start with simple trend/category charts
-3. Move to more complex custom implementations
-4. Update documentation as you go
+1. Use the appropriate chart type for your data
+2. Add reload functionality to improve user experience
+3. Leverage debug mode (`?dev=1`) during development
+4. Follow the helper function pattern for data processing
 
 ---
 
@@ -1051,8 +1328,12 @@ All 23 charts in the dashboard have been refactored to this pattern:
 - **RetailerTrendChartDiscount**: `processRetailerDiscountData()`, `extractRetailers()`, `calculateRetailerTrend()`
 - **StatsCards**: `processStatsData()`
 - **StatsCardsTable**: `processStatsTableData()`
+- **PieChartComponent**: `processPieData()`
+- **RadarChartComponent**: `processRadarData()`
+- **MunicipalityHorizontalChart**: `processMunicipalityData()`
+- **SettlementHorizontalChart**: `processSettlementData()`
 
 Refer to these implementations for guidance when creating new charts.
 
 **Last Updated**: January 2025  
-**Version**: 2.0 (Refactored Architecture with Helper Functions)
+**Version**: 3.0 (Enhanced Chart Types with Reload Functionality)
