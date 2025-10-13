@@ -3,12 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import { ThemeProvider } from "@/components/theme-provider";
 import Layout from "@/layouts/Layout";
-import FullscreenLayout from "@/layouts/FullscreenLayout";
 import HomePage from "@/pages/HomePage";
-import Charts from "@/utils/cube/App";
 import DashboardSidebarPage from "@/pages/DashboardSidebarPage";
-import ChartDebugPage from "@/pages/ChartDebugPage";
-import ChartListPage from "@/pages/ChartListPage";
 
 // Lazy load pages that aren't immediately needed
 const AboutPage = lazy(() => import("@/pages/AboutPage"));
@@ -48,14 +44,6 @@ function App() {
               <Route path="terms" element={<TermsPage />} />
               <Route path="privacy" element={<PrivacyPage />} />
               <Route path="rewards" element={<RewardsPage />} />
-            </Route>
-
-            {/* Fullscreen layout for charts (no footer, minimal header) */}
-            <Route path="/charts" element={<FullscreenLayout />}>
-              <Route index element={<Charts />} />
-              <Route path="category" element={<Charts />} />
-              <Route path="debug" element={<ChartDebugPage />} />
-              <Route path="list" element={<ChartListPage />} />
             </Route>
 
             {/* New dashboard sidebar route - standalone (no layout wrapper) */}

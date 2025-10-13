@@ -105,18 +105,18 @@ export function AppSidebar({ charts, currentChartId }: AppSidebarDashboardProps)
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <a href="/charts/dashboard">
+              {/* <a href="/charts/dashboard">
                 <Icons.LayoutGrid className="h-4 w-4" />
                 <span>Old Dashboard</span>
-              </a>
+              </a> */}
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <a href="/charts/list">
+              {/* <a href="/charts/list">
                 <Icons.List className="h-4 w-4" />
                 <span>Chart List</span>
-              </a>
+              </a> */}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
