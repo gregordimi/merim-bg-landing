@@ -1,7 +1,7 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { GlobalFilters, buildOptimizedQuery } from '@/utils/cube/filterUtils';
 import { useStableQuery } from '@/hooks/useStableQuery';
-import { ChartWrapper } from './ChartWrapper';
+import { ChartWrapper } from '../../config/ChartWrapper';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 interface MunicipalityHorizontalChartProps {
@@ -14,32 +14,12 @@ interface ChartDataPoint {
   promoPrice: number;
 }
 
-export function MunicipalityHorizontalChart({ globalFilters }: MunicipalityHorizontalChartProps) {
-  const { resultSet, isLoading, error, progress } = useStableQuery(
-    () => buildOptimizedQuery(
-      ["prices.averageRetailPrice", "prices.averagePromoPrice"],
-      globalFilters,
-      ["prices.municipality_name"] // Always include municipalities dimension
-    ),
-    [
-      (globalFilters.retailers || []).join(','),
-      (globalFilters.settlements || []).join(','),
-      (globalFilters.municipalities || []).join(','),
-      (globalFilters.categories || []).join(','),
-      (globalFilters.dateRange || []).join(',')
-    ],
-    'municipality-horizontal-chart'
-  );
+function processMunicipalityData(resultSet: any, limit: number = 15) {
+  if (!resultSet) return [];
 
-  // Keep track of the last valid data to prevent showing empty charts
-  const [lastValidData, setLastValidData] = useState<ChartDataPoint[]>([]);
-  const [hasEverLoaded, setHasEverLoaded] = useState(false);
-
-  const chartData = useMemo(() => {
-    if (!resultSet) return null;
-
+  try {
     const pivot = resultSet.tablePivot();
-    if (!pivot || pivot.length === 0) return null;
+    if (!pivot || pivot.length === 0) return [];
 
     return pivot
       .map((row: any) => ({
@@ -47,33 +27,61 @@ export function MunicipalityHorizontalChart({ globalFilters }: MunicipalityHoriz
         retailPrice: Number(row["prices.averageRetailPrice"] || 0),
         promoPrice: Number(row["prices.averagePromoPrice"] || 0),
       }))
-      .sort((a, b) => b.retailPrice - a.retailPrice) // Sort by retail price descending
+      .sort((a, b) => b.retailPrice - a.retailPrice)
+      .slice(0, limit);
+  } catch (error) {
+    console.error("Error processing municipality data:", error);
+    return [];
+  }
+}
+
+export function MunicipalityHorizontalChart({ globalFilters }: MunicipalityHorizontalChartProps) {
+  const query = useMemo(() => {
+    const query = buildOptimizedQuery(
+      ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+      globalFilters,
+      ["prices.municipality_name"] // Always include municipalities dimension
+    );
+    
+    // Remove time dimensions for aggregate query to improve performance
+    query.timeDimensions = [];
+    
+    return query;
+  }, [globalFilters]);
+
+  const { resultSet, isLoading, error, progress } = useStableQuery(
+    () => query,
+    [
+      (globalFilters.retailers || []).join(','),
+      (globalFilters.settlements || []).join(','),
+      (globalFilters.municipalities || []).join(','),
+      (globalFilters.categories || []).join(','),
+      globalFilters.datePreset || "last7days",
+    ],
+    'municipality-horizontal-chart'
+  );
+
+  const data = useMemo(() => {
+    return processMunicipalityData(resultSet, 15);
   }, [resultSet]);
-
-  // Update last valid data when we get new data
-  useEffect(() => {
-    if (chartData && chartData.length > 0 && !isLoading) {
-      setLastValidData(chartData);
-      setHasEverLoaded(true);
-    }
-  }, [chartData, isLoading]);
-
-  // Determine what data to display
-  const displayData = chartData || lastValidData;
-  const shouldShowLoading = isLoading && !hasEverLoaded;
 
   return (
     <ChartWrapper
       title="Top 15 Municipalities - Horizontal View"
       description="Compare retail and promotional prices across municipalities (horizontal bars)"
-      isLoading={shouldShowLoading}
+      isLoading={isLoading}
       error={error}
       progress={progress}
+      chartType="custom"
+      height="xl"
+      query={query}
+      resultSet={resultSet}
+      globalFilters={globalFilters}
     >
-      {displayData && displayData.length > 0 ? (
+      {data && data.length > 0 ? (
         <ResponsiveContainer width="100%" height={500}>
           <BarChart
-            data={displayData}
+            data={data}
             layout="vertical"
             margin={{ top: 20, right: 80, left: 150, bottom: 20 }}
           >
@@ -102,11 +110,11 @@ export function MunicipalityHorizontalChart({ globalFilters }: MunicipalityHoriz
             <Bar dataKey="promoPrice" fill="#00C49F" name="Promo Price" radius={[0, 4, 4, 0]} />
           </BarChart>
         </ResponsiveContainer>
-      ) : !shouldShowLoading ? (
+      ) : (
         <div className="w-full h-[500px] flex items-center justify-center text-muted-foreground">
           No data available for the selected filters
         </div>
-      ) : null}
+      )}
     </ChartWrapper>
   );
 }

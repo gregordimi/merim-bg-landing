@@ -1,8 +1,7 @@
-import { useMemo, useState, useEffect } from 'react';
-import { GlobalFilters, buildOptimizedQuery } from '@/utils/cube/filterUtils';
-import { useStableQuery } from '@/hooks/useStableQuery';
-import { ChartWrapper } from './ChartWrapper';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { useMemo } from "react";
+import { GlobalFilters, buildOptimizedQuery } from "@/utils/cube/filterUtils";
+import { useStableQuery } from "@/hooks/useStableQuery";
+import { ChartWrapper } from "../../config/ChartWrapper";
 
 interface RegionalTrendChartProps {
   globalFilters: GlobalFilters;
@@ -13,146 +12,143 @@ interface ChartDataPoint {
   [municipality: string]: any;
 }
 
-export function RegionalTrendChart({ globalFilters }: RegionalTrendChartProps) {
-  const { resultSet, isLoading, error, progress } = useStableQuery(
-    () => buildOptimizedQuery(
-      ["prices.averageRetailPrice"],
-      globalFilters,
-      ["prices.municipality_name"] // Always include municipalities dimension
-    ),
-    [
-      (globalFilters.retailers || []).join(','),
-      (globalFilters.settlements || []).join(','),
-      (globalFilters.municipalities || []).join(','),
-      (globalFilters.categories || []).join(','),
-      (globalFilters.dateRange || []).join(',')
-    ],
-    'regional-trend-chart'
-  );
+function processRegionalData(resultSet: any, granularity: string = "day") {
+  if (!resultSet) return [];
 
-  // Keep track of the last valid data to prevent showing empty charts
-  const [lastValidData, setLastValidData] = useState<ChartDataPoint[]>([]);
-  const [lastValidMunicipalities, setLastValidMunicipalities] = useState<string[]>([]);
-  const [hasEverLoaded, setHasEverLoaded] = useState(false);
-
-  const chartData = useMemo(() => {
-    if (!resultSet) return null;
-
+  try {
     const pivot = resultSet.tablePivot();
-    if (!pivot || pivot.length === 0) return null;
+    if (!pivot || pivot.length === 0) return [];
 
     const dataMap = new Map();
 
-    // Group data by date
     pivot.forEach((row: any) => {
-      const date = row["prices.price_date.day"] || row["prices.price_date"];
+      const dateKey = `prices.price_date.${granularity}`;
+      const date = row[dateKey] || row["prices.price_date"];
       const municipality = row["prices.municipality_name"];
       const price = Number(row["prices.averageRetailPrice"] || 0);
 
       if (!dataMap.has(date)) {
         dataMap.set(date, { date });
       }
-      
+
       const dateEntry = dataMap.get(date);
       dateEntry[municipality] = price > 0 ? price : null;
     });
 
-    // Convert to array and sort by date
-    return Array.from(dataMap.values()).sort((a, b) => 
-      new Date(a.date).getTime() - new Date(b.date).getTime()
+    return Array.from(dataMap.values()).sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     );
-  }, [resultSet]);
+  } catch (error) {
+    console.error("Error processing regional data:", error);
+    return [];
+  }
+}
 
-  // Get unique municipalities for line colors
-  const municipalities = useMemo(() => {
-    if (!resultSet) return null;
+function extractMunicipalities(resultSet: any): string[] {
+  if (!resultSet) return [];
+  
+  try {
     const pivot = resultSet.tablePivot();
-    if (!pivot || pivot.length === 0) return null;
+    if (!pivot || pivot.length === 0) return [];
 
-    const municipalitySet = new Set();
+    const municipalitySet = new Set<string>();
     pivot.forEach((row: any) => {
       if (row["prices.municipality_name"]) {
         municipalitySet.add(row["prices.municipality_name"]);
       }
     });
-    return Array.from(municipalitySet) as string[];
+    return Array.from(municipalitySet);
+  } catch (error) {
+    console.error("Error extracting municipalities:", error);
+    return [];
+  }
+}
+
+function calculateRegionalTrend(data: any[], municipalities: string[]) {
+  if (data.length < 2 || municipalities.length === 0) return undefined;
+  
+  const firstMunicipality = municipalities[0];
+  const first = data[0][firstMunicipality];
+  const last = data[data.length - 1][firstMunicipality];
+  
+  if (!first || first === 0) return undefined;
+  
+  const change = ((last - first) / first) * 100;
+  return {
+    value: change.toFixed(1),
+    direction: change > 0 ? "up" as const : "down" as const,
+  };
+}
+
+function formatDate(dateStr: string): string {
+  try {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+  } catch {
+    return dateStr;
+  }
+}
+
+export function RegionalTrendChart({ globalFilters }: RegionalTrendChartProps) {
+  // Build the query
+  const query = useMemo(() => {
+    console.log(
+      "🔧 RegionalTrendChart building query with globalFilters:",
+      globalFilters
+    );
+    return buildOptimizedQuery(
+      ["prices.averageRetailPrice"],
+      globalFilters,
+      ["prices.municipality_name"] // Always include municipalities dimension
+    );
+  }, [globalFilters]);
+
+  const { resultSet, isLoading, error, progress } = useStableQuery(
+    () => query,
+    [
+      globalFilters.retailers?.join(",") ?? "",
+      globalFilters.settlements?.join(",") ?? "",
+      globalFilters.municipalities?.join(",") ?? "",
+      globalFilters.categories?.join(",") ?? "",
+      globalFilters.datePreset ?? "last7days",
+      globalFilters.granularity ?? "day",
+    ],
+    "regional-trend-chart"
+  );
+
+  const data = useMemo(() => {
+    return processRegionalData(resultSet, globalFilters.granularity);
+  }, [resultSet, globalFilters.granularity]);
+
+  const municipalities = useMemo(() => {
+    return extractMunicipalities(resultSet);
   }, [resultSet]);
 
-  // Update last valid data when we get new data
-  useEffect(() => {
-    if (chartData && chartData.length > 0 && municipalities && municipalities.length > 0 && !isLoading) {
-      setLastValidData(chartData);
-      setLastValidMunicipalities(municipalities);
-      setHasEverLoaded(true);
-    }
-  }, [chartData, municipalities, isLoading]);
-
-  // Determine what data to display
-  const displayData = chartData || lastValidData;
-  const displayMunicipalities = municipalities || lastValidMunicipalities;
-  const shouldShowLoading = isLoading && !hasEverLoaded;
-
-  const COLORS = [
-    "#0088FE", "#00C49F", "#FFBB28", "#FF8042", 
-    "#8884d8", "#82ca9d", "#ffc658", "#ff7c7c"
-  ];
-
-  const formatDate = (dateStr: string) => {
-    try {
-      const date = new Date(dateStr);
-      return date.toLocaleDateString("en-US", { 
-        month: "short", 
-        day: "numeric" 
-      });
-    } catch {
-      return dateStr;
-    }
-  };
+  const trend = useMemo(() => {
+    return calculateRegionalTrend(data, municipalities);
+  }, [data, municipalities]);
 
   return (
     <ChartWrapper
       title="Regional Price Trends"
-      description="Track how prices vary across different municipalities over time"
-      isLoading={shouldShowLoading}
+      description="Track how prices vary across different municipalities over time (separate line per municipality)"
+      isLoading={isLoading}
       error={error}
       progress={progress}
-    >
-      {displayData && displayData.length > 0 && displayMunicipalities && displayMunicipalities.length > 0 ? (
-        <ResponsiveContainer width="100%" height={400}>
-          <LineChart
-            data={displayData}
-            margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" tickFormatter={formatDate} />
-            <YAxis tickFormatter={(value) => `${value.toFixed(2)} лв`} />
-            <Tooltip
-              formatter={(value: number, name: string) => [
-                `${Number(value).toFixed(2)} лв`,
-                name
-              ]}
-              labelFormatter={(date) => formatDate(date)}
-              labelStyle={{ color: "#000" }}
-            />
-            <Legend />
-            {displayMunicipalities.map((municipality, index) => (
-              <Line
-                key={String(municipality)}
-                type="monotone"
-                dataKey={String(municipality)}
-                stroke={COLORS[index % COLORS.length]}
-                strokeWidth={2}
-                dot={{ r: 4 }}
-                connectNulls={false}
-              />
-            ))}
-          </LineChart>
-        </ResponsiveContainer>
-      ) : !shouldShowLoading ? (
-        <div className="w-full h-[400px] flex items-center justify-center text-muted-foreground">
-          No data available for the selected filters
-        </div>
-      ) : null}
-    </ChartWrapper>
+      trend={trend}
+      height="medium"
+      chartType="multiline"
+      data={data}
+      xAxisKey="date"
+      xAxisFormatter={formatDate}
+      yAxisFormatter={(value) => `${value.toFixed(1)} лв`}
+      dynamicKeys={municipalities}
+      query={query}
+      resultSet={resultSet}
+      globalFilters={globalFilters}
+    />
   );
 }

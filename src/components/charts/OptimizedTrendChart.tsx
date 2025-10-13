@@ -3,47 +3,26 @@
  */
 
 import { useMemo } from "react";
-import { useCubeQuery } from "@cubejs-client/react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
 import { GlobalFilters, buildOptimizedQuery } from "@/utils/cube/filterUtils";
+import { useStableQuery } from "@/hooks/useStableQuery";
+import { ChartWrapper } from "../../config/ChartWrapper";
 
 interface OptimizedTrendChartProps {
   globalFilters: GlobalFilters;
 }
 
-export function OptimizedTrendChart({
-  globalFilters,
-}: OptimizedTrendChartProps) {
-  // Build optimized query that matches pre-aggregations
-  const query = useMemo(
-    () =>
-      buildOptimizedQuery(
-        ["prices.averageRetailPrice", "prices.averagePromoPrice"],
-        globalFilters
-      ),
-    [globalFilters]
-  );
+function processOptimizedData(resultSet: any, granularity: string = "day") {
+  if (!resultSet) return [];
 
-  const { resultSet, isLoading, error } = useCubeQuery(query);
-
-  const chartData = useMemo(() => {
-    if (!resultSet) return [];
-
+  try {
     const pivot = resultSet.tablePivot();
+    if (!pivot || pivot.length === 0) return [];
+
     const dataMap = new Map();
 
     pivot.forEach((row: any) => {
-      const date = row["prices.price_date.day"] || row["prices.price_date"];
+      const dateKey = `prices.price_date.${granularity}`;
+      const date = row[dateKey] || row["prices.price_date"];
       const retailPrice = Number(row["prices.averageRetailPrice"] || 0);
       const promoPrice = Number(row["prices.averagePromoPrice"] || 0);
 
@@ -69,78 +48,92 @@ export function OptimizedTrendChart({
         promoPrice: item.count > 0 ? item.promoPrice / item.count : 0,
       }))
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  }, [resultSet]);
-
-  if (error) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="text-red-500">
-            Error loading trend data: {error.toString()}
-          </div>
-        </CardContent>
-      </Card>
-    );
+  } catch (error) {
+    console.error("Error processing optimized data:", error);
+    return [];
   }
+}
+
+function calculateTrend(data: any[]) {
+  if (data.length < 2) return undefined;
+
+  const first = data[0].retailPrice;
+  const last = data[data.length - 1].retailPrice;
+
+  if (first === 0) return undefined;
+
+  const change = ((last - first) / first) * 100;
+  return {
+    value: change.toFixed(1),
+    direction: change > 0 ? ("up" as const) : ("down" as const),
+  };
+}
+
+function formatDate(dateStr: string): string {
+  try {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+  } catch {
+    return dateStr;
+  }
+}
+
+export function OptimizedTrendChart({
+  globalFilters,
+}: OptimizedTrendChartProps) {
+  const query = useMemo(
+    () =>
+      buildOptimizedQuery(
+        ["prices.averageRetailPrice", "prices.averagePromoPrice"],
+        globalFilters
+      ),
+    [globalFilters]
+  );
+
+  const { resultSet, isLoading, error, progress } = useStableQuery(
+    () => query,
+    [
+      globalFilters.retailers?.join(",") ?? "",
+      globalFilters.settlements?.join(",") ?? "",
+      globalFilters.municipalities?.join(",") ?? "",
+      globalFilters.categories?.join(",") ?? "",
+      globalFilters.datePreset ?? "last7days",
+      globalFilters.granularity ?? "day",
+    ],
+    "optimized-trend-chart"
+  );
+
+  const data = useMemo(() => {
+    return processOptimizedData(resultSet, globalFilters.granularity);
+  }, [resultSet, globalFilters.granularity]);
+
+  const trend = useMemo(() => {
+    return calculateTrend(data);
+  }, [data]);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>📈 Price Trends (Optimized)</CardTitle>
-        <div className="text-sm text-muted-foreground">
-          Retail and promotional price trends over time - uses pre-aggregations
-          for fast performance
-        </div>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="h-64 flex items-center justify-center">
-            <div className="text-muted-foreground">Loading trend data...</div>
-          </div>
-        ) : (
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="date"
-                  tick={{ fontSize: 12 }}
-                  tickFormatter={(value) =>
-                    new Date(value).toLocaleDateString("bg-BG", {
-                      month: "short",
-                      day: "numeric",
-                    })
-                  }
-                />
-                <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip
-                  labelFormatter={(value) =>
-                    new Date(value).toLocaleDateString("bg-BG")
-                  }
-                  formatter={(value: number) => [`${value.toFixed(2)} лв`, ""]}
-                />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="retailPrice"
-                  stroke="#2563eb"
-                  strokeWidth={2}
-                  name="Retail Price"
-                  connectNulls
-                />
-                <Line
-                  type="monotone"
-                  dataKey="promoPrice"
-                  stroke="#dc2626"
-                  strokeWidth={2}
-                  name="Promo Price"
-                  connectNulls
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+    <ChartWrapper
+      title="📈 Price Trends (Optimized)"
+      description="Retail and promotional price trends over time - uses pre-aggregations for fast performance"
+      isLoading={isLoading}
+      error={error}
+      progress={progress}
+      trend={trend}
+      height="medium"
+      chartType="area"
+      data={data}
+      chartConfigType="trend"
+      xAxisKey="date"
+      xAxisFormatter={formatDate}
+      yAxisFormatter={(value) => `${value.toFixed(1)} лв`}
+      dataKeys={["retailPrice", "promoPrice"]}
+      showGradients={true}
+      query={query}
+      resultSet={resultSet}
+      globalFilters={globalFilters}
+    />
   );
 }
