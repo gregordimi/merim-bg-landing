@@ -3,7 +3,7 @@
  * Modern pie chart using shadcn/ui chart components
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { GlobalFilters, buildOptimizedQuery } from '@/utils/cube/filterUtils';
 import { useStableQuery } from '@/hooks/useStableQuery';
 import { ChartWrapper } from '@/config/ChartWrapper';
@@ -48,11 +48,13 @@ function processPieData(resultSet: any, limit: number = 8) {
 }
 
 export function PieChartComponent({ globalFilters }: PieChartComponentProps) {
+  const [refreshKey, setRefreshKey] = useState(0);
+  
   const query = useMemo(() => buildOptimizedQuery(
     ['prices.averageRetailPrice'],
     globalFilters,
     ['prices.category_group_name']
-  ), [globalFilters]);
+  ), [globalFilters, refreshKey]);
 
   const { isLoading, error, resultSet, progress } = useStableQuery(
     () => query,
@@ -62,9 +64,14 @@ export function PieChartComponent({ globalFilters }: PieChartComponentProps) {
       globalFilters.municipalities?.join(",") ?? "",
       globalFilters.categories?.join(",") ?? "",
       globalFilters.datePreset ?? "last7days",
+      refreshKey,
     ],
     "pie-chart"
   );
+
+  const handleReload = () => {
+    setRefreshKey(prev => prev + 1);
+  };
 
   const { chartData, chartConfig } = useMemo(() => {
     return processPieData(resultSet, 8);
@@ -85,6 +92,7 @@ export function PieChartComponent({ globalFilters }: PieChartComponentProps) {
       outerRadius={120}
       showPercentage={true}
       height="large"
+      onReload={handleReload}
       query={query}
       resultSet={resultSet}
       globalFilters={globalFilters}

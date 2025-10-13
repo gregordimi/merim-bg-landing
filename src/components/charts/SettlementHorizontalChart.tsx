@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { GlobalFilters, buildOptimizedQuery } from '@/utils/cube/filterUtils';
 import { useStableQuery } from "@/hooks/useStableQuery";
 import { ChartWrapper } from "../../config/ChartWrapper";
@@ -37,6 +37,8 @@ function processSettlementData(resultSet: any, limit: number = 20) {
 export function SettlementHorizontalChart({
   globalFilters,
 }: SettlementHorizontalChartProps) {
+  const [refreshKey, setRefreshKey] = useState(0);
+  
   const query = useMemo(() => {
     const query = buildOptimizedQuery(
       ["prices.averageRetailPrice", "prices.averagePromoPrice"],
@@ -48,7 +50,7 @@ export function SettlementHorizontalChart({
     query.timeDimensions = [];
     
     return query;
-  }, [globalFilters]);
+  }, [globalFilters, refreshKey]);
 
   const { resultSet, isLoading, error, progress } = useStableQuery(
     () => query,
@@ -58,9 +60,14 @@ export function SettlementHorizontalChart({
       (globalFilters.municipalities || []).join(","),
       (globalFilters.categories || []).join(","),
       globalFilters.datePreset || "last7days",
+      refreshKey,
     ],
     "settlement-horizontal-chart"
   );
+
+  const handleReload = () => {
+    setRefreshKey(prev => prev + 1);
+  };
 
   const data = useMemo(() => {
     return processSettlementData(resultSet, 20);
@@ -81,6 +88,7 @@ export function SettlementHorizontalChart({
       yAxisFormatter={(value) => `${value.toFixed(2)} лв`}
       yAxisWidth={130}
       height="xl"
+      onReload={handleReload}
       query={query}
       resultSet={resultSet}
       globalFilters={globalFilters}

@@ -27,6 +27,7 @@ export function MultiLineTrendChart({
   const [selectedMeasure, setSelectedMeasure] = useState<"retail" | "promo">(
     "retail"
   );
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Build the query with dimensions
   const query = useMemo(
@@ -35,7 +36,7 @@ export function MultiLineTrendChart({
         ["prices.averageRetailPrice", "prices.averagePromoPrice"],
         globalFilters
       ),
-    [globalFilters]
+    [globalFilters, refreshKey]
   );
 
   const { resultSet, isLoading, error, progress } = useStableQuery(
@@ -47,9 +48,14 @@ export function MultiLineTrendChart({
       (globalFilters.categories || []).join(","),
       globalFilters.datePreset ?? "last7days",
       globalFilters.granularity ?? "day",
+      refreshKey,
     ],
     "multi-line-trend-chart"
   );
+
+  const handleReload = () => {
+    setRefreshKey(prev => prev + 1);
+  };
 
   const processedData = useMemo(() => {
     if (!resultSet)
@@ -144,6 +150,7 @@ export function MultiLineTrendChart({
       yAxisFormatter={(value) => `${value.toFixed(2)} лв`}
       dynamicKeys={dynamicKeys}
       height="large"
+      onReload={handleReload}
       query={query}
       resultSet={resultSet}
       globalFilters={globalFilters}

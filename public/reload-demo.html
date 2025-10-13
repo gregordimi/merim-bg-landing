@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reload Button Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #0f172a;
+            color: white;
+        }
+        .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            max-width: 800px;
+        }
+        .title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .description {
+            font-size: 14px;
+            color: #94a3b8;
+            margin-bottom: 16px;
+        }
+        .error-state, .no-data-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 350px;
+            color: #94a3b8;
+        }
+        .icon {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 16px;
+        }
+        .message {
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+        .button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid #475569;
+            border-radius: 6px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .button:hover {
+            background: #334155;
+        }
+        .refresh-icon {
+            width: 16px;
+            height: 16px;
+        }
+        .highlight {
+            border: 3px solid #fbbf24;
+            position: relative;
+        }
+        .highlight::after {
+            content: "← RELOAD BUTTON";
+            position: absolute;
+            right: -200px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #fbbf24;
+            font-weight: bold;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Reload Button Implementation - All Charts</h1>
+    <p>The reload button appears in two scenarios:</p>
+
+    <div class="card">
+        <div class="title">1. Error State with Reload Button</div>
+        <div class="description">When chart fails to load data</div>
+        <div class="error-state">
+            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" stroke-width="2"/>
+                <line x1="12" y1="8" x2="12" y2="12" stroke-width="2"/>
+                <line x1="12" y1="16" x2="12.01" y2="16" stroke-width="2"/>
+            </svg>
+            <p class="message">Failed to load data</p>
+            <button class="button highlight">
+                <svg class="refresh-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                Retry
+            </button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="title">2. No Data Available State with Reload Button</div>
+        <div class="description">When no data matches the selected filters</div>
+        <div class="no-data-state">
+            <p class="message">No data available for the selected filters</p>
+            <button class="button highlight">
+                <svg class="refresh-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                Reload
+            </button>
+        </div>
+    </div>
+
+    <h2>Charts Updated with Reload Functionality:</h2>
+    <ul style="font-size: 16px; line-height: 1.8;">
+        <li>✅ PieChartComponent</li>
+        <li>✅ RadarChartComponent</li>
+        <li>✅ MunicipalityHorizontalChart</li>
+        <li>✅ SettlementHorizontalChart</li>
+        <li>✅ MultiLineTrendChart</li>
+    </ul>
+
+    <h2>How it Works:</h2>
+    <ol style="font-size: 16px; line-height: 1.8;">
+        <li>Each chart now has a <code style="background: #334155; padding: 2px 6px; border-radius: 4px;">refreshKey</code> state</li>
+        <li>When reload button is clicked, <code style="background: #334155; padding: 2px 6px; border-radius: 4px;">handleReload()</code> increments the key</li>
+        <li>This triggers a new data query through useStableQuery</li>
+        <li>Fresh data is fetched from the API</li>
+    </ol>
+</body>
+</html>

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { GlobalFilters, buildOptimizedQuery } from '@/utils/cube/filterUtils';
 import { useStableQuery } from '@/hooks/useStableQuery';
 import { ChartWrapper } from '../../config/ChartWrapper';
@@ -35,6 +35,8 @@ function processMunicipalityData(resultSet: any, limit: number = 15) {
 }
 
 export function MunicipalityHorizontalChart({ globalFilters }: MunicipalityHorizontalChartProps) {
+  const [refreshKey, setRefreshKey] = useState(0);
+  
   const query = useMemo(() => {
     const query = buildOptimizedQuery(
       ["prices.averageRetailPrice", "prices.averagePromoPrice"],
@@ -46,7 +48,7 @@ export function MunicipalityHorizontalChart({ globalFilters }: MunicipalityHoriz
     query.timeDimensions = [];
     
     return query;
-  }, [globalFilters]);
+  }, [globalFilters, refreshKey]);
 
   const { resultSet, isLoading, error, progress } = useStableQuery(
     () => query,
@@ -56,9 +58,14 @@ export function MunicipalityHorizontalChart({ globalFilters }: MunicipalityHoriz
       (globalFilters.municipalities || []).join(','),
       (globalFilters.categories || []).join(','),
       globalFilters.datePreset || "last7days",
+      refreshKey,
     ],
     'municipality-horizontal-chart'
   );
+
+  const handleReload = () => {
+    setRefreshKey(prev => prev + 1);
+  };
 
   const data = useMemo(() => {
     return processMunicipalityData(resultSet, 15);
@@ -79,6 +86,7 @@ export function MunicipalityHorizontalChart({ globalFilters }: MunicipalityHoriz
       yAxisFormatter={(value) => `${value.toFixed(2)} лв`}
       yAxisWidth={130}
       height="xl"
+      onReload={handleReload}
       query={query}
       resultSet={resultSet}
       globalFilters={globalFilters}

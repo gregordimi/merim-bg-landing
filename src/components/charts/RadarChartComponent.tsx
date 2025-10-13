@@ -3,7 +3,7 @@
  * Modern radar chart using shadcn/ui chart components
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { GlobalFilters, buildOptimizedQuery } from '@/utils/cube/filterUtils';
 import { useStableQuery } from '@/hooks/useStableQuery';
 import { ChartWrapper } from '@/config/ChartWrapper';
@@ -48,6 +48,8 @@ function processRadarData(resultSet: any) {
 }
 
 export function RadarChartComponent({ globalFilters }: RadarChartComponentProps) {
+  const [refreshKey, setRefreshKey] = useState(0);
+  
   const query = useMemo(() => buildOptimizedQuery(
     [
       'prices.averageRetailPrice',
@@ -56,7 +58,7 @@ export function RadarChartComponent({ globalFilters }: RadarChartComponentProps)
     ],
     globalFilters,
     ['prices.retailer_name']
-  ), [globalFilters]);
+  ), [globalFilters, refreshKey]);
 
   const { isLoading, error, resultSet, progress } = useStableQuery(
     () => query,
@@ -66,9 +68,14 @@ export function RadarChartComponent({ globalFilters }: RadarChartComponentProps)
       globalFilters.municipalities?.join(",") ?? "",
       globalFilters.categories?.join(",") ?? "",
       globalFilters.datePreset ?? "last7days",
+      refreshKey,
     ],
     "radar-chart"
   );
+
+  const handleReload = () => {
+    setRefreshKey(prev => prev + 1);
+  };
 
   const chartData = useMemo(() => {
     return processRadarData(resultSet);
@@ -87,6 +94,7 @@ export function RadarChartComponent({ globalFilters }: RadarChartComponentProps)
       radarDataKey="retailer"
       dataKeys={['retailPrice', 'promoPrice', 'discountRate']}
       height="xl"
+      onReload={handleReload}
       query={query}
       resultSet={resultSet}
       globalFilters={globalFilters}
