@@ -9,6 +9,7 @@ import { CubeProvider } from "@/lib/cube";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Explorer from "@/components/charts/explorer"
 import {
   Select,
   SelectContent,
@@ -176,7 +177,7 @@ const DashboardPreview: React.FC = () => {
                 </Select>
               </div>
 
-              <TabsList className="hidden w-full grid-cols-4 md:grid">
+              <TabsList className="hidden w-full grid-cols-5 md:grid">
                 <TabsTrigger value="general">
                   {content.pages.dashboard.tabs.general}
                 </TabsTrigger>
@@ -189,7 +190,17 @@ const DashboardPreview: React.FC = () => {
                 <TabsTrigger value="retailer">
                   {content.pages.dashboard.tabs.retailer}
                 </TabsTrigger>
+                <TabsTrigger value="explorer">
+                  explorer
+                </TabsTrigger>
               </TabsList>
+
+              <TabsContent value="explorer" className="space-y-6">
+                {/* RESPONSIVE CHANGE: Reduced padding on mobile */}
+                <div className="p-2 sm:p-6">
+                  <Explorer globalFilters={stableFilters} />
+                </div>
+              </TabsContent>
 
               {/* General Prices Tab */}
               <TabsContent value="general" className="space-y-6">
