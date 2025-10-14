@@ -140,7 +140,7 @@ export const Header = () => {
             {content.header.nav.blog}
           </Link>
           <Link
-            to="/dashboard-sidebar/stats"
+            to="/dashboard/stats"
             className="text-muted-foreground hover:text-foreground transition-colors"
           >
             {content.header.nav.dashboard}

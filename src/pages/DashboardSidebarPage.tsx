@@ -290,7 +290,7 @@ export default function DashboardSidebarPage() {
   // Default to first chart if none selected - use useEffect to avoid render-time navigation
   useEffect(() => {
     if (!chartId) {
-      navigate(`/dashboard-sidebar/${CHART_ROUTES[0].id}`, { replace: true });
+      navigate(`/dashboard/${CHART_ROUTES[0].id}`, { replace: true });
     }
   }, [chartId, navigate]);
 
@@ -306,7 +306,7 @@ export default function DashboardSidebarPage() {
               <Breadcrumb>
                 <BreadcrumbList>
                   <BreadcrumbItem className="hidden md:block">
-                    <BreadcrumbLink href="/dashboard-sidebar/stats">
+                    <BreadcrumbLink href="/dashboard/stats">
                       Dashboard
                     </BreadcrumbLink>
                   </BreadcrumbItem>

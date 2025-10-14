@@ -2,7 +2,7 @@
 
 ## Overview
 
-The **Analytics Dashboard** (`/dashboard-sidebar`) is a comprehensive business intelligence tool for retail price analysis. It provides an intuitive interface with sidebar navigation, powerful filtering capabilities, and a variety of interactive charts.
+The **Analytics Dashboard** (`/dashboard`) is a comprehensive business intelligence tool for retail price analysis. It provides an intuitive interface with sidebar navigation, powerful filtering capabilities, and a variety of interactive charts.
 
 ### Key Features
 
@@ -20,7 +20,7 @@ The **Analytics Dashboard** (`/dashboard-sidebar`) is a comprehensive business i
 
 ### Accessing the Dashboard
 
-Navigate to `/dashboard-sidebar` to access the main dashboard. The system will automatically redirect to the first chart (Stats Cards).
+Navigate to `/dashboard` to access the main dashboard. The system will automatically redirect to the first chart (Stats Cards).
 
 ### Navigation
 
@@ -181,9 +181,9 @@ Each chart displays different insights based on the applied filters.
 
 Enable debug mode by adding `?dev=1` to the URL:
 ```
-/dashboard-sidebar/stats?dev=1
-/dashboard-sidebar/category?dev=1
-/dashboard-sidebar/trends?dev=1
+/dashboard/stats?dev=1
+/dashboard/category?dev=1
+/dashboard/trends?dev=1
 ```
 
 Debug mode automatically activates for all ChartWrapper-based charts and provides:
@@ -358,7 +358,7 @@ export const CHART_ROUTES: ChartRoute[] = [
 
 #### 3. Test Your Chart
 
-Navigate to `/dashboard-sidebar/my-new-chart` to test your new chart.
+Navigate to `/dashboard/my-new-chart` to test your new chart.
 
 ### Filter System Architecture
 
@@ -443,7 +443,7 @@ const timeDimensions = buildTimeDimensions(globalFilters.datePreset);
 
 Add `?dev=1` to any dashboard URL:
 ```
-/dashboard-sidebar/stats?dev=1
+/dashboard/stats?dev=1
 ```
 
 Debug mode is automatically detected by ChartWrapper components. When enabled, charts will show:
