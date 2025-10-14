@@ -116,7 +116,7 @@ export const Header = () => {
           className="flex items-center gap-2 text-2xl font-bold text-foreground"
         >
           <Wordmark />
-          .bg
+          .org
         </Link>
 
         {/* Desktop Navigation */}
@@ -211,7 +211,7 @@ export const Footer = () => {
               className="flex items-center gap-2 text-2xl font-bold text-foreground align-text-bottom"
             >
               <Wordmark />
-              <div>.bg</div>
+              <div>.org</div>
             </Link>
             <p className="mt-4 text-muted-foreground text-sm max-w-xs">
               {content.footer.mission}

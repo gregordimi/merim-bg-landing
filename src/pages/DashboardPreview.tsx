@@ -9,6 +9,7 @@ import { CubeProvider } from "@/lib/cube";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { content } from "@/i18n/bg";
 
 const DashboardPreview: React.FC = () => {
   const [currentTab, setCurrentTab] = useState("general");
@@ -35,7 +36,6 @@ const DashboardPreview: React.FC = () => {
   // Available retailers
   const availableRetailers = ["Лидл България", "Кауфланд България", "Минимарт"];
 
-
   const [globalFilters, setGlobalFilters] = useState<GlobalFilters>({
     retailers: [],
     settlements: [],
@@ -44,8 +44,6 @@ const DashboardPreview: React.FC = () => {
     datePreset: "last7days",
     granularity: "day",
   });
-
-
 
   const handleCategorySelect = (category: string) => {
     setGlobalFilters((prev) => ({
@@ -92,10 +90,10 @@ const DashboardPreview: React.FC = () => {
   const handleTabChange = (newTab: string) => {
     // Reset all filters when switching tabs
     setGlobalFilters({
-      retailers: newTab=="retailer" ? [availableRetailers[0]] : [],
-      settlements: newTab=="settlement" ? [availableSettlements[0]] : [],
+      retailers: newTab == "retailer" ? [availableRetailers[0]] : [],
+      settlements: newTab == "settlement" ? [availableSettlements[0]] : [],
       municipalities: [],
-      categories: newTab=="category" ? [availableCategories[0]] : [],
+      categories: newTab == "category" ? [availableCategories[0]] : [],
       datePreset: "last7days",
       granularity: "day",
     });
@@ -133,10 +131,10 @@ const DashboardPreview: React.FC = () => {
           {/* Header */}
           <div className="text-center space-y-4">
             <h1 className="text-4xl font-bold">
-              Dashboard Preview
+              {content.pages.dashboard.title}
             </h1>
             <p className="text-lg max-w-2xl mx-auto">
-              Explore price trends and analytics with interactive filters
+              {content.pages.dashboard.subtitle}
             </p>
           </div>
 
@@ -148,10 +146,18 @@ const DashboardPreview: React.FC = () => {
               className="w-full"
             >
               <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="general">Общи цени</TabsTrigger>
-                <TabsTrigger value="category">По категория</TabsTrigger>
-                <TabsTrigger value="settlement">По населено място</TabsTrigger>
-                <TabsTrigger value="retailer">По магазин</TabsTrigger>
+                <TabsTrigger value="general">
+                  {content.pages.dashboard.tabs.general}
+                </TabsTrigger>
+                <TabsTrigger value="category">
+                  {content.pages.dashboard.tabs.category}
+                </TabsTrigger>
+                <TabsTrigger value="settlement">
+                  {content.pages.dashboard.tabs.settlement}
+                </TabsTrigger>
+                <TabsTrigger value="retailer">
+                  {content.pages.dashboard.tabs.retailer}
+                </TabsTrigger>
               </TabsList>
 
               {/* General Prices Tab */}
@@ -168,7 +174,7 @@ const DashboardPreview: React.FC = () => {
                   <Card className="border-slate-200">
                     <CardHeader>
                       <CardTitle className="text-lg text-slate-800">
-                        Category Filters
+                        {content.pages.dashboard.filters.categoryTitle}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -197,12 +203,13 @@ const DashboardPreview: React.FC = () => {
                             size="sm"
                             className="text-slate-600 hover:text-slate-900"
                           >
-                            Clear All
+                            {content.pages.dashboard.filters.clearAll}
                           </Button>
                           {globalFilters.categories &&
                             globalFilters.categories.length > 0 && (
                               <div className="flex items-center text-sm text-slate-600">
-                                Selected: {globalFilters.categories.join(", ")}
+                                {content.pages.dashboard.filters.selected}:{" "}
+                                {globalFilters.categories.join(", ")}
                               </div>
                             )}
                         </div>
@@ -220,7 +227,7 @@ const DashboardPreview: React.FC = () => {
                   <Card className="border-slate-200">
                     <CardHeader>
                       <CardTitle className="text-lg text-slate-800">
-                        Settlement Filters
+                        {content.pages.dashboard.filters.settlementTitle}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -249,12 +256,13 @@ const DashboardPreview: React.FC = () => {
                             size="sm"
                             className="text-slate-600 hover:text-slate-900"
                           >
-                            Clear All
+                            {content.pages.dashboard.filters.clearAll}
                           </Button>
                           {globalFilters.settlements &&
                             globalFilters.settlements.length > 0 && (
                               <div className="flex items-center text-sm text-slate-600">
-                                Selected: {globalFilters.settlements.join(", ")}
+                                {content.pages.dashboard.filters.selected}:{" "}
+                                {globalFilters.settlements.join(", ")}
                               </div>
                             )}
                         </div>
@@ -272,7 +280,7 @@ const DashboardPreview: React.FC = () => {
                   <Card className="border-slate-200">
                     <CardHeader>
                       <CardTitle className="text-lg text-slate-800">
-                        Retailer Filters
+                        {content.pages.dashboard.filters.retailerTitle}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -301,12 +309,13 @@ const DashboardPreview: React.FC = () => {
                             size="sm"
                             className="text-slate-600 hover:text-slate-900"
                           >
-                            Clear All
+                            {content.pages.dashboard.filters.clearAll}
                           </Button>
                           {globalFilters.retailers &&
                             globalFilters.retailers.length > 0 && (
                               <div className="flex items-center text-sm text-slate-600">
-                                Selected: {globalFilters.retailers.join(", ")}
+                                {content.pages.dashboard.filters.selected}:{" "}
+                                {globalFilters.retailers.join(", ")}
                               </div>
                             )}
                         </div>
@@ -318,7 +327,7 @@ const DashboardPreview: React.FC = () => {
                   <Card className="border-slate-200">
                     <CardHeader>
                       <CardTitle className="text-lg text-slate-800">
-                        Metric Type
+                        {content.pages.dashboard.metrics.title}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -330,7 +339,7 @@ const DashboardPreview: React.FC = () => {
                           }
                           size="sm"
                         >
-                          Price
+                          {content.pages.dashboard.metrics.price}
                         </Button>
                         <Button
                           onClick={() => setMetricType("promo")}
@@ -339,7 +348,7 @@ const DashboardPreview: React.FC = () => {
                           }
                           size="sm"
                         >
-                          Promo
+                          {content.pages.dashboard.metrics.promo}
                         </Button>
                         <Button
                           onClick={() => setMetricType("discount")}
@@ -348,7 +357,7 @@ const DashboardPreview: React.FC = () => {
                           }
                           size="sm"
                         >
-                          Discount
+                          {content.pages.dashboard.metrics.discount}
                         </Button>
                       </div>
                     </CardContent>

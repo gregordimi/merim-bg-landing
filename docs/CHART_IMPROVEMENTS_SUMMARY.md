@@ -1,7 +1,7 @@
 # Chart Components Improvements Summary
 
 ## Overview
-This document summarizes the improvements made to the chart system in the Merim.bg landing page repository.
+This document summarizes the improvements made to the chart system in the Merim.org landing page repository.
 
 ## Problem Statement
 The original issue identified three main areas for improvement:

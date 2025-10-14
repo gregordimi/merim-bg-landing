@@ -1,8 +1,8 @@
-# Merim.bg - Smart Price Comparison Platform
+# Merim.org - Smart Price Comparison Platform
 
-**Merim.bg** is a revolutionary price comparison platform designed to empower Bulgarian consumers with transparent pricing information and intelligent shopping tools.
+**Merim.org** is a revolutionary price comparison platform designed to empower Bulgarian consumers with transparent pricing information and intelligent shopping tools.
 
-![Merim.bg Screenshot](https://github.com/user-attachments/assets/8e4cf97c-4d9d-4321-a38e-496645cefc7e)
+![Merim.org Screenshot](https://github.com/user-attachments/assets/8e4cf97c-4d9d-4321-a38e-496645cefc7e)
 
 ## 🎯 Mission
 
@@ -217,7 +217,7 @@ Comprehensive documentation is available in the `/docs` folder:
 
 ## 🤝 Contributing
 
-We welcome contributions to improve Merim.bg! Please read our documentation before contributing:
+We welcome contributions to improve Merim.org! Please read our documentation before contributing:
 
 1. **Fork the repository**
 2. **Create feature branch** (`git checkout -b feature/amazing-feature`)
@@ -240,7 +240,7 @@ This project is proprietary software. Unauthorized copying, modification, distri
 
 ## 🔗 Links
 
-- **Live Application**: [https://merim.bg](https://merim.bg)
+- **Live Application**: [https://merim.org](https://merim.org)
 - **Documentation**: [./docs/README.md](./docs/README.md)
 - **Blog Guide**: [BLOG_GUIDE.md](./BLOG_GUIDE.md)
 
@@ -254,4 +254,4 @@ For questions, feedback, or collaboration opportunities:
 
 ---
 
-**Merim.bg** - Empowering Bulgarian consumers through price transparency and smart shopping technology.
+**Merim.org** - Empowering Bulgarian consumers through price transparency and smart shopping technology.
