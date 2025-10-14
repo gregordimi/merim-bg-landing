@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import Layout from "@/layouts/Layout";
 import HomePage from "@/pages/HomePage";
 import DashboardSidebarPage from "@/pages/DashboardSidebarPage";
+import DashboardPreview from './pages/DashboardPreview';
 
 // Lazy load pages that aren't immediately needed
 const AboutPage = lazy(() => import("@/pages/AboutPage"));
@@ -24,9 +25,11 @@ const PageLoader = () => (
 function App() {
 
   React.useEffect(() => {
+    // @ts-ignore
    var _mtm = window._mtm = window._mtm || [];
    _mtm.push({'mtm.startTime': (new Date().getTime()), 'event': 'mtm.Start'});
    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+   // @ts-ignore
    g.async=true; g.src='https://cenite2-matomo.xxkpxb.easypanel.host/js/container_2OtD161c.js'; s.parentNode.insertBefore(g,s);
   }, [])
 
@@ -37,7 +40,8 @@ function App() {
           <Routes>
             {/* Main layout with header and footer */}
             <Route path="/" element={<Layout />}>
-              <Route index element={<HomePage />} />
+              {/* <Route index element={<HomePage />} /> */}
+              <Route index element={<DashboardPreview />} />
               <Route path="about" element={<AboutPage />} />
               <Route path="blog" element={<BlogPage />} />
               <Route path="blog/:slug" element={<BlogPostPage />} />
