@@ -9,6 +9,13 @@ import { CubeProvider } from "@/lib/cube";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"; // Import Select components
 import { content } from "@/i18n/bg";
 
 const DashboardPreview: React.FC = () => {
@@ -126,11 +133,12 @@ const DashboardPreview: React.FC = () => {
 
   return (
     <CubeProvider>
-      <div className="min-h-screen p-4 md:p-8">
+      {/* RESPONSIVE CHANGE: Reduced padding on mobile (p-2), scales up for larger screens */}
+      <div className="min-h-screen p-2 sm:p-4 md:p-8">
         <div className="max-w-7xl mx-auto space-y-8">
           {/* Header */}
           <div className="text-center space-y-4">
-            <h1 className="text-4xl font-bold">
+            <h1 className="text-3xl font-bold sm:text-4xl">
               {content.pages.dashboard.title}
             </h1>
             <p className="text-lg max-w-2xl mx-auto">
@@ -145,7 +153,30 @@ const DashboardPreview: React.FC = () => {
               onValueChange={handleTabChange}
               className="w-full"
             >
-              <TabsList className="grid w-full grid-cols-4">
+              {/* RESPONSIVE CHANGE: Use a dropdown on mobile and tabs on desktop */}
+              <div className="px-2 pt-2 md:hidden">
+                <Select value={currentTab} onValueChange={handleTabChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a view" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="general">
+                      {content.pages.dashboard.tabs.general}
+                    </SelectItem>
+                    <SelectItem value="category">
+                      {content.pages.dashboard.tabs.category}
+                    </SelectItem>
+                    <SelectItem value="settlement">
+                      {content.pages.dashboard.tabs.settlement}
+                    </SelectItem>
+                    <SelectItem value="retailer">
+                      {content.pages.dashboard.tabs.retailer}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <TabsList className="hidden w-full grid-cols-4 md:grid">
                 <TabsTrigger value="general">
                   {content.pages.dashboard.tabs.general}
                 </TabsTrigger>
@@ -162,14 +193,16 @@ const DashboardPreview: React.FC = () => {
 
               {/* General Prices Tab */}
               <TabsContent value="general" className="space-y-6">
-                <div className="p-6">
+                {/* RESPONSIVE CHANGE: Reduced padding on mobile */}
+                <div className="p-2 sm:p-6">
                   <TrendChart globalFilters={stableFilters} />
                 </div>
               </TabsContent>
 
               {/* Category Tab */}
               <TabsContent value="category" className="space-y-6">
-                <div className="p-6 space-y-6">
+                 {/* RESPONSIVE CHANGE: Reduced padding on mobile */}
+                <div className="p-2 sm:p-6 space-y-6">
                   {/* Category Filter Controls */}
                   <Card className="border-slate-200">
                     <CardHeader>
@@ -196,7 +229,7 @@ const DashboardPreview: React.FC = () => {
                             </Button>
                           ))}
                         </div>
-                        <div className="flex gap-2 pt-2 border-t">
+                        <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
                           <Button
                             onClick={handleClearCategories}
                             variant="ghost"
@@ -222,7 +255,8 @@ const DashboardPreview: React.FC = () => {
 
               {/* Settlement Tab */}
               <TabsContent value="settlement" className="space-y-6">
-                <div className="p-6 space-y-6">
+                {/* RESPONSIVE CHANGE: Reduced padding on mobile */}
+                <div className="p-2 sm:p-6 space-y-6">
                   {/* Settlement Filter Controls */}
                   <Card className="border-slate-200">
                     <CardHeader>
@@ -249,7 +283,7 @@ const DashboardPreview: React.FC = () => {
                             </Button>
                           ))}
                         </div>
-                        <div className="flex gap-2 pt-2 border-t">
+                        <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
                           <Button
                             onClick={handleClearSettlements}
                             variant="ghost"
@@ -275,7 +309,8 @@ const DashboardPreview: React.FC = () => {
 
               {/* Retailer Tab */}
               <TabsContent value="retailer" className="space-y-6">
-                <div className="p-6 space-y-6">
+                {/* RESPONSIVE CHANGE: Reduced padding on mobile */}
+                <div className="p-2 sm:p-6 space-y-6">
                   {/* Retailer Filter Controls */}
                   <Card className="border-slate-200">
                     <CardHeader>
@@ -302,7 +337,7 @@ const DashboardPreview: React.FC = () => {
                             </Button>
                           ))}
                         </div>
-                        <div className="flex gap-2 pt-2 border-t">
+                        <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
                           <Button
                             onClick={handleClearRetailers}
                             variant="ghost"
@@ -331,7 +366,7 @@ const DashboardPreview: React.FC = () => {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap gap-2">
                         <Button
                           onClick={() => setMetricType("price")}
                           variant={

@@ -1,4 +1,4 @@
-import { ReactNode, useMemo } from "react";
+import { ReactNode, useMemo, useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -108,6 +108,33 @@ interface ChartWrapperProps {
   globalFilters?: GlobalFilters;
 }
 
+/**
+ * Custom hook for tracking media query status.
+ * @param {string} query - The media query string to match.
+ * @returns {boolean} - True if the media query matches, false otherwise.
+ */
+const useMediaQuery = (query: string): boolean => {
+  const [matches, setMatches] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const media = window.matchMedia(query);
+    if (media.matches !== matches) {
+      setMatches(media.matches);
+    }
+    const listener = () => {
+      setMatches(media.matches);
+    };
+    media.addEventListener("change", listener);
+    return () => media.removeEventListener("change", listener);
+  }, [matches, query]);
+
+  return matches;
+};
+
 export function ChartWrapper({
   title,
   description,
@@ -153,6 +180,7 @@ export function ChartWrapper({
   resultSet,
   globalFilters,
 }: ChartWrapperProps) {
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const chartHeight = CHART_HEIGHTS[height];
   const chartConfig = getChartConfig(chartConfigType);
 
@@ -234,24 +262,23 @@ export function ChartWrapper({
       return null;
     }
 
-    const commonProps = {
-      data,
-      margin:
-        chartType === "bar"
-          ? { top: 10, right: 10, left: 10, bottom: 80 }
-          : { top: 10, right: 10, left: 10, bottom: 0 },
-    };
-
     if (chartType === "area") {
       return (
         <ChartContainer
           config={chartConfig}
           className={`h-[${chartHeight}px] w-full`}
         >
-          <AreaChart {...commonProps}>
+          <AreaChart
+            data={data}
+            margin={
+              isMobile
+                ? { top: 5, right: 5, left: -20, bottom: 0 }
+                : { top: 10, right: 10, left: 10, bottom: 0 }
+            }
+          >
             {showGradients && (
               <defs>
-                {dataKeys.map((key, index) => {
+                {dataKeys.map((key) => {
                   const color = chartConfig[key]?.color || "#0088FE";
                   return (
                     <linearGradient
@@ -269,26 +296,31 @@ export function ChartWrapper({
                 })}
               </defs>
             )}
-            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+            <CartesianGrid
+              vertical={false}
+              stroke="hsl(var(--border))"
+              strokeDasharray="3 3"
+            />
             <XAxis
               dataKey={xAxisKey}
               tickLine={false}
               axisLine={false}
-              tickMargin={8}
-              tick={{ fontSize: 12 }}
+              tickMargin={isMobile ? 4 : 8}
+              tick={{ fontSize: isMobile ? 10 : 12 }}
               tickFormatter={xAxisFormatter}
             />
             <YAxis
               tickLine={false}
               axisLine={false}
-              tickMargin={8}
-              tick={{ fontSize: 12 }}
+              tickMargin={isMobile ? 4 : 8}
+              tick={{ fontSize: isMobile ? 10 : 12 }}
               tickFormatter={yAxisFormatter}
             />
             <ChartTooltip
               cursor={{ strokeDasharray: "3 3" }}
               content={<ChartTooltipContent indicator="dot" />}
             />
+            <ChartLegend content={<ChartLegendContent />} />
             {dataKeys.map((key) => (
               <Area
                 key={key}
@@ -314,31 +346,45 @@ export function ChartWrapper({
           config={chartConfig}
           className={`h-[${chartHeight}px] w-full`}
         >
-          <BarChart {...commonProps}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+          <BarChart
+            data={data}
+            margin={
+              isMobile
+                ? { top: 5, right: 5, left: -20, bottom: 40 }
+                : { top: 10, right: 10, left: 10, bottom: 80 }
+            }
+          >
+            <CartesianGrid
+              vertical={false}
+              stroke="hsl(var(--border))"
+              strokeDasharray="3 3"
+            />
             <XAxis
               dataKey={xAxisKey}
               angle={xAxisKey === "category" ? -45 : 0}
               textAnchor={xAxisKey === "category" ? "end" : "middle"}
-              height={xAxisKey === "category" ? 100 : 60}
-              interval={0}
+              height={isMobile ? 60 : xAxisKey === "category" ? 100 : 60}
+              interval={isMobile ? "preserveStartEnd" : 0}
               tickLine={false}
               axisLine={false}
-              tickMargin={8}
-              tick={{ fontSize: xAxisKey === "category" ? 11 : 12 }}
+              tickMargin={isMobile ? 4 : 8}
+              tick={{
+                fontSize: isMobile ? 10 : xAxisKey === "category" ? 11 : 12,
+              }}
               tickFormatter={xAxisFormatter}
             />
             <YAxis
               tickLine={false}
               axisLine={false}
-              tickMargin={8}
-              tick={{ fontSize: 12 }}
+              tickMargin={isMobile ? 4 : 8}
+              tick={{ fontSize: isMobile ? 10 : 12 }}
               tickFormatter={yAxisFormatter}
             />
             <ChartTooltip
-              cursor={{ fill: "rgba(0, 0, 0, 0.1)" }}
-              content={<ChartTooltipContent indicator="dashed" />}
+              cursor={{ fill: "hsl(var(--muted))" }}
+              content={<ChartTooltipContent indicator="dot" />}
             />
+            <ChartLegend content={<ChartLegendContent />} />
             {dataKeys.map((key) => (
               <Bar
                 key={key}
@@ -354,25 +400,31 @@ export function ChartWrapper({
     }
 
     if (chartType === "horizontal-bar") {
+      const currentYAxisWidth = isMobile ? 80 : yAxisWidth;
       return (
         <ResponsiveContainer width="100%" height={chartHeight}>
           <BarChart
             data={data}
             layout="vertical"
-            margin={{ top: 20, right: 80, left: yAxisWidth + 20, bottom: 20 }}
+            margin={
+              isMobile
+                ? { top: 10, right: 20, left: 10, bottom: 10 }
+                : { top: 20, right: 80, left: 20, bottom: 20 }
+            }
           >
-            <CartesianGrid strokeDasharray="3 3" />
+            <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="3 3" />
             <XAxis
               type="number"
               tickFormatter={yAxisFormatter}
               tickLine={false}
               axisLine={false}
+              tick={{ fontSize: isMobile ? 10 : 12 }}
             />
             <YAxis
               type="category"
               dataKey={xAxisKey}
-              width={yAxisWidth}
-              tick={{ fontSize: 12 }}
+              width={currentYAxisWidth}
+              tick={{ fontSize: isMobile ? 10 : 12 }}
               tickLine={false}
               axisLine={false}
             />
@@ -400,52 +452,59 @@ export function ChartWrapper({
 
     if (chartType === "multiline") {
       return (
-        <ResponsiveContainer width="100%" height={chartHeight}>
+        <ChartContainer
+          config={chartConfig}
+          className={`h-[${chartHeight}px] w-full`}
+        >
           <LineChart
             data={data}
-            margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+            margin={
+              isMobile
+                ? { top: 5, right: 5, left: -20, bottom: 0 }
+                : { top: 10, right: 10, left: 10, bottom: 0 }
+            }
           >
-            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+            <CartesianGrid
+              vertical={false}
+              stroke="hsl(var(--border))"
+              strokeDasharray="3 3"
+            />
             <XAxis
               dataKey={xAxisKey}
               tickLine={false}
               axisLine={false}
-              tickMargin={8}
-              tick={{ fontSize: 12 }}
+              tickMargin={isMobile ? 4 : 8}
+              tick={{ fontSize: isMobile ? 10 : 12 }}
               tickFormatter={xAxisFormatter}
             />
             <YAxis
               tickLine={false}
               axisLine={false}
-              tickMargin={8}
-              tick={{ fontSize: 12 }}
+              tickMargin={isMobile ? 4 : 8}
+              tick={{ fontSize: isMobile ? 10 : 12 }}
               tickFormatter={yAxisFormatter}
             />
-            <Tooltip
+            <ChartTooltip
               cursor={{ strokeDasharray: "3 3" }}
-              formatter={(value: number, name: string) => {
-                if (value === null || value === undefined) {
-                  return ["No data", name];
-                }
-                return [yAxisFormatter(value), name];
-              }}
-              labelFormatter={xAxisFormatter}
-              labelStyle={{ color: "#000" }}
+              content={<ChartTooltipContent indicator="dot" />}
             />
-            <Legend />
+            <ChartLegend content={<ChartLegendContent />} />
             {dynamicKeys.map((key, index) => (
               <Line
                 key={String(key)}
                 type="monotone"
                 dataKey={String(key)}
-                stroke={CHART_COLORS[index % CHART_COLORS.length]}
+                stroke={
+                  chartConfig[key]?.color ||
+                  CHART_COLORS[index % CHART_COLORS.length]
+                }
                 strokeWidth={2}
-                dot={{ r: 4 }}
+                dot={{ r: isMobile ? 3 : 4 }}
                 connectNulls={false}
               />
             ))}
           </LineChart>
-        </ResponsiveContainer>
+        </ChartContainer>
       );
     }
 
@@ -463,13 +522,13 @@ export function ChartWrapper({
               cy="50%"
               labelLine={false}
               label={
-                showPercentage
+                showPercentage && !isMobile
                   ? ({ name, percent }) =>
                       `${name}: ${((percent || 0) * 100).toFixed(0)}%`
                   : undefined
               }
-              outerRadius={outerRadius}
-              innerRadius={innerRadius}
+              outerRadius={isMobile ? 80 : outerRadius}
+              innerRadius={isMobile ? 40 : innerRadius}
               dataKey={pieDataKey}
               paddingAngle={2}
             >
@@ -496,12 +555,19 @@ export function ChartWrapper({
           className={`h-[${chartHeight}px] w-full`}
         >
           <RadarChart data={data}>
-            <PolarGrid gridType="circle" />
-            <PolarAngleAxis dataKey={radarDataKey} tick={{ fontSize: 12 }} />
+            <PolarGrid
+              gridType="circle"
+              stroke="hsl(var(--border))"
+              strokeDasharray="3 3"
+            />
+            <PolarAngleAxis
+              dataKey={radarDataKey}
+              tick={{ fontSize: isMobile ? 10 : 12 }}
+            />
             <PolarRadiusAxis
               angle={90}
               domain={[0, "dataMax"]}
-              tick={{ fontSize: 10 }}
+              tick={{ fontSize: isMobile ? 8 : 10 }}
             />
             <ChartTooltip content={<ChartTooltipContent />} />
             <ChartLegend content={<ChartLegendContent />} />
