@@ -13,6 +13,7 @@ import {
 } from "@/utils/cube/filterUtils";
 import { useStableQuery } from "@/hooks/useStableQuery";
 import { ChartWrapper } from "../../config/ChartWrapper";
+import { formatDate } from "@/utils/dateUtils";
 
 interface SimpleTrendChartProps {
   globalFilters: GlobalFilters;
@@ -56,18 +57,6 @@ function calculateTrend(data: any[]) {
     value: change.toFixed(1),
     direction: change > 0 ? "up" as const : "down" as const,
   };
-}
-
-function formatDate(dateStr: string): string {
-  try {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-  } catch {
-    return dateStr;
-  }
 }
 
 export function SimpleTrendChart({ globalFilters }: SimpleTrendChartProps) {

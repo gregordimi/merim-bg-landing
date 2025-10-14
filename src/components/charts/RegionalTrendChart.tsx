@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { GlobalFilters, buildOptimizedQuery } from "@/utils/cube/filterUtils";
 import { useStableQuery } from "@/hooks/useStableQuery";
 import { ChartWrapper } from "../../config/ChartWrapper";
+import { formatDate } from "@/utils/dateUtils";
 
 interface RegionalTrendChartProps {
   globalFilters: GlobalFilters;
@@ -80,17 +81,6 @@ function calculateRegionalTrend(data: any[], municipalities: string[]) {
   };
 }
 
-function formatDate(dateStr: string): string {
-  try {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-  } catch {
-    return dateStr;
-  }
-}
 
 export function RegionalTrendChart({ globalFilters }: RegionalTrendChartProps) {
   // Build the query
