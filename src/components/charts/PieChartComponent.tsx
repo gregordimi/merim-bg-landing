@@ -3,19 +3,11 @@
  * Modern pie chart using shadcn/ui chart components
  */
 
-import { useMemo } from 'react';
-import { Pie, PieChart, Cell } from 'recharts';
+import { useMemo, useState } from 'react';
 import { GlobalFilters, buildOptimizedQuery } from '@/utils/cube/filterUtils';
 import { useStableQuery } from '@/hooks/useStableQuery';
 import { ChartWrapper } from '@/config/ChartWrapper';
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
-} from '@/components/ui/chart';
+import { ChartConfig } from '@/components/ui/chart';
 import { CHART_COLORS } from '@/config/chartConfig';
 
 interface PieChartComponentProps {
@@ -56,11 +48,13 @@ function processPieData(resultSet: any, limit: number = 8) {
 }
 
 export function PieChartComponent({ globalFilters }: PieChartComponentProps) {
+  const [refreshKey, setRefreshKey] = useState(0);
+  
   const query = useMemo(() => buildOptimizedQuery(
     ['prices.averageRetailPrice'],
     globalFilters,
     ['prices.category_group_name']
-  ), [globalFilters]);
+  ), [globalFilters, refreshKey]);
 
   const { isLoading, error, resultSet, progress } = useStableQuery(
     () => query,
@@ -70,9 +64,14 @@ export function PieChartComponent({ globalFilters }: PieChartComponentProps) {
       globalFilters.municipalities?.join(",") ?? "",
       globalFilters.categories?.join(",") ?? "",
       globalFilters.datePreset ?? "last7days",
+      refreshKey,
     ],
     "pie-chart"
   );
+
+  const handleReload = () => {
+    setRefreshKey(prev => prev + 1);
+  };
 
   const { chartData, chartConfig } = useMemo(() => {
     return processPieData(resultSet, 8);
@@ -85,41 +84,19 @@ export function PieChartComponent({ globalFilters }: PieChartComponentProps) {
       isLoading={isLoading}
       error={error}
       progress={progress}
-      chartType="custom"
+      chartType="pie"
+      data={chartData}
+      chartConfigType="distribution"
+      pieDataKey="value"
+      innerRadius={60}
+      outerRadius={120}
+      showPercentage={true}
       height="large"
+      onReload={handleReload}
       query={query}
       resultSet={resultSet}
       globalFilters={globalFilters}
     >
-      <ChartContainer config={chartConfig} className="h-[400px] w-full">
-        <PieChart>
-          <ChartTooltip
-            content={<ChartTooltipContent hideLabel />}
-          />
-          <Pie
-            data={chartData}
-            cx="50%"
-            cy="50%"
-            labelLine={false}
-            label={({ name, percent }) => 
-              `${name}: ${(percent * 100).toFixed(0)}%`
-            }
-            outerRadius={120}
-            innerRadius={60}
-            dataKey="value"
-            paddingAngle={2}
-          >
-            {chartData.map((entry: any, index: number) => (
-              <Cell key={`cell-${index}`} fill={entry.fill} />
-            ))}
-          </Pie>
-          <ChartLegend
-            content={<ChartLegendContent />}
-            className="flex-wrap gap-2"
-          />
-        </PieChart>
-      </ChartContainer>
-      
       {/* Summary Stats */}
       <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
         <div className="space-y-1">

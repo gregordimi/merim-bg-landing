@@ -43,6 +43,10 @@ export const getChartConfig = (
           label: "Discount %",
           color: CHART_COLORS[3],
         },
+        discountRate: {
+          label: "Discount %",
+          color: CHART_COLORS[3],
+        },
       } satisfies ChartConfig;
 
     case "category":

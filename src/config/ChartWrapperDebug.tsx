@@ -7,7 +7,7 @@ import { GlobalFilters } from "@/utils/cube/filterUtils";
 interface ChartWrapperDebugProps {
   query: any;
   resultSet: any;
-  displayData: any[] | null;
+  displayData: any[] | null | undefined;
   globalFilters: GlobalFilters;
 }
 

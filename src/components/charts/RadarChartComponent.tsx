@@ -3,19 +3,11 @@
  * Modern radar chart using shadcn/ui chart components
  */
 
-import { useMemo } from 'react';
-import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts';
+import { useMemo, useState } from 'react';
 import { GlobalFilters, buildOptimizedQuery } from '@/utils/cube/filterUtils';
 import { useStableQuery } from '@/hooks/useStableQuery';
 import { ChartWrapper } from '@/config/ChartWrapper';
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
-} from '@/components/ui/chart';
+import { ChartConfig } from '@/components/ui/chart';
 
 interface RadarChartComponentProps {
   globalFilters: GlobalFilters;
@@ -56,6 +48,8 @@ function processRadarData(resultSet: any) {
 }
 
 export function RadarChartComponent({ globalFilters }: RadarChartComponentProps) {
+  const [refreshKey, setRefreshKey] = useState(0);
+  
   const query = useMemo(() => buildOptimizedQuery(
     [
       'prices.averageRetailPrice',
@@ -64,7 +58,7 @@ export function RadarChartComponent({ globalFilters }: RadarChartComponentProps)
     ],
     globalFilters,
     ['prices.retailer_name']
-  ), [globalFilters]);
+  ), [globalFilters, refreshKey]);
 
   const { isLoading, error, resultSet, progress } = useStableQuery(
     () => query,
@@ -74,9 +68,14 @@ export function RadarChartComponent({ globalFilters }: RadarChartComponentProps)
       globalFilters.municipalities?.join(",") ?? "",
       globalFilters.categories?.join(",") ?? "",
       globalFilters.datePreset ?? "last7days",
+      refreshKey,
     ],
     "radar-chart"
   );
+
+  const handleReload = () => {
+    setRefreshKey(prev => prev + 1);
+  };
 
   const chartData = useMemo(() => {
     return processRadarData(resultSet);
@@ -89,50 +88,17 @@ export function RadarChartComponent({ globalFilters }: RadarChartComponentProps)
       isLoading={isLoading}
       error={error}
       progress={progress}
-      chartType="custom"
+      chartType="radar"
+      data={chartData}
+      chartConfigType="trend"
+      radarDataKey="retailer"
+      dataKeys={['retailPrice', 'promoPrice', 'discountRate']}
       height="xl"
+      onReload={handleReload}
       query={query}
       resultSet={resultSet}
       globalFilters={globalFilters}
     >
-      <ChartContainer config={chartConfig} className="h-[450px] w-full">
-        <RadarChart data={chartData}>
-          <PolarGrid gridType="circle" />
-          <PolarAngleAxis 
-            dataKey="retailer" 
-            tick={{ fontSize: 12 }}
-          />
-          <PolarRadiusAxis 
-            angle={90} 
-            domain={[0, 'dataMax']}
-            tick={{ fontSize: 10 }}
-          />
-          <ChartTooltip content={<ChartTooltipContent />} />
-          <ChartLegend content={<ChartLegendContent />} />
-          <Radar
-            name="Retail Price"
-            dataKey="retailPrice"
-            stroke="var(--color-retailPrice)"
-            fill="var(--color-retailPrice)"
-            fillOpacity={0.6}
-          />
-          <Radar
-            name="Promo Price"
-            dataKey="promoPrice"
-            stroke="var(--color-promoPrice)"
-            fill="var(--color-promoPrice)"
-            fillOpacity={0.6}
-          />
-          <Radar
-            name="Discount %"
-            dataKey="discountRate"
-            stroke="var(--color-discountRate)"
-            fill="var(--color-discountRate)"
-            fillOpacity={0.6}
-          />
-        </RadarChart>
-      </ChartContainer>
-
       {/* Summary Info */}
       <div className="mt-4 p-4 bg-muted rounded-lg">
         <p className="text-sm text-muted-foreground">

@@ -1,8 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { GlobalFilters, buildOptimizedQuery } from '@/utils/cube/filterUtils';
 import { useStableQuery } from '@/hooks/useStableQuery';
 import { ChartWrapper } from '../../config/ChartWrapper';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 interface MunicipalityHorizontalChartProps {
   globalFilters: GlobalFilters;
@@ -27,7 +26,7 @@ function processMunicipalityData(resultSet: any, limit: number = 15) {
         retailPrice: Number(row["prices.averageRetailPrice"] || 0),
         promoPrice: Number(row["prices.averagePromoPrice"] || 0),
       }))
-      .sort((a, b) => b.retailPrice - a.retailPrice)
+      .sort((a: ChartDataPoint, b: ChartDataPoint) => b.retailPrice - a.retailPrice)
       .slice(0, limit);
   } catch (error) {
     console.error("Error processing municipality data:", error);
@@ -36,6 +35,8 @@ function processMunicipalityData(resultSet: any, limit: number = 15) {
 }
 
 export function MunicipalityHorizontalChart({ globalFilters }: MunicipalityHorizontalChartProps) {
+  const [refreshKey, setRefreshKey] = useState(0);
+  
   const query = useMemo(() => {
     const query = buildOptimizedQuery(
       ["prices.averageRetailPrice", "prices.averagePromoPrice"],
@@ -47,7 +48,7 @@ export function MunicipalityHorizontalChart({ globalFilters }: MunicipalityHoriz
     query.timeDimensions = [];
     
     return query;
-  }, [globalFilters]);
+  }, [globalFilters, refreshKey]);
 
   const { resultSet, isLoading, error, progress } = useStableQuery(
     () => query,
@@ -57,9 +58,14 @@ export function MunicipalityHorizontalChart({ globalFilters }: MunicipalityHoriz
       (globalFilters.municipalities || []).join(','),
       (globalFilters.categories || []).join(','),
       globalFilters.datePreset || "last7days",
+      refreshKey,
     ],
     'municipality-horizontal-chart'
   );
+
+  const handleReload = () => {
+    setRefreshKey(prev => prev + 1);
+  };
 
   const data = useMemo(() => {
     return processMunicipalityData(resultSet, 15);
@@ -72,49 +78,18 @@ export function MunicipalityHorizontalChart({ globalFilters }: MunicipalityHoriz
       isLoading={isLoading}
       error={error}
       progress={progress}
-      chartType="custom"
+      chartType="horizontal-bar"
+      data={data}
+      chartConfigType="trend"
+      xAxisKey="municipality"
+      dataKeys={['retailPrice', 'promoPrice']}
+      yAxisFormatter={(value) => `${value.toFixed(2)} лв`}
+      yAxisWidth={130}
       height="xl"
+      onReload={handleReload}
       query={query}
       resultSet={resultSet}
       globalFilters={globalFilters}
-    >
-      {data && data.length > 0 ? (
-        <ResponsiveContainer width="100%" height={500}>
-          <BarChart
-            data={data}
-            layout="vertical"
-            margin={{ top: 20, right: 80, left: 150, bottom: 20 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis 
-              type="number" 
-              tickFormatter={(value) => `${Number(value).toFixed(2)} лв`} 
-            />
-            <YAxis 
-              type="category" 
-              dataKey="municipality" 
-              width={130}
-              tick={{ fontSize: 12 }}
-              tickLine={false}
-              axisLine={false}
-            />
-            <Tooltip
-              formatter={(value: number, name: string) => {
-                const label = name === "retailPrice" ? "Retail Price" : "Promo Price";
-                return [`${Number(value).toFixed(2)} лв`, label];
-              }}
-              labelStyle={{ color: "#000" }}
-            />
-            <Legend />
-            <Bar dataKey="retailPrice" fill="#0088FE" name="Retail Price" radius={[0, 4, 4, 0]} />
-            <Bar dataKey="promoPrice" fill="#00C49F" name="Promo Price" radius={[0, 4, 4, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      ) : (
-        <div className="w-full h-[500px] flex items-center justify-center text-muted-foreground">
-          No data available for the selected filters
-        </div>
-      )}
-    </ChartWrapper>
+    />
   );
 }

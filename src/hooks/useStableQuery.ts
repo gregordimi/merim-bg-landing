@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useRef, useEffect } from "react";
 import { useCubeQuery, UseCubeQueryResult } from "@cubejs-client/react";
 import { Query } from "@cubejs-client/core";
 
@@ -7,6 +7,10 @@ export function useStableQuery(
   dependencies: any[],
   componentId?: string
 ): UseCubeQueryResult<Query, any> {
+  // Track if we've ever successfully loaded data
+  const hasLoadedOnce = useRef(false);
+  const lastValidResultSet = useRef<any>(null);
+  
   // Simple memoization based on dependencies only
   const query = useMemo(() => {
     const builtQuery = queryBuilder();
@@ -23,12 +27,25 @@ export function useStableQuery(
     subscribe: false,
   });
 
+  // Keep the last valid resultSet to prevent data loss
+  useEffect(() => {
+    if (result.resultSet && !result.isLoading && !result.error) {
+      hasLoadedOnce.current = true;
+      lastValidResultSet.current = result.resultSet;
+    }
+  }, [result.resultSet, result.isLoading, result.error]);
+
   console.log(`🔍 ${componentId} result:`, {
     isLoading: result.isLoading,
     error: result.error?.message,
     hasData: !!result.resultSet,
     progress: result.progress,
+    hasLoadedOnce: hasLoadedOnce.current,
   });
 
-  return result;
+  // Return result with stable resultSet
+  return {
+    ...result,
+    resultSet: result.resultSet || (hasLoadedOnce.current ? lastValidResultSet.current : null)
+  };
 }

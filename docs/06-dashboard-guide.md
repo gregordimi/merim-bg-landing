@@ -296,9 +296,9 @@ export const MyNewChart = ({ globalFilters }: MyNewChartProps) => {
       description="Description of what this chart shows"
       isLoading={isLoading}
       error={error}
-      chartType="bar" // or "area"
+      chartType="bar" // Choose: "area", "bar", "horizontal-bar", "multiline", "pie", "radar", or "custom"
       data={chartData}
-      chartConfigType="category" // or "trend"
+      chartConfigType="category" // or "trend", "comparison", "distribution"
       xAxisKey="name"
       dataKeys={['retailPrice', 'promoPrice']}
       height="medium"
@@ -312,7 +312,7 @@ export const MyNewChart = ({ globalFilters }: MyNewChartProps) => {
 
 #### Approach 2: Custom Charts
 
-For complex charts that need custom rendering:
+For complex charts that need custom rendering (only use if built-in types don't fit):
 
 ```typescript
 export const MyCustomChart = ({ globalFilters }: MyNewChartProps) => {
@@ -324,7 +324,7 @@ export const MyCustomChart = ({ globalFilters }: MyNewChartProps) => {
       description="Custom chart implementation"
       isLoading={isLoading}
       error={error}
-      chartType="custom" // Use custom type
+      chartType="custom" // Use custom type only when necessary
     >
       {/* Your custom chart JSX here */}
       <div className="custom-chart">
@@ -334,6 +334,8 @@ export const MyCustomChart = ({ globalFilters }: MyNewChartProps) => {
   );
 };
 ```
+
+**Note**: With the new chart types (horizontal-bar, pie, radar, multiline), you should rarely need custom charts. See the Chart Creation & Migration Guide for examples of each type.
 
 #### 2. Register in CHART_ROUTES
 

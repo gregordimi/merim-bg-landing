@@ -9,19 +9,8 @@ import { useMemo, useState } from "react";
 import { GlobalFilters, buildOptimizedQuery } from "@/utils/cube/filterUtils";
 import { useStableQuery } from "@/hooks/useStableQuery";
 import { ChartWrapper } from "../../config/ChartWrapper";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CHART_COLORS } from "@/config/chartConfig";
 
 interface MultiLineTrendChartProps {
   globalFilters: GlobalFilters;
@@ -38,6 +27,7 @@ export function MultiLineTrendChart({
   const [selectedMeasure, setSelectedMeasure] = useState<"retail" | "promo">(
     "retail"
   );
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Build the query with dimensions
   const query = useMemo(
@@ -46,7 +36,7 @@ export function MultiLineTrendChart({
         ["prices.averageRetailPrice", "prices.averagePromoPrice"],
         globalFilters
       ),
-    [globalFilters]
+    [globalFilters, refreshKey]
   );
 
   const { resultSet, isLoading, error, progress } = useStableQuery(
@@ -58,9 +48,14 @@ export function MultiLineTrendChart({
       (globalFilters.categories || []).join(","),
       globalFilters.datePreset ?? "last7days",
       globalFilters.granularity ?? "day",
+      refreshKey,
     ],
     "multi-line-trend-chart"
   );
+
+  const handleReload = () => {
+    setRefreshKey(prev => prev + 1);
+  };
 
   const processedData = useMemo(() => {
     if (!resultSet)
@@ -137,6 +132,9 @@ export function MultiLineTrendChart({
   };
 
   const measureSuffix = selectedMeasure === "retail" ? "_retail" : "_promo";
+  const dynamicKeys = useMemo(() => {
+    return dimensionValues.map(dimValue => `${dimValue}${measureSuffix}`);
+  }, [dimensionValues, measureSuffix]);
 
   return (
     <ChartWrapper
@@ -145,7 +143,14 @@ export function MultiLineTrendChart({
       isLoading={isLoading}
       error={error}
       progress={progress}
-      chartType="custom"
+      chartType="multiline"
+      data={chartData}
+      xAxisKey="date"
+      xAxisFormatter={formatDate}
+      yAxisFormatter={(value) => `${value.toFixed(2)} лв`}
+      dynamicKeys={dynamicKeys}
+      height="large"
+      onReload={handleReload}
       query={query}
       resultSet={resultSet}
       globalFilters={globalFilters}
@@ -178,47 +183,6 @@ export function MultiLineTrendChart({
           </Badge>
         )}
       </div>
-
-      {chartData &&
-      chartData.length > 0 &&
-      dimensionValues &&
-      dimensionValues.length > 0 ? (
-        <ResponsiveContainer width="100%" height={400}>
-          <LineChart
-            data={chartData}
-            margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" tickFormatter={formatDate} />
-            <YAxis tickFormatter={(value) => `${value.toFixed(2)} лв`} />
-            <Tooltip
-              formatter={(value: number, name: string) => [
-                `${Number(value).toFixed(2)} лв`,
-                name.replace(measureSuffix, ""),
-              ]}
-              labelFormatter={(date) => formatDate(date)}
-              labelStyle={{ color: "#000" }}
-            />
-            <Legend />
-            {dimensionValues.map((dimValue, index) => (
-              <Line
-                key={`${dimValue}${measureSuffix}`}
-                type="monotone"
-                dataKey={`${dimValue}${measureSuffix}`}
-                stroke={CHART_COLORS[index % CHART_COLORS.length]}
-                strokeWidth={2}
-                dot={{ r: 3 }}
-                name={dimValue}
-                connectNulls={false}
-              />
-            ))}
-          </LineChart>
-        </ResponsiveContainer>
-      ) : (
-        <div className="w-full h-[400px] flex items-center justify-center text-muted-foreground">
-          No data available for the selected filters
-        </div>
-      )}
     </ChartWrapper>
   );
 }
