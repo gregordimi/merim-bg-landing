@@ -4,7 +4,7 @@ import { Suspense, lazy } from "react";
 import { ThemeProvider } from "@/components/theme-provider";
 import Layout from "@/layouts/Layout";
 import HomePage from "@/pages/HomePage";
-import DashboardSidebarPage from "@/pages/DashboardSidebarPage";
+// import DashboardSidebarPage from "@/pages/DashboardSidebarPage";
 import DashboardPreview from './pages/DashboardPreview';
 
 // Lazy load pages that aren't immediately needed
@@ -14,6 +14,7 @@ const BlogPostPage = lazy(() => import("@/pages/BlogPostPage"));
 const TermsPage = lazy(() => import("@/pages/TermsPage"));
 const PrivacyPage = lazy(() => import("@/pages/PrivacyPage"));
 const RewardsPage = lazy(() => import("@/pages/RewardsPage"));
+const DashboardSidebarPage = lazy(() => import("@/pages/DashboardSidebarPage"));
 
 // Loading component
 const PageLoader = () => (
