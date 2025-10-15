@@ -9,7 +9,7 @@ import { CubeProvider } from "@/lib/cube";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Explorer from "@/components/charts/explorer"
+import Explorer from "@/components/charts/Explorer"
 import {
   Select,
   SelectContent,
