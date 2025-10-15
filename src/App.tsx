@@ -30,7 +30,8 @@ function App() {
    _mtm.push({'mtm.startTime': (new Date().getTime()), 'event': 'mtm.Start'});
    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
    // @ts-ignore
-   g.async=true; g.src='https://cenite2-matomo.xxkpxb.easypanel.host/js/container_2OtD161c.js'; s.parentNode.insertBefore(g,s);
+  //  g.async=true; g.src='https://cenite2-matomo.xxkpxb.easypanel.host/js/container_2OtD161c.js'; s.parentNode.insertBefore(g,s);
+  g.async=true; g.src=`${import.meta.env.VITE_MATOMO_URL}/js/container_2OtD161c.js`; s.parentNode.insertBefore(g,s);
   }, [])
 
   return (
