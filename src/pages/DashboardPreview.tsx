@@ -60,7 +60,7 @@ const DashboardPreview: React.FC = () => {
     }));
   };
 
-  const handleClearCategories = () => {
+  const handleSelectCategories = () => {
     setGlobalFilters((prev) => ({
       ...prev,
       categories: availableCategories,
@@ -74,7 +74,7 @@ const DashboardPreview: React.FC = () => {
     }));
   };
 
-  const handleClearSettlements = () => {
+  const handleSelectSettlements = () => {
     setGlobalFilters((prev) => ({
       ...prev,
       settlements: availableSettlements,
@@ -88,7 +88,7 @@ const DashboardPreview: React.FC = () => {
     }));
   };
 
-  const handleClearRetailers = () => {
+  const handleSelectRetailers = () => {
     setGlobalFilters((prev) => ({
       ...prev,
       retailers: availableRetailers,
@@ -132,6 +132,45 @@ const DashboardPreview: React.FC = () => {
     ]
   );
 
+
+  const handleRegister = () => {
+    console.log("Register button clicked");
+  };
+
+function RegisterButton({ children }: { children: string }) {
+  // Define your click handler
+  const handleRegister = () => {
+    console.log("Registering...");
+  };
+
+  return (
+    <Button
+      size="sm"
+      onClick={handleRegister}
+      className="transition-all duration-200 hover:scale-105
+                 relative z-0 overflow-hidden
+                 p-0.5 // This creates space for the border
+                 group
+                 before:absolute before:inset-0 before:-z-10
+                 // --- The key change is here ---
+                 before:bg-[conic-gradient(from_90deg_at_50%_50%,#ff0077,#ff5a00,#ffee00,#00ff6e,#00aaff,#5f00ff,#ff0077)]
+                 before:animate-[spin_2s_linear_infinite]
+                 before:rounded-[inherit]
+                 "
+    >
+      <span
+        className="block h-full w-full rounded-[inherit]
+                   bg-background
+                   text-foreground
+                   px-3 py-1 // Adjusted padding for 'sm' size
+                   transition-colors group-hover:bg-accent group-hover:text-accent-foreground
+                  "
+      >
+        {children}
+      </span>
+    </Button>
+  );
+}
   return (
     <CubeProvider>
       {/* RESPONSIVE CHANGE: Reduced padding on mobile (p-2), scales up for larger screens */}
@@ -239,15 +278,16 @@ const DashboardPreview: React.FC = () => {
                               {category}
                             </Button>
                           ))}
+                          <RegisterButton>{content.pages.dashboard.filters.addcat}</RegisterButton>
                         </div>
                         <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
                           <Button
-                            onClick={handleClearCategories}
+                            onClick={handleSelectCategories}
                             variant="ghost"
                             size="sm"
                             className="text-slate-600 hover:text-slate-900"
                           >
-                            {content.pages.dashboard.filters.clearAll}
+                            {content.pages.dashboard.filters.selectAll}
                           </Button>
                           {globalFilters.categories &&
                             globalFilters.categories.length > 0 && (
@@ -293,15 +333,16 @@ const DashboardPreview: React.FC = () => {
                               {settlement}
                             </Button>
                           ))}
+                          <RegisterButton>{content.pages.dashboard.filters.addset}</RegisterButton>
                         </div>
                         <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
                           <Button
-                            onClick={handleClearSettlements}
+                            onClick={handleSelectSettlements}
                             variant="ghost"
                             size="sm"
                             className="text-slate-600 hover:text-slate-900"
                           >
-                            {content.pages.dashboard.filters.clearAll}
+                            {content.pages.dashboard.filters.selectAll}
                           </Button>
                           {globalFilters.settlements &&
                             globalFilters.settlements.length > 0 && (
@@ -347,15 +388,16 @@ const DashboardPreview: React.FC = () => {
                               {retailer}
                             </Button>
                           ))}
+                        <RegisterButton>{content.pages.dashboard.filters.addsho}</RegisterButton>
                         </div>
                         <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
                           <Button
-                            onClick={handleClearRetailers}
+                            onClick={handleSelectRetailers}
                             variant="ghost"
                             size="sm"
                             className="text-slate-600 hover:text-slate-900"
                           >
-                            {content.pages.dashboard.filters.clearAll}
+                            {content.pages.dashboard.filters.selectAll}
                           </Button>
                           {globalFilters.retailers &&
                             globalFilters.retailers.length > 0 && (

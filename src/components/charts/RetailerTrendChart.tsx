@@ -49,7 +49,8 @@ function processRetailerData(resultSet: any, granularity: string = "day", metric
 
     pivot.forEach((row: any) => {
       const dateKey = `prices.price_date.${granularity}`;
-      const date = row[dateKey] || row["prices.price_date"];
+      const date_pre = row[dateKey] || row["prices.price_date"];
+      const date = formatDate(date_pre);
       const retailer = row["prices.retailer_name"];
       const value = Number(row[config.measure] || 0);
 

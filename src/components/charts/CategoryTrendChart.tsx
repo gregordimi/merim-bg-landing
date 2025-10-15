@@ -20,13 +20,35 @@ function processCategoryData(resultSet: any, granularity: string = "day") {
     const pivot = resultSet.tablePivot();
     if (!pivot || pivot.length === 0) return [];
 
+    console.log("🔧 Processing data, total rows:", pivot.length);
+
     const dataMap = new Map();
 
     pivot.forEach((row: any) => {
+      // Handle different possible date key formats
       const dateKey = `prices.price_date.${granularity}`;
-      const date = row[dateKey] || row["prices.price_date"];
-      const category = row["prices.category_group_name"];
-      const price = Number(row["prices.averageRetailPrice"] || 0);
+      const date_pre =
+        row[dateKey] || row["prices.price_date"] || row["Prices Price Date"];
+      const date = formatDate(date_pre);
+
+      // Handle different possible category/retailer key formats
+      const category =
+        row["prices.category_group_name"] ||
+        row["prices.retailer_name"] ||
+        row["Prices Retailer Name"] ||
+        row["Prices Category Group Name"];
+
+      // Handle different possible price key formats
+      const price = Number(
+        row["prices.averageRetailPrice"] ||
+          row["Prices Average Retail Price"] ||
+          0
+      );
+
+      if (!category) {
+        console.warn("No category found in row:", row);
+        return;
+      }
 
       if (!dataMap.has(date)) {
         dataMap.set(date, { date });
@@ -36,9 +58,14 @@ function processCategoryData(resultSet: any, granularity: string = "day") {
       dateEntry[category] = price > 0 ? price : null;
     });
 
-    return Array.from(dataMap.values()).sort(
+    const result = Array.from(dataMap.values()).sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     );
+
+    console.log("🔧 Processed data points:", result.length);
+    console.log("🔧 Sample data point:", result[0]);
+
+    return result;
   } catch (error) {
     console.error("Error processing category data:", error);
     return [];
@@ -47,15 +74,22 @@ function processCategoryData(resultSet: any, granularity: string = "day") {
 
 function extractCategories(resultSet: any): string[] {
   if (!resultSet) return [];
-  
+
   try {
     const pivot = resultSet.tablePivot();
     if (!pivot || pivot.length === 0) return [];
 
     const categorySet = new Set<string>();
     pivot.forEach((row: any) => {
-      if (row["prices.category_group_name"]) {
-        categorySet.add(row["prices.category_group_name"]);
+      // Handle different possible category/retailer key formats
+      const category =
+        row["prices.category_group_name"] ||
+        row["prices.retailer_name"] ||
+        row["Prices Retailer Name"] ||
+        row["Prices Category Group Name"];
+
+      if (category) {
+        categorySet.add(category);
       }
     });
     return Array.from(categorySet);
@@ -67,17 +101,17 @@ function extractCategories(resultSet: any): string[] {
 
 function calculateCategoryTrend(data: any[], categories: string[]) {
   if (data.length < 2 || categories.length === 0) return undefined;
-  
+
   const firstCategory = categories[0];
   const first = data[0][firstCategory];
   const last = data[data.length - 1][firstCategory];
-  
+
   if (!first || first === 0) return undefined;
-  
+
   const change = ((last - first) / first) * 100;
   return {
     value: change.toFixed(1),
-    direction: change > 0 ? "up" as const : "down" as const,
+    direction: change > 0 ? ("up" as const) : ("down" as const),
   };
 }
 
@@ -109,11 +143,18 @@ export function CategoryTrendChart({ globalFilters }: CategoryTrendChartProps) {
   );
 
   const data = useMemo(() => {
-    return processCategoryData(resultSet, globalFilters.granularity);
+    const processedData = processCategoryData(
+      resultSet,
+      globalFilters.granularity
+    );
+    console.log("🔧 All processed data points:", processedData);
+    return processedData;
   }, [resultSet, globalFilters.granularity]);
 
   const categories = useMemo(() => {
-    return extractCategories(resultSet);
+    const cats = extractCategories(resultSet);
+    console.log("🔧 Extracted categories:", cats);
+    return cats;
   }, [resultSet]);
 
   const trend = useMemo(() => {
@@ -130,6 +171,7 @@ export function CategoryTrendChart({ globalFilters }: CategoryTrendChartProps) {
       trend={trend}
       height="medium"
       chartType="multiline"
+      chartConfigType="category"
       data={data}
       xAxisKey="date"
       xAxisFormatter={formatDate}

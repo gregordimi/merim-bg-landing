@@ -10,7 +10,7 @@ export const content = {
   header: {
     nav: {
       howItWorks: "Как работи",
-      aboutUs: "За нас",
+      aboutUs: "За проекта",
       blog: "Новини",
       terms: "Общи условия",
       privacy: "Поверителност",
@@ -163,7 +163,7 @@ export const content = {
   },
   pages: {
     about: {
-      pagetitle: "За нас",
+      pagetitle: "За проекта",
       title: "Екип",
       content:
         'Зад проекта "Merim" (Merim.org) стои изследовател на потребителско поведение и разработчик. Мисията на проекта "Мерим" (Merim.org) е да направи пазаруването по-прозрачно и справедливо за всички.',
@@ -209,8 +209,11 @@ export const content = {
         categoryTitle: "Филтри по категория",
         settlementTitle: "Филтри по населено място",
         retailerTitle: "Филтри по магазин",
-        clearAll: "Изчисти всички",
+        selectAll: "Избери всички",
         selected: "Избрани",
+        addcat: "Добави категория",
+        addset: "Добави град",
+        addsho: "Добави магазин",
       },
       metrics: {
         title: "Тип метрика",

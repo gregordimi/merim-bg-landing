@@ -182,7 +182,21 @@ export function ChartWrapper({
 }: ChartWrapperProps) {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const chartHeight = CHART_HEIGHTS[height];
-  const chartConfig = getChartConfig(chartConfigType);
+  let chartConfig = getChartConfig(chartConfigType);
+  
+  // For multiline charts, add dynamic keys to chart config
+  if (chartType === "multiline" && dynamicKeys && dynamicKeys.length > 0) {
+    const dynamicConfig = { ...chartConfig };
+    dynamicKeys.forEach((key, index) => {
+      if (!dynamicConfig[key]) {
+        dynamicConfig[key] = {
+          label: String(key),
+          color: CHART_COLORS[index % CHART_COLORS.length]
+        };
+      }
+    });
+    chartConfig = dynamicConfig;
+  }
 
   // Check if debug mode is enabled via URL parameter
   const isDebugMode = useMemo(() => {
@@ -494,6 +508,7 @@ export function ChartWrapper({
                 key={String(key)}
                 type="monotone"
                 dataKey={String(key)}
+                name={String(chartConfig[key]?.label || key)}
                 stroke={
                   chartConfig[key]?.color ||
                   CHART_COLORS[index % CHART_COLORS.length]
