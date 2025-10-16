@@ -9,7 +9,7 @@ import { CubeProvider } from "@/lib/cube";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Explorer from "@/components/charts/Explorer"
+import Explorer from "@/components/charts/Explorer";
 import {
   Select,
   SelectContent,
@@ -39,17 +39,18 @@ const DashboardPreview: React.FC = () => {
   ];
 
   // Available settlements
-  const availableSettlements = ["София", "Пловдив", "Варна"];
+  const availableSettlements = ["София", "Пловдив", "Варна", "Бургас"];
 
   // Available retailers
-  const availableRetailers = ["Лидл България", "Кауфланд България", "Минимарт"];
+  const availableRetailers = ["Лидл България", "Кауфланд България", "Минимарт", "КОМЕ СВА",
+    "Метро България", "ФАНТАСТИКО", "Магазини ДАР","DOUGLAS (ДЪГЛАС)", "дм България"];
 
   const [globalFilters, setGlobalFilters] = useState<GlobalFilters>({
     retailers: [],
     settlements: [],
     municipalities: [],
     categories: [],
-    datePreset: "last7days",
+    datePreset: "last7inclToday",
     granularity: "day",
   });
 
@@ -102,7 +103,7 @@ const DashboardPreview: React.FC = () => {
       settlements: newTab == "settlement" ? [availableSettlements[0]] : [],
       municipalities: [],
       categories: newTab == "category" ? [availableCategories[0]] : [],
-      datePreset: "last7days",
+      datePreset: "last7inclToday",
       granularity: "day",
     });
 
@@ -127,27 +128,26 @@ const DashboardPreview: React.FC = () => {
       globalFilters.settlements?.join(",") ?? "",
       globalFilters.municipalities?.join(",") ?? "",
       globalFilters.categories?.join(",") ?? "",
-      globalFilters.datePreset ?? "last7days",
+      globalFilters.datePreset ?? "last7inclToday",
       globalFilters.granularity ?? "day",
     ]
   );
-
 
   const handleRegister = () => {
     console.log("Register button clicked");
   };
 
-function RegisterButton({ children }: { children: string }) {
-  // Define your click handler
-  const handleRegister = () => {
-    console.log("Registering...");
-  };
+  function RegisterButton({ children }: { children: string }) {
+    // Define your click handler
+    const handleRegister = () => {
+      console.log("Registering...");
+    };
 
-  return (
-    <Button
-      size="sm"
-      onClick={handleRegister}
-      className="transition-all duration-200 hover:scale-105
+    return (
+      <Button
+        size="sm"
+        onClick={handleRegister}
+        className="transition-all duration-200 hover:scale-105
                  relative z-0 overflow-hidden
                  p-0.5 // This creates space for the border
                  group
@@ -157,20 +157,20 @@ function RegisterButton({ children }: { children: string }) {
                  before:animate-[spin_2s_linear_infinite]
                  before:rounded-[inherit]
                  "
-    >
-      <span
-        className="block h-full w-full rounded-[inherit]
+      >
+        <span
+          className="block h-full w-full rounded-[inherit]
                    bg-background
                    text-foreground
                    px-3 py-1 // Adjusted padding for 'sm' size
                    transition-colors group-hover:bg-accent group-hover:text-accent-foreground
                   "
-      >
-        {children}
-      </span>
-    </Button>
-  );
-}
+        >
+          {children}
+        </span>
+      </Button>
+    );
+  }
   return (
     <CubeProvider>
       {/* RESPONSIVE CHANGE: Reduced padding on mobile (p-2), scales up for larger screens */}
@@ -229,9 +229,7 @@ function RegisterButton({ children }: { children: string }) {
                 <TabsTrigger value="retailer">
                   {content.pages.dashboard.tabs.retailer}
                 </TabsTrigger>
-                <TabsTrigger value="explorer">
-                  explorer
-                </TabsTrigger>
+                <TabsTrigger value="explorer">explorer</TabsTrigger>
               </TabsList>
 
               <TabsContent value="explorer" className="space-y-6">
@@ -251,7 +249,7 @@ function RegisterButton({ children }: { children: string }) {
 
               {/* Category Tab */}
               <TabsContent value="category" className="space-y-6">
-                 {/* RESPONSIVE CHANGE: Reduced padding on mobile */}
+                {/* RESPONSIVE CHANGE: Reduced padding on mobile */}
                 <div className="p-2 sm:p-6 space-y-6">
                   {/* Category Filter Controls */}
                   <Card className="border-slate-200">
@@ -278,7 +276,9 @@ function RegisterButton({ children }: { children: string }) {
                               {category}
                             </Button>
                           ))}
-                          <RegisterButton>{content.pages.dashboard.filters.addcat}</RegisterButton>
+                          <RegisterButton>
+                            {content.pages.dashboard.filters.addcat}
+                          </RegisterButton>
                         </div>
                         <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
                           <Button
@@ -333,7 +333,9 @@ function RegisterButton({ children }: { children: string }) {
                               {settlement}
                             </Button>
                           ))}
-                          <RegisterButton>{content.pages.dashboard.filters.addset}</RegisterButton>
+                          <RegisterButton>
+                            {content.pages.dashboard.filters.addset}
+                          </RegisterButton>
                         </div>
                         <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
                           <Button
@@ -388,7 +390,9 @@ function RegisterButton({ children }: { children: string }) {
                               {retailer}
                             </Button>
                           ))}
-                        <RegisterButton>{content.pages.dashboard.filters.addsho}</RegisterButton>
+                          <RegisterButton>
+                            {content.pages.dashboard.filters.addsho}
+                          </RegisterButton>
                         </div>
                         <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
                           <Button

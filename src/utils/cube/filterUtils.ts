@@ -19,7 +19,8 @@ export type DateRangePreset =
   | "last3days"
   | "last7days"
   | "last30days"
-  | "last3months";
+  | "last3months"
+  | "last7inclToday";
 
 /**
  * Maps DateRangePreset values to Cube.js relative date strings.
@@ -30,6 +31,7 @@ export const DATE_PRESET_TO_CUBE_STRING: Record<DateRangePreset, string> = {
   last7days: "last 7 days",
   last30days: "last 30 days",
   last3months: "last 3 months",
+  last7inclToday: "from 7 days ago to now",
 };
 
 /**
