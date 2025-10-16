@@ -3,6 +3,7 @@ import { CategoryTrendChart } from "@/components/charts/CategoryTrendChart";
 import { TrendChart } from "@/components/charts/TrendChart";
 import { RetailerTrendChart } from "@/components/charts/RetailerTrendChart";
 import { SettlementHorizontalChart } from "@/components/charts/SettlementHorizontalChart";
+import Compare from "@/components/charts/Compare";
 import { useState, useMemo } from "react";
 import { GlobalFilters } from "@/utils/cube/filterUtils";
 import { CubeProvider } from "@/lib/cube";
@@ -212,11 +213,14 @@ const DashboardPreview: React.FC = () => {
                     <SelectItem value="retailer">
                       {content.pages.dashboard.tabs.retailer}
                     </SelectItem>
+                    <SelectItem value="compare">
+                      Compare
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              <TabsList className="hidden w-full grid-cols-5 md:grid">
+              <TabsList className="hidden w-full grid-cols-6 md:grid">
                 <TabsTrigger value="general">
                   {content.pages.dashboard.tabs.general}
                 </TabsTrigger>
@@ -229,8 +233,16 @@ const DashboardPreview: React.FC = () => {
                 <TabsTrigger value="retailer">
                   {content.pages.dashboard.tabs.retailer}
                 </TabsTrigger>
+                <TabsTrigger value="compare">Compare</TabsTrigger>
                 <TabsTrigger value="explorer">explorer</TabsTrigger>
               </TabsList>
+
+              <TabsContent value="compare" className="space-y-6">
+                {/* RESPONSIVE CHANGE: Reduced padding on mobile */}
+                <div className="p-2 sm:p-6">
+                  <Compare globalFilters={stableFilters} />
+                </div>
+              </TabsContent>
 
               <TabsContent value="explorer" className="space-y-6">
                 {/* RESPONSIVE CHANGE: Reduced padding on mobile */}
