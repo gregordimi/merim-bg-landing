@@ -1,0 +1,1012 @@
+[
+  {
+    "id": 1,
+    "category": "Бял хляб от 500 гр. до 1 кг",
+    "nsi_code": 11131,
+    "nsi_category": "Бял хляб",
+    "value": "533,768.00",
+    "share": 0.00903,
+    "relative_share": 0.01743,
+    "comment": ""
+  },
+  {
+    "id": 2,
+    "category": "Хляб Добруджа от 500 гр. до 1 кг",
+    "nsi_code": 11132,
+    "nsi_category": "Хляб Добруджа",
+    "value": "176,356.00",
+    "share": 0.00298,
+    "relative_share": 0.00576,
+    "comment": ""
+  },
+  {
+    "id": 3,
+    "category": "Ръжен хляб от 400 гр. до 600 гр.",
+    "nsi_code": 11133,
+    "nsi_category": "Типов и ръжен хляб",
+    "value": "227,689.00",
+    "share": 0.00385,
+    "relative_share": 0.00744,
+    "comment": ""
+  },
+  {
+    "id": 4,
+    "category": "Типов хляб от 400 гр. до 600 гр.",
+    "nsi_code": 11133,
+    "nsi_category": "Типов и ръжен хляб",
+    "value": "227,689.00",
+    "share": 0.00385,
+    "relative_share": 0.00744,
+    "comment": ""
+  },
+  {
+    "id": 5,
+    "category": "Точени кори от 400 гр. до 500 гр.",
+    "nsi_code": 11181,
+    "nsi_category": "Смеси и теста за приготвяне на тестени изделия",
+    "value": "105,644.00",
+    "share": 0.00179,
+    "relative_share": 0.00345,
+    "comment": ""
+  },
+  {
+    "id": 6,
+    "category": "Прясно мляко от 2 % до 3.6 % 1 л",
+    "nsi_code": 1141,
+    "nsi_category": "Пълномаслено прясно мляко",
+    "value": "334,259.00",
+    "share": 0.00565,
+    "relative_share": 0.01092,
+    "comment": ""
+  },
+  {
+    "id": 7,
+    "category": "Кисело мляко от 2 % до 3.6 %...",
+    "nsi_code": 1144,
+    "nsi_category": "Кисели млека",
+    "value": "590,647.00",
+    "share": 0.00999,
+    "relative_share": 0.01929,
+    "comment": ""
+  },
+  {
+    "id": 8,
+    "category": "Сирене от краве мляко насипно 1 кг",
+    "nsi_code": 114510,
+    "nsi_category": "Сирене бяло саламурено",
+    "value": "920,375.00",
+    "share": 0.01556,
+    "relative_share": 0.03006,
+    "comment": ""
+  },
+  {
+    "id": 9,
+    "category": "Сирене от краве мляко пакетирано...",
+    "nsi_code": 114510,
+    "nsi_category": "Сирене бяло саламурено",
+    "value": "920,375.00",
+    "share": 0.01556,
+    "relative_share": 0.03006,
+    "comment": ""
+  },
+  {
+    "id": 10,
+    "category": "Кашкавал от краве мляко насипно 1 кг",
+    "nsi_code": 114530,
+    "nsi_category": "Кашкавал",
+    "value": "663,132.00",
+    "share": 0.01121,
+    "relative_share": 0.02166,
+    "comment": ""
+  },
+  {
+    "id": 11,
+    "category": "Кашкавал от краве мляко пакетирано...",
+    "nsi_code": 114530,
+    "nsi_category": "Кашкавал",
+    "value": "663,132.00",
+    "share": 0.01121,
+    "relative_share": 0.02166,
+    "comment": ""
+  },
+  {
+    "id": 12,
+    "category": "Краве масло от 125 гр. до 250 гр.",
+    "nsi_code": 1151,
+    "nsi_category": "Млечни масла",
+    "value": "206,139.00",
+    "share": 0.00349,
+    "relative_share": 0.00673,
+    "comment": ""
+  },
+  {
+    "id": 13,
+    "category": "Извара насипна 1 кг",
+    "nsi_code": 114540,
+    "nsi_category": "Извара",
+    "value": "54,126.00",
+    "share": 0.00092,
+    "relative_share": 0.00177,
+    "comment": ""
+  },
+  {
+    "id": 14,
+    "category": "Извара пакетирана от 200 гр. до 1 кг",
+    "nsi_code": 114540,
+    "nsi_category": "Извара",
+    "value": "54,126.00",
+    "share": 0.00092,
+    "relative_share": 0.00177,
+    "comment": ""
+  },
+  {
+    "id": 15,
+    "category": "Прясно охладено пиле 1 кг (цяло)",
+    "nsi_code": 1124,
+    "nsi_category": "Mесо от домашни птици",
+    "value": "643,920.00",
+    "share": 0.01089,
+    "relative_share": 0.02103,
+    "comment": ""
+  },
+  {
+    "id": 16,
+    "category": "Пилешко филе, охладено, 1 кг",
+    "nsi_code": 1124,
+    "nsi_category": "Mесо от домашни птици",
+    "value": "643,920.00",
+    "share": 0.01089,
+    "relative_share": 0.02103,
+    "comment": ""
+  },
+  {
+    "id": 17,
+    "category": "Пилешки бут, цял, охладен 1 кг",
+    "nsi_code": 1124,
+    "nsi_category": "Mесо от домашни птици",
+    "value": "643,920.00",
+    "share": 0.01089,
+    "relative_share": 0.02103,
+    "comment": ""
+  },
+  {
+    "id": 18,
+    "category": "Прясно свинско месо плешка 1 кг",
+    "nsi_code": 1122,
+    "nsi_category": "Свинско месо",
+    "value": "933,242.00",
+    "share": 0.01578,
+    "relative_share": 0.03048,
+    "comment": ""
+  },
+  {
+    "id": 19,
+    "category": "Прясно свинско месо бут 1 кг",
+    "nsi_code": 1122,
+    "nsi_category": "Свинско месо",
+    "value": "933,242.00",
+    "share": 0.01578,
+    "relative_share": 0.03048,
+    "comment": ""
+  },
+  {
+    "id": 20,
+    "category": "Прясно свинско месо шол 1 кг",
+    "nsi_code": 1122,
+    "nsi_category": "Свинско месо",
+    "value": "933,242.00",
+    "share": 0.01578,
+    "relative_share": 0.03048,
+    "comment": ""
+  },
+  {
+    "id": 21,
+    "category": "Прясно свинско месо врат 1 кг",
+    "nsi_code": 1122,
+    "nsi_category": "Свинско месо",
+    "value": "933,242.00",
+    "share": 0.01578,
+    "relative_share": 0.03048,
+    "comment": ""
+  },
+  {
+    "id": 22,
+    "category": "Свинско месо за готвене 1 кг",
+    "nsi_code": 1122,
+    "nsi_category": "Свинско месо",
+    "value": "933,242.00",
+    "share": 0.01578,
+    "relative_share": 0.03048,
+    "comment": ""
+  },
+  {
+    "id": 23,
+    "category": "Телешко месо шол 1 кг",
+    "nsi_code": 1121,
+    "nsi_category": "Mесо от едър рогат добитък",
+    "value": "155,147.00",
+    "share": 0.00262,
+    "relative_share": 0.00507,
+    "comment": ""
+  },
+  {
+    "id": 24,
+    "category": "Телешко месо за готвене 1 кг",
+    "nsi_code": 1121,
+    "nsi_category": "Mесо от едър рогат добитък",
+    "value": "155,147.00",
+    "share": 0.00262,
+    "relative_share": 0.00507,
+    "comment": ""
+  },
+  {
+    "id": 25,
+    "category": "Мляно месо смес 60/40, насипно за 1 кг",
+    "nsi_code": 112810,
+    "nsi_category": "Мляно месо (кайма)",
+    "value": "547,991.00",
+    "share": 0.00927,
+    "relative_share": 0.0179,
+    "comment": ""
+  },
+  {
+    "id": 26,
+    "category": "Кренвирши, насипни за 1 кг",
+    "nsi_code": 11272,
+    "nsi_category": "Малотрайни колбаси",
+    "value": "519,339.00",
+    "share": 0.00878,
+    "relative_share": 0.01696,
+    "comment": ""
+  },
+  {
+    "id": 27,
+    "category": "Колбаси пресни от 300 гр. до 1 кг",
+    "nsi_code": 11272,
+    "nsi_category": "Малотрайни колбаси",
+    "value": "519,339.00",
+    "share": 0.00878,
+    "relative_share": 0.01696,
+    "comment": ""
+  },
+  {
+    "id": 28,
+    "category": "Колбаси сухи (Шпек, Бургас, Деликатесен)...",
+    "nsi_code": 11273,
+    "nsi_category": "Трайни колбаси",
+    "value": "448,246.00",
+    "share": 0.00758,
+    "relative_share": 0.01464,
+    "comment": ""
+  },
+  {
+    "id": 29,
+    "category": "Риба замразена (скумрия, пъстърва...)...",
+    "nsi_code": 1132,
+    "nsi_category": "Замразена риба",
+    "value": "180,613.00",
+    "share": 0.00305,
+    "relative_share": 0.0059,
+    "comment": ""
+  },
+  {
+    "id": 30,
+    "category": "Риба охладена (скумрия, пъстърва...)...",
+    "nsi_code": 1131,
+    "nsi_category": "Прясна и охладена риба",
+    "value": "250,385.00",
+    "share": 0.00423,
+    "relative_share": 0.00818,
+    "comment": ""
+  },
+  {
+    "id": 31,
+    "category": "Яйца размер М от 6 бр. до 10 бр. ...",
+    "nsi_code": 1147,
+    "nsi_category": "Яйца и яйчни продукти",
+    "value": "389,474.00",
+    "share": 0.00659,
+    "relative_share": 0.01272,
+    "comment": ""
+  },
+  {
+    "id": 32,
+    "category": "Яйца размер L 6 бр. до 10 бр. ...",
+    "nsi_code": 1147,
+    "nsi_category": "Яйца и яйчни продукти",
+    "value": "389,474.00",
+    "share": 0.00659,
+    "relative_share": 0.01272,
+    "comment": ""
+  },
+  {
+    "id": 33,
+    "category": "Боб, пакетиран 1 кг",
+    "nsi_code": 11731,
+    "nsi_category": "Зрял боб",
+    "value": "122,021.00",
+    "share": 0.00206,
+    "relative_share": 0.00399,
+    "comment": ""
+  },
+  {
+    "id": 34,
+    "category": "Леща, пакетиран 1 кг",
+    "nsi_code": 11732,
+    "nsi_category": "Леща",
+    "value": "86,159.00",
+    "share": 0.00146,
+    "relative_share": 0.00281,
+    "comment": ""
+  },
+  {
+    "id": 35,
+    "category": "Бисерен ориз 1 кг",
+    "nsi_code": 1111,
+    "nsi_category": "Ориз",
+    "value": "150,236.00",
+    "share": 0.00254,
+    "relative_share": 0.00491,
+    "comment": ""
+  },
+  {
+    "id": 36,
+    "category": "Макарони от 400 гр. до 500 гр.",
+    "nsi_code": 1116,
+    "nsi_category": "Макаронени изделия и кус-кус",
+    "value": "135,156.00",
+    "share": 0.00229,
+    "relative_share": 0.00441,
+    "comment": ""
+  },
+  {
+    "id": 37,
+    "category": "Спагети (№ 3, № 5 и № 10) 500 гр.",
+    "nsi_code": 1116,
+    "nsi_category": "Макаронени изделия и кус-кус",
+    "value": "135,156.00",
+    "share": 0.00229,
+    "relative_share": 0.00441,
+    "comment": ""
+  },
+  {
+    "id": 38,
+    "category": "Бяла захар 1 кг",
+    "nsi_code": 1181,
+    "nsi_category": "Захар",
+    "value": "153,149.00",
+    "share": 0.00259,
+    "relative_share": 0.005,
+    "comment": ""
+  },
+  {
+    "id": 39,
+    "category": "Готварска сол 1 кг",
+    "nsi_code": 119210,
+    "nsi_category": "Сол",
+    "value": "27,511.00",
+    "share": 0.00047,
+    "relative_share": 0.0009,
+    "comment": ""
+  },
+  {
+    "id": 40,
+    "category": "Брашно тип 500 1 кг",
+    "nsi_code": 1112,
+    "nsi_category": "Брашно и други зърнени продукти",
+    "value": "114,844.00",
+    "share": 0.00194,
+    "relative_share": 0.00375,
+    "comment": ""
+  },
+  {
+    "id": 41,
+    "category": "Брашно екстра 1 кг",
+    "nsi_code": 1112,
+    "nsi_category": "Брашно и други зърнени продукти",
+    "value": "114,844.00",
+    "share": 0.00194,
+    "relative_share": 0.00375,
+    "comment": ""
+  },
+  {
+    "id": 42,
+    "category": "Олио слънчогледово 1 л",
+    "nsi_code": 1154,
+    "nsi_category": "Други течни растителни мазнини (олио)",
+    "value": "257,585.00",
+    "share": 0.00436,
+    "relative_share": 0.00841,
+    "comment": ""
+  },
+  {
+    "id": 43,
+    "category": "Зехтин 1л",
+    "nsi_code": 1153,
+    "nsi_category": "Маслиново масло (зехтин)",
+    "value": "104,971.00",
+    "share": 0.00178,
+    "relative_share": 0.00343,
+    "comment": ""
+  },
+  {
+    "id": 44,
+    "category": "Винен оцет 700 мл.",
+    "nsi_code": 119110,
+    "nsi_category": "Оцет",
+    "value": "40,542.00",
+    "share": 0.00069,
+    "relative_share": 0.00132,
+    "comment": ""
+  },
+  {
+    "id": 45,
+    "category": "Ябълков оцет 700 мл.",
+    "nsi_code": 119110,
+    "nsi_category": "Оцет",
+    "value": "40,542.00",
+    "share": 0.00069,
+    "relative_share": 0.00132,
+    "comment": ""
+  },
+  {
+    "id": 46,
+    "category": "Консерви боб, от 400 гр. до 800 гр.",
+    "nsi_code": 11733,
+    "nsi_category": "Консервирани зеленчуци и продукти на зеленчукова основа",
+    "value": "325,177.00",
+    "share": 0.0055,
+    "relative_share": 0.01062,
+    "comment": ""
+  },
+  {
+    "id": 47,
+    "category": "Консерви грах, от 400 гр. до 800 гр.",
+    "nsi_code": 11733,
+    "nsi_category": "Консервирани зеленчуци и продукти на зеленчукова основа",
+    "value": "325,177.00",
+    "share": 0.0055,
+    "relative_share": 0.01062,
+    "comment": ""
+  },
+  {
+    "id": 48,
+    "category": "Консервирани домати, от 400 гр. до 800 гр.",
+    "nsi_code": 11733,
+    "nsi_category": "Консервирани зеленчуци и продукти на зеленчукова основа",
+    "value": "325,177.00",
+    "share": 0.0055,
+    "relative_share": 0.01062,
+    "comment": ""
+  },
+  {
+    "id": 49,
+    "category": "Лютеница, от 400 гр. до 800 гр.",
+    "nsi_code": 11733,
+    "nsi_category": "Консервирани зеленчуци и продукти на зеленчукова основа",
+    "value": "325,177.00",
+    "share": 0.0055,
+    "relative_share": 0.01062,
+    "comment": ""
+  },
+  {
+    "id": 50,
+    "category": "Лимони, насипни 1кг",
+    "nsi_code": 11615,
+    "nsi_category": "Цитрусови и южни плодове",
+    "value": "385,740.00",
+    "share": 0.00652,
+    "relative_share": 0.0126,
+    "comment": ""
+  },
+  {
+    "id": 51,
+    "category": "Портокали, насипни 1кг",
+    "nsi_code": 11615,
+    "nsi_category": "Цитрусови и южни плодове",
+    "value": "385,740.00",
+    "share": 0.00652,
+    "relative_share": 0.0126,
+    "comment": ""
+  },
+  {
+    "id": 52,
+    "category": "Банани 1кг",
+    "nsi_code": 11615,
+    "nsi_category": "Цитрусови и южни плодове",
+    "value": "385,740.00",
+    "share": 0.00652,
+    "relative_share": 0.0126,
+    "comment": ""
+  },
+  {
+    "id": 53,
+    "category": "Ябълки, насипни 1кг",
+    "nsi_code": 11611,
+    "nsi_category": "Ябълки",
+    "value": "152,221.00",
+    "share": 0.00257,
+    "relative_share": 0.00497,
+    "comment": ""
+  },
+  {
+    "id": 54,
+    "category": "Домати, червени, насипни 1кг",
+    "nsi_code": 117110,
+    "nsi_category": "Домати",
+    "value": "426,580.00",
+    "share": 0.00721,
+    "relative_share": 0.01393,
+    "comment": ""
+  },
+  {
+    "id": 55,
+    "category": "Кромид лук, насипен 1кг",
+    "nsi_code": 117130,
+    "nsi_category": "Зрял лук",
+    "value": "83,072.00",
+    "share": 0.0014,
+    "relative_share": 0.00271,
+    "comment": ""
+  },
+  {
+    "id": 56,
+    "category": "Моркови, насипни 1кг",
+    "nsi_code": 117145,
+    "nsi_category": "Кореноплодни зеленчуци",
+    "value": "58,396.00",
+    "share": 0.00099,
+    "relative_share": 0.00191,
+    "comment": ""
+  },
+  {
+    "id": 57,
+    "category": "Бяло зеле 1кг",
+    "nsi_code": 117120,
+    "nsi_category": "Зеле",
+    "value": "93,003.00",
+    "share": 0.00157,
+    "relative_share": 0.00304,
+    "comment": ""
+  },
+  {
+    "id": 58,
+    "category": "Краставици, насипни 1кг",
+    "nsi_code": 117115,
+    "nsi_category": "Краставици",
+    "value": "262,865.00",
+    "share": 0.00445,
+    "relative_share": 0.00859,
+    "comment": ""
+  },
+  {
+    "id": 59,
+    "category": "Зрял чесън 1кг",
+    "nsi_code": 117135,
+    "nsi_category": "Зрял чесън",
+    "value": "30,259.00",
+    "share": 0.00051,
+    "relative_share": 0.00099,
+    "comment": ""
+  },
+  {
+    "id": 60,
+    "category": "Пресни гъби, насипни 1кг",
+    "nsi_code": 117165,
+    "nsi_category": "Гъби",
+    "value": "67,429.00",
+    "share": 0.00114,
+    "relative_share": 0.0022,
+    "comment": ""
+  },
+  {
+    "id": 61,
+    "category": "Картофи, насипни 1кг",
+    "nsi_code": 117410,
+    "nsi_category": "Картофи",
+    "value": "271,205.00",
+    "share": 0.00459,
+    "relative_share": 0.00886,
+    "comment": ""
+  },
+  {
+    "id": 62,
+    "category": "Маслини, насипни 1 кг",
+    "nsi_code": 117160,
+    "nsi_category": "Маслини",
+    "value": "175,907.00",
+    "share": 0.00297,
+    "relative_share": 0.00575,
+    "comment": ""
+  },
+  {
+    "id": 63,
+    "category": "Каша (млечна, плодова) от 190 гр. до 250 гр.",
+    "nsi_code": 1193,
+    "nsi_category": "Бебешки храни",
+    "value": "64,213.00",
+    "share": 0.00109,
+    "relative_share": 0.0021,
+    "comment": ""
+  },
+  {
+    "id": 64,
+    "category": "Детско пюре от 190 гр. до 250 гр.",
+    "nsi_code": 1193,
+    "nsi_category": "Бебешки храни",
+    "value": "64,213.00",
+    "share": 0.00109,
+    "relative_share": 0.0021,
+    "comment": ""
+  },
+  {
+    "id": 65,
+    "category": "Адаптирани млека от 400 гр. до 800 гр.",
+    "nsi_code": 1193,
+    "nsi_category": "Бебешки храни",
+    "value": "64,213.00",
+    "share": 0.00109,
+    "relative_share": 0.0021,
+    "comment": ""
+  },
+  {
+    "id": 66,
+    "category": "Обикновени бисквити",
+    "nsi_code": 11141,
+    "nsi_category": "Сухи сладкарски изделия",
+    "value": "426,997.00",
+    "share": 0.00722,
+    "relative_share": 0.01395,
+    "comment": ""
+  },
+  {
+    "id": 67,
+    "category": "Кроасани от 50 гр. до 110 гр.",
+    "nsi_code": 11151,
+    "nsi_category": "Тестени закуски и пици",
+    "value": "225,706.00",
+    "share": 0.00382,
+    "relative_share": 0.00737,
+    "comment": ""
+  },
+  {
+    "id": 68,
+    "category": "Баница от 100 гр. до 500 гр.",
+    "nsi_code": 11151,
+    "nsi_category": "Тестени закуски и пици",
+    "value": "225,706.00",
+    "share": 0.00382,
+    "relative_share": 0.00737,
+    "comment": ""
+  },
+  {
+    "id": 69,
+    "category": "Шоколад, млечен, от 80 гр. до 100 гр.",
+    "nsi_code": 1183,
+    "nsi_category": "Шоколад и шоколадови изделия",
+    "value": "353,999.00",
+    "share": 0.00599,
+    "relative_share": 0.01156,
+    "comment": ""
+  },
+  {
+    "id": 70,
+    "category": "Кафе мляно от 200 гр. до 250 гр.",
+    "nsi_code": 1211,
+    "nsi_category": "Кафе",
+    "value": "408,251.00",
+    "share": 0.0069,
+    "relative_share": 0.01333,
+    "comment": ""
+  },
+  {
+    "id": 71,
+    "category": "Кафе на зърна 1 кг",
+    "nsi_code": 1211,
+    "nsi_category": "Кафе",
+    "value": "408,251.00",
+    "share": 0.0069,
+    "relative_share": 0.01333,
+    "comment": ""
+  },
+  {
+    "id": 72,
+    "category": "Чай (билков на пакетчета)",
+    "nsi_code": 1212,
+    "nsi_category": "Чай",
+    "value": "21,724.00",
+    "share": 0.00037,
+    "relative_share": 0.00071,
+    "comment": ""
+  },
+  {
+    "id": 73,
+    "category": "Минерална вода, 6 бр. в опаковка по 1,5 л.",
+    "nsi_code": 1221,
+    "nsi_category": "Минерални или изворни води",
+    "value": "173,979.00",
+    "share": 0.00294,
+    "relative_share": 0.00568,
+    "comment": ""
+  },
+  {
+    "id": 74,
+    "category": "Светла бира 2 л.",
+    "nsi_code": 213,
+    "nsi_category": "Бира",
+    "value": "313,195.00",
+    "share": 0.0053,
+    "relative_share": 0.01023,
+    "comment": ""
+  },
+  {
+    "id": 75,
+    "category": "Бяло вино бутилирано...",
+    "nsi_code": 212,
+    "nsi_category": "Вина",
+    "value": "155,185.00",
+    "share": 0.00262,
+    "relative_share": 0.00507,
+    "comment": ""
+  },
+  {
+    "id": 76,
+    "category": "Червено вино бутилирано...",
+    "nsi_code": 212,
+    "nsi_category": "Вина",
+    "value": "155,185.00",
+    "share": 0.00262,
+    "relative_share": 0.00507,
+    "comment": ""
+  },
+  {
+    "id": 77,
+    "category": "Ракия, произход България 700 мл.",
+    "nsi_code": 211110,
+    "nsi_category": "Ракии - всички видове",
+    "value": "107,026.00",
+    "share": 0.00181,
+    "relative_share": 0.0035,
+    "comment": ""
+  },
+  {
+    "id": 78,
+    "category": "Тютюневи изделия, произход България, кутия, пакет",
+    "nsi_code": 2201,
+    "nsi_category": "Цигари",
+    "value": "2,018,155.00",
+    "share": 0.03413,
+    "relative_share": 0.06592,
+    "comment": ""
+  },
+  {
+    "id": 79,
+    "category": "Течен препарат за миене на съдове...",
+    "nsi_code": 56111,
+    "nsi_category": "Препарати за почистване на съдове",
+    "value": "118,197.00",
+    "share": 0.002,
+    "relative_share": 0.00386,
+    "comment": ""
+  },
+  {
+    "id": 80,
+    "category": "Четка за зъби – средна твърдост",
+    "nsi_code": 1213210,
+    "nsi_category": "Продукти за лична хигиена",
+    "value": "398,026.00",
+    "share": 0.00673,
+    "relative_share": 0.013,
+    "comment": ""
+  },
+  {
+    "id": 81,
+    "category": "Паста за зъби, туба от 50 мл. до 125 мл.",
+    "nsi_code": 1213210,
+    "nsi_category": "Продукти за лична хигиена",
+    "value": "398,026.00",
+    "share": 0.00673,
+    "relative_share": 0.013,
+    "comment": ""
+  },
+  {
+    "id": 82,
+    "category": "Шампоан за нормална коса – от 250 мл. ...",
+    "nsi_code": 1213210,
+    "nsi_category": "Продукти за лична хигиена",
+    "value": "398,026.00",
+    "share": 0.00673,
+    "relative_share": 0.013,
+    "comment": ""
+  },
+  {
+    "id": 83,
+    "category": "Сапун, твърд",
+    "nsi_code": 1213210,
+    "nsi_category": "Продукти за лична хигиена",
+    "value": "398,026.00",
+    "share": 0.00673,
+    "relative_share": 0.013,
+    "comment": ""
+  },
+  {
+    "id": 84,
+    "category": "Класически мокри кърпи пакет",
+    "nsi_code": 1213230,
+    "nsi_category": "Други продукти за лична хигиена",
+    "value": "650,588.00",
+    "share": 0.011,
+    "relative_share": 0.02125,
+    "comment": ""
+  },
+  {
+    "id": 85,
+    "category": "Тоалетна хартия",
+    "nsi_code": 1213230,
+    "nsi_category": "Други продукти за лична хигиена",
+    "value": "650,588.00",
+    "share": 0.011,
+    "relative_share": 0.02125,
+    "comment": ""
+  },
+  {
+    "id": 86,
+    "category": "(A02) Лекарства за... Киселинността",
+    "nsi_code": 611029,
+    "nsi_category": "Лекарства, повлияващи храносмилателния тракт... без рецепта",
+    "value": "99,179.00",
+    "share": 0.00168,
+    "relative_share": 0.00324,
+    "comment": ""
+  },
+  {
+    "id": 87,
+    "category": "(А03) Лекарства за... Функционални Гастро...",
+    "nsi_code": 611029,
+    "nsi_category": "Лекарства, повлияващи храносмилателния тракт... без рецепта",
+    "value": "99,179.00",
+    "share": 0.00168,
+    "relative_share": 0.00324,
+    "comment": ""
+  },
+  {
+    "id": 88,
+    "category": "(A06) Очистителни Средства (Лаксативи)",
+    "nsi_code": 611029,
+    "nsi_category": "Лекарства, повлияващи храносмилателния тракт... без рецепта",
+    "value": "99,179.00",
+    "share": 0.00168,
+    "relative_share": 0.00324,
+    "comment": ""
+  },
+  {
+    "id": 89,
+    "category": "(A07) Антидиарични, Чревни...",
+    "nsi_code": 611029,
+    "nsi_category": "Лекарства, повлияващи храносмилателния тракт... без рецепта",
+    "value": "99,179.00",
+    "share": 0.00168,
+    "relative_share": 0.00324,
+    "comment": ""
+  },
+  {
+    "id": 90,
+    "category": "(D01) Противогъбични Средства...",
+    "nsi_code": 611026,
+    "nsi_category": "Дерматологични лекарства, без рецепта",
+    "value": "18,566.00",
+    "share": 0.00031,
+    "relative_share": 0.00061,
+    "comment": ""
+  },
+  {
+    "id": 91,
+    "category": "(D04) Противосърбежни Препарати...",
+    "nsi_code": 611026,
+    "nsi_category": "Дерматологични лекарства, без рецепта",
+    "value": "18,566.00",
+    "share": 0.00031,
+    "relative_share": 0.00061,
+    "comment": ""
+  },
+  {
+    "id": 92,
+    "category": "(D08) Антисептици и Дезинфектанти",
+    "nsi_code": 611026,
+    "nsi_category": "Дерматологични лекарства, без рецепта",
+    "value": "18,566.00",
+    "share": 0.00031,
+    "relative_share": 0.00061,
+    "comment": ""
+  },
+  {
+    "id": 93,
+    "category": "(J07) Ваксини",
+    "nsi_code": 0,
+    "nsi_category": "Категориите в група 611 описват лекарства, но не и ваксини.",
+    "value": "18,566.00",
+    "share": 0.001,
+    "relative_share": 0.00061,
+    "comment": "made up value here"
+  },
+  {
+    "id": 94,
+    "category": "(M01) Противовъзпалителни... НСПВС",
+    "nsi_code": 611023,
+    "nsi_category": "Лекарства, повлияващи мускулно-скелетната система, без рецепта",
+    "value": "37,147.00",
+    "share": 0.00063,
+    "relative_share": 0.00121,
+    "comment": ""
+  },
+  {
+    "id": 95,
+    "category": "(M02) Локални Продукти за Ставна...",
+    "nsi_code": 611023,
+    "nsi_category": "Лекарства, повлияващи мускулно-скелетната система, без рецепта",
+    "value": "37,147.00",
+    "share": 0.00063,
+    "relative_share": 0.00121,
+    "comment": ""
+  },
+  {
+    "id": 96,
+    "category": "(N02) Аналгетици",
+    "nsi_code": 611013,
+    "nsi_category": "Лекарства, повлияващи нервната система, без рецепта",
+    "value": "96,013.00",
+    "share": 0.00162,
+    "relative_share": 0.00314,
+    "comment": ""
+  },
+  {
+    "id": 97,
+    "category": "(R01) Назални Препарати",
+    "nsi_code": 611016,
+    "nsi_category": "Лекарства, повлияващи дихателната система, без рецепта",
+    "value": "86,275.00",
+    "share": 0.00146,
+    "relative_share": 0.00282,
+    "comment": ""
+  },
+  {
+    "id": 98,
+    "category": "(R02) Препарати за Лечение на Гърло",
+    "nsi_code": 611016,
+    "nsi_category": "Лекарства, повлияващи дихателната система, без рецепта",
+    "value": "86,275.00",
+    "share": 0.00146,
+    "relative_share": 0.00282,
+    "comment": ""
+  },
+  {
+    "id": 99,
+    "category": "(R05) Препарати за... Кашлица и Простуда...",
+    "nsi_code": 611016,
+    "nsi_category": "Лекарства, повлияващи дихателната система, без рецепта",
+    "value": "86,275.00",
+    "share": 0.00146,
+    "relative_share": 0.00282,
+    "comment": ""
+  },
+  {
+    "id": 100,
+    "category": "(R06) Антихистамини за Системно...",
+    "nsi_code": 611016,
+    "nsi_category": "Лекарства, повлияващи дихателната система, без рецепта",
+    "value": "86,275.00",
+    "share": 0.00146,
+    "relative_share": 0.00282,
+    "comment": ""
+  },
+  {
+    "id": 101,
+    "category": "(S02) Отологични Средства",
+    "nsi_code": 611061,
+    "nsi_category": "Лекарства, повлияващи сензорните органи, с рецепта",
+    "value": "39,362.00",
+    "share": 0.00067,
+    "relative_share": 0.00129,
+    "comment": ""
+  }
+]

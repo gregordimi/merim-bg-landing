@@ -3,7 +3,7 @@ import { CategoryTrendChart } from "@/components/charts/CategoryTrendChart";
 import { TrendChart } from "@/components/charts/TrendChart";
 import { RetailerTrendChart } from "@/components/charts/RetailerTrendChart";
 import { SettlementHorizontalChart } from "@/components/charts/SettlementHorizontalChart";
-import Compare from "@/components/charts/Compare";
+import Compare from "@/components/charts/Compare_new";
 import { useState, useMemo } from "react";
 import { GlobalFilters } from "@/utils/cube/filterUtils";
 import { CubeProvider } from "@/lib/cube";
