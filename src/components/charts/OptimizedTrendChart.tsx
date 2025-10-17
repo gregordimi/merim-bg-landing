@@ -6,6 +6,7 @@ import { useMemo } from "react";
 import { GlobalFilters, buildOptimizedQuery } from "@/utils/cube/filterUtils";
 import { useStableQuery } from "@/hooks/useStableQuery";
 import { ChartWrapper } from "../../config/ChartWrapper";
+import { formatDate } from "@/utils/dateUtils";
 
 interface OptimizedTrendChartProps {
   globalFilters: GlobalFilters;
@@ -69,17 +70,6 @@ function calculateTrend(data: any[]) {
   };
 }
 
-function formatDate(dateStr: string): string {
-  try {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-  } catch {
-    return dateStr;
-  }
-}
 
 export function OptimizedTrendChart({
   globalFilters,

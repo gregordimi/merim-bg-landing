@@ -49,7 +49,7 @@ export function AppSidebar({ charts, currentChartId }: AppSidebarDashboardProps)
   }, [charts])
 
   const handleChartClick = (chartId: string) => {
-    navigate(`/dashboard-sidebar/${chartId}`)
+    navigate(`/dashboard/${chartId}`)
   }
 
   return (
@@ -58,7 +58,7 @@ export function AppSidebar({ charts, currentChartId }: AppSidebarDashboardProps)
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href="/dashboard-sidebar/stats">
+              <a href="/dashboard/stats">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                   <span className="text-sm font-bold">AD</span>
                 </div>

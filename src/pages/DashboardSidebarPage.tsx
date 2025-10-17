@@ -10,10 +10,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import cube from "@cubejs-client/core";
-import { CubeProvider } from "@cubejs-client/react";
-import WebSocketTransport from "@cubejs-client/ws-transport";
-import { extractHashConfig } from "@/utils/cube/config";
+import { CubeProvider } from "@/lib/cube";
 import { GlobalFilters } from "@/utils/cube/filterUtils";
 import { FilterPanel } from "@/components/filters/FilterPanel";
 import { DebugProvider } from "@/contexts/DebugContext";
@@ -54,11 +51,7 @@ import { SimpleTrendChart } from "@/components/charts/SimpleTrendChart";
 import { PieChartComponent } from "@/components/charts/PieChartComponent";
 import { RadarChartComponent } from "@/components/charts/RadarChartComponent";
 
-interface AppConfig extends Record<string, unknown> {
-  apiUrl: string;
-  apiToken: string;
-  useWebSockets?: boolean;
-}
+
 
 export interface ChartRoute {
   id: string;
@@ -237,12 +230,6 @@ export default function DashboardSidebarPage() {
   const { chartId } = useParams<{ chartId?: string }>();
   const navigate = useNavigate();
 
-  const { apiUrl, apiToken, useWebSockets } = extractHashConfig<AppConfig>({
-    apiUrl: import.meta.env.VITE_CUBE_API_URL || "",
-    apiToken: import.meta.env.VITE_CUBE_API_TOKEN || "",
-    useWebSockets: import.meta.env.VITE_CUBE_API_USE_WEBSOCKETS === "true",
-  });
-
   const [globalFilters, setGlobalFilters] = useState<GlobalFilters>({
     retailers: [],
     settlements: [],
@@ -272,16 +259,7 @@ export default function DashboardSidebarPage() {
     ]
   );
 
-  const cubeApi = useMemo(() => {
-    let transport = undefined;
-    if (useWebSockets) {
-      transport = new WebSocketTransport({ authorization: apiToken, apiUrl });
-    }
-    return cube(apiToken, {
-      apiUrl,
-      transport,
-    });
-  }, [apiToken, apiUrl, useWebSockets]);
+
 
   // Find current chart
   const currentChart = CHART_ROUTES.find((chart) => chart.id === chartId);
@@ -290,13 +268,13 @@ export default function DashboardSidebarPage() {
   // Default to first chart if none selected - use useEffect to avoid render-time navigation
   useEffect(() => {
     if (!chartId) {
-      navigate(`/dashboard-sidebar/${CHART_ROUTES[0].id}`, { replace: true });
+      navigate(`/dashboard/${CHART_ROUTES[0].id}`, { replace: true });
     }
   }, [chartId, navigate]);
 
   return (
     <DebugProvider>
-      <CubeProvider cubeApi={cubeApi}>
+      <CubeProvider>
         <SidebarProvider>
           <AppSidebar charts={CHART_ROUTES} currentChartId={chartId || ""} />
           <SidebarInset>
@@ -306,7 +284,7 @@ export default function DashboardSidebarPage() {
               <Breadcrumb>
                 <BreadcrumbList>
                   <BreadcrumbItem className="hidden md:block">
-                    <BreadcrumbLink href="/dashboard-sidebar/stats">
+                    <BreadcrumbLink href="/dashboard/stats">
                       Dashboard
                     </BreadcrumbLink>
                   </BreadcrumbItem>

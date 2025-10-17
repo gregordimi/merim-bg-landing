@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { GlobalFilters, buildOptimizedQuery } from "@/utils/cube/filterUtils";
 import { useStableQuery } from "@/hooks/useStableQuery";
 import { ChartWrapper } from "@/config/ChartWrapper";
+import { formatDate } from "@/utils/dateUtils";
 
 interface TrendChartProps {
   globalFilters: GlobalFilters;
@@ -37,7 +38,7 @@ function processTrendData(resultSet: any, granularity: string = "day") {
 
     return Array.from(dataMap.values())
       .map((entry) => ({
-        date: entry.date,
+        date: formatDate(entry.date),
         retailPrice:
           entry.retailPrices.length > 0
             ? entry.retailPrices.reduce(
@@ -78,17 +79,7 @@ function calculateTrend(data: any[]) {
   };
 }
 
-function formatDate(dateStr: string): string {
-  try {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-  } catch {
-    return dateStr;
-  }
-}
+
 
 export function TrendChart({ globalFilters }: TrendChartProps) {
   const query = useMemo(() => {

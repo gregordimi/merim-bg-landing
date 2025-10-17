@@ -2,6 +2,7 @@ import { useMemo, useCallback } from "react";
 import { GlobalFilters, buildOptimizedQuery } from "@/utils/cube/filterUtils";
 import { useStableQuery } from "@/hooks/useStableQuery";
 import { ChartWrapper } from "../../config/ChartWrapper";
+import { formatDate } from "@/utils/dateUtils";
 
 type MetricType = 'price' | 'promo' | 'discount';
 
@@ -48,7 +49,8 @@ function processRetailerData(resultSet: any, granularity: string = "day", metric
 
     pivot.forEach((row: any) => {
       const dateKey = `prices.price_date.${granularity}`;
-      const date = row[dateKey] || row["prices.price_date"];
+      const date_pre = row[dateKey] || row["prices.price_date"];
+      const date = formatDate(date_pre);
       const retailer = row["prices.retailer_name"];
       const value = Number(row[config.measure] || 0);
 
@@ -112,18 +114,6 @@ function calculateRetailerTrend(data: any[], retailers: string[]) {
   };
 }
 
-function formatDate(dateStr: string): string {
-  try {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-  } catch {
-    return dateStr;
-  }
-}
-
 export function RetailerTrendChart({
   globalFilters,
   metricType
@@ -156,7 +146,8 @@ export function RetailerTrendChart({
     globalFilters.categories?.join(",") ?? "",
     globalFilters.datePreset ?? "last7days",
     globalFilters.granularity ?? "day",
-    config.measure
+    config.measure,
+    metricType, // Add metricType to dependencies
   ]);
 
   const { resultSet, isLoading, error, progress, refetch } = useStableQuery(
@@ -168,6 +159,7 @@ export function RetailerTrendChart({
       globalFilters.categories?.join(",") ?? "",
       globalFilters.datePreset ?? "last7days",
       globalFilters.granularity ?? "day",
+      metricType, // Add metricType to dependencies
     ],
     config.componentId
   );
@@ -189,8 +181,7 @@ export function RetailerTrendChart({
     return calculateRetailerTrend(data, retailers);
   }, [data, retailers]);
 
-  // Just use the original isLoading from the API
-  const isDataReady = !isLoading;
+
 
   return (
     <ChartWrapper

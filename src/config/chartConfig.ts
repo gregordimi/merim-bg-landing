@@ -32,19 +32,19 @@ export const getChartConfig = (
     case "trend":
       return {
         retailPrice: {
-          label: "Retail Price",
+          label: "Цени",
           color: CHART_COLORS[0],
         },
         promoPrice: {
-          label: "Promo Price",
+          label: "Промоция",
           color: CHART_COLORS[1],
         },
         discountPercent: {
-          label: "Discount %",
+          label: "Промоция %",
           color: CHART_COLORS[3],
         },
         discountRate: {
-          label: "Discount %",
+          label: "Промоция %",
           color: CHART_COLORS[3],
         },
       } satisfies ChartConfig;
@@ -52,27 +52,27 @@ export const getChartConfig = (
     case "category":
       return {
         retailPrice: {
-          label: "Retail Price",
+          label: "Цени",
           color: CHART_COLORS[0],
         },
         promoPrice: {
-          label: "Promo Price",
+          label: "Промоция",
           color: CHART_COLORS[1],
         },
         minimum: {
-          label: "Min Price",
+          label: "Минимална цена",
           color: CHART_COLORS[2],
         },
         average: {
-          label: "Avg Price",
+          label: "Средна цена",
           color: CHART_COLORS[0],
         },
         maximum: {
-          label: "Max Price",
+          label: "Максимална цена",
           color: CHART_COLORS[3],
         },
         discount: {
-          label: "Discount Rate",
+          label: "Промоция %",
           color: CHART_COLORS[3],
         },
         ...Object.fromEntries(

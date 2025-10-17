@@ -1,5 +1,5 @@
 # --- STAGE 1: Dependency Installation ---
-FROM node:18-alpine AS deps
+FROM node:22-alpine AS deps
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
@@ -14,7 +14,7 @@ RUN \
   fi
 
 # --- STAGE 2: Build Application ---
-FROM node:18-alpine AS builder
+FROM node:22-alpine AS builder
 WORKDIR /app
 # Copy dependencies
 COPY --from=deps /app/node_modules ./node_modules
@@ -53,6 +53,11 @@ ARG VITE_CUBE_API_USE_SUBSCRIPTION
 ENV VITE_CUBE_API_USE_SUBSCRIPTION=$VITE_CUBE_API_USE_SUBSCRIPTION
 ARG VITE_CUBE_CACHE_TIME
 ENV VITE_CUBE_CACHE_TIME=$VITE_CUBE_CACHE_TIME
+
+# Matomo Configuration
+ARG VITE_MATOMO_URL
+ENV VITE_MATOMO_URL=$VITE_MATOMO_URL
+
 
 # Set production environment flag
 ENV NODE_ENV=production

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { GlobalFilters, buildOptimizedQuery } from '@/utils/cube/filterUtils';
+import { GlobalFilters, buildOptimizedQuery } from "@/utils/cube/filterUtils";
 import { useStableQuery } from "@/hooks/useStableQuery";
 import { ChartWrapper } from "../../config/ChartWrapper";
 
@@ -26,7 +26,9 @@ function processSettlementData(resultSet: any, limit: number = 20) {
         retailPrice: Number(row["prices.averageRetailPrice"] || 0),
         promoPrice: Number(row["prices.averagePromoPrice"] || 0),
       }))
-      .sort((a: ChartDataPoint, b: ChartDataPoint) => b.retailPrice - a.retailPrice)
+      .sort(
+        (a: ChartDataPoint, b: ChartDataPoint) => b.retailPrice - a.retailPrice
+      )
       .slice(0, limit);
   } catch (error) {
     console.error("Error processing settlement data:", error);
@@ -38,17 +40,17 @@ export function SettlementHorizontalChart({
   globalFilters,
 }: SettlementHorizontalChartProps) {
   const [refreshKey, setRefreshKey] = useState(0);
-  
+
   const query = useMemo(() => {
     const query = buildOptimizedQuery(
       ["prices.averageRetailPrice", "prices.averagePromoPrice"],
       globalFilters,
       ["prices.settlement_name"] // Always include settlements dimension
     );
-    
+
     // Remove time dimensions for aggregate query to improve performance
     query.timeDimensions = [];
-    
+
     return query;
   }, [globalFilters, refreshKey]);
 
@@ -66,7 +68,7 @@ export function SettlementHorizontalChart({
   );
 
   const handleReload = () => {
-    setRefreshKey(prev => prev + 1);
+    setRefreshKey((prev) => prev + 1);
   };
 
   const data = useMemo(() => {
@@ -84,7 +86,7 @@ export function SettlementHorizontalChart({
       data={data}
       chartConfigType="trend"
       xAxisKey="settlement"
-      dataKeys={['retailPrice', 'promoPrice']}
+      dataKeys={["retailPrice", "promoPrice"]}
       yAxisFormatter={(value) => `${value.toFixed(2)} лв`}
       yAxisWidth={130}
       height="xl"
