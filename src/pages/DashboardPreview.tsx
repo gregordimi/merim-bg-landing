@@ -43,8 +43,17 @@ const DashboardPreview: React.FC = () => {
   const availableSettlements = ["София", "Пловдив", "Варна", "Бургас"];
 
   // Available retailers
-  const availableRetailers = ["Лидл България", "Кауфланд България", "Минимарт", "КОМЕ СВА",
-    "Метро България", "ФАНТАСТИКО", "Магазини ДАР","DOUGLAS (ДЪГЛАС)", "дм България"];
+  const availableRetailers = [
+    "Лидл България",
+    "Кауфланд България",
+    "Минимарт",
+    "КОМЕ СВА",
+    "Метро България",
+    "ФАНТАСТИКО",
+    "Магазини ДАР",
+    "DOUGLAS (ДЪГЛАС)",
+    "дм България",
+  ];
 
   const [globalFilters, setGlobalFilters] = useState<GlobalFilters>({
     retailers: [],
@@ -213,8 +222,8 @@ const DashboardPreview: React.FC = () => {
                     <SelectItem value="retailer">
                       {content.pages.dashboard.tabs.retailer}
                     </SelectItem>
-                    <SelectItem value="compare">
-                      Compare
+                    <SelectItem value="kleidoscope">
+                      {content.pages.dashboard.tabs.kleidoscope}
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -233,11 +242,13 @@ const DashboardPreview: React.FC = () => {
                 <TabsTrigger value="retailer">
                   {content.pages.dashboard.tabs.retailer}
                 </TabsTrigger>
-                <TabsTrigger value="compare">Compare</TabsTrigger>
+                <TabsTrigger value="kleidoscope">
+                  {content.pages.dashboard.tabs.kleidoscope}
+                </TabsTrigger>
                 <TabsTrigger value="explorer">explorer</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="compare" className="space-y-6">
+              <TabsContent value="kleidoscope" className="space-y-6">
                 {/* RESPONSIVE CHANGE: Reduced padding on mobile */}
                 <div className="p-2 sm:p-6">
                   <Compare globalFilters={stableFilters} />

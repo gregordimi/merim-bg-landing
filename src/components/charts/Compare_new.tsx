@@ -4,6 +4,13 @@ import { Treemap, ResponsiveContainer, Tooltip } from "recharts";
 import { GlobalFilters } from "@/utils/cube/filterUtils";
 import groupsData from "./Compare_new_groups.json";
 import categoriesData from "./Compare_new_category.json";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 // --------------------------------------
 // COLOR DEFINITIONS
@@ -469,6 +476,71 @@ const Compare: React.FC<{ globalFilters: GlobalFilters }> = ({
     "day"
   );
   const [priceType, setPriceType] = useState<"retail" | "promo">("retail");
+  
+  // Date state - single dates that will be converted based on granularity
+  const [tempDates, setTempDates] = useState<{
+    current?: Date;
+    previous?: Date;
+  }>({
+    current: new Date("2025-10-16"),
+    previous: new Date("2025-10-15"),
+  });
+  
+  const [appliedDates, setAppliedDates] = useState<{
+    current?: Date;
+    previous?: Date;
+  }>({
+    current: new Date("2025-10-16"),
+    previous: new Date("2025-10-15"),
+  });
+
+  // Convert date to range based on granularity
+  const getDateRange = (date?: Date, gran: string = granularity) => {
+    if (!date) return { from: "", to: "" };
+    
+    let from: Date;
+    let to: Date;
+    
+    switch (gran) {
+      case "week":
+        from = startOfWeek(date, { weekStartsOn: 1 }); // Monday
+        to = endOfWeek(date, { weekStartsOn: 1 });
+        break;
+      case "month":
+        from = startOfMonth(date);
+        to = endOfMonth(date);
+        break;
+      case "day":
+      default:
+        from = date;
+        to = date;
+        break;
+    }
+    
+    return {
+      from: format(from, "yyyy-MM-dd"),
+      to: format(to, "yyyy-MM-dd"),
+    };
+  };
+
+  const formatDateDisplay = (date?: Date) => {
+    if (!date) return "Pick a date";
+    
+    switch (granularity) {
+      case "week":
+        const weekStart = startOfWeek(date, { weekStartsOn: 1 });
+        const weekEnd = endOfWeek(date, { weekStartsOn: 1 });
+        return `${format(weekStart, "MMM dd")} - ${format(weekEnd, "MMM dd, yyyy")}`;
+      case "month":
+        return format(date, "MMMM yyyy");
+      case "day":
+      default:
+        return format(date, "MMM dd, yyyy");
+    }
+  };
+
+  const currentRange = getDateRange(appliedDates.current, granularity);
+  const previousRange = getDateRange(appliedDates.previous, granularity);
 
   const {
     resultSet: result,
@@ -485,8 +557,8 @@ const Compare: React.FC<{ globalFilters: GlobalFilters }> = ({
       {
         dimension: "prices.price_date",
         compareDateRange: [
-          ["2025-10-16", "2025-10-16"],
-          ["2025-10-15", "2025-10-15"],
+          [currentRange.from, currentRange.to],
+          [previousRange.from, previousRange.to],
         ],
         granularity: granularity,
       },
@@ -527,50 +599,146 @@ const Compare: React.FC<{ globalFilters: GlobalFilters }> = ({
     });
   };
 
+  const handleApplyDates = () => {
+    setAppliedDates(tempDates);
+  };
+
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.toString()}</div>;
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-4 mb-4">
-        <div className="flex gap-2">
-          {["day", "week", "month"].map((g) => (
-            <button
-              key={g}
-              onClick={() => setGranularity(g as any)}
-              className={`px-4 py-2 rounded ${
-                granularity === g
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 text-gray-700"
-              }`}
+      {/* Date Picker Card */}
+      <Card className="border-slate-200">
+        <CardHeader>
+          <CardTitle className="text-lg text-slate-800">
+            Select {granularity === "day" ? "Dates" : granularity === "week" ? "Weeks" : "Months"}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-slate-700 mb-2 block">
+                  Current Period
+                </label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !tempDates.current && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formatDateDisplay(tempDates.current)}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={tempDates.current}
+                      onSelect={(date) =>
+                        setTempDates((prev) => ({ ...prev, current: date }))
+                      }
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-slate-700 mb-2 block">
+                  Previous Period
+                </label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !tempDates.previous && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formatDateDisplay(tempDates.previous)}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={tempDates.previous}
+                      onSelect={(date) =>
+                        setTempDates((prev) => ({ ...prev, previous: date }))
+                      }
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+            <Button
+              onClick={handleApplyDates}
+              size="sm"
+              className="transition-all duration-200 hover:scale-105"
             >
-              {g[0].toUpperCase() + g.slice(1)}
-            </button>
-          ))}
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setPriceType("retail")}
-            className={`px-4 py-2 rounded ${
-              priceType === "retail"
-                ? "bg-green-500 text-white"
-                : "bg-gray-200 text-gray-700"
-            }`}
-          >
-            Retail Price
-          </button>
-          <button
-            onClick={() => setPriceType("promo")}
-            className={`px-4 py-2 rounded ${
-              priceType === "promo"
-                ? "bg-green-500 text-white"
-                : "bg-gray-200 text-gray-700"
-            }`}
-          >
-            Promo Price
-          </button>
-        </div>
-      </div>
+              Apply Dates
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Filter Controls Card */}
+      <Card className="border-slate-200">
+        <CardHeader>
+          <CardTitle className="text-lg text-slate-800">Filters</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-slate-700 mb-2 block">
+                Granularity
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {["day", "week", "month"].map((g) => (
+                  <Button
+                    key={g}
+                    onClick={() => setGranularity(g as any)}
+                    variant={granularity === g ? "default" : "outline"}
+                    size="sm"
+                    className="transition-all duration-200 hover:scale-105"
+                  >
+                    {g[0].toUpperCase() + g.slice(1)}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-slate-700 mb-2 block">
+                Price Type
+              </label>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  onClick={() => setPriceType("retail")}
+                  variant={priceType === "retail" ? "default" : "outline"}
+                  size="sm"
+                  className="transition-all duration-200 hover:scale-105"
+                >
+                  Retail Price
+                </Button>
+                <Button
+                  onClick={() => setPriceType("promo")}
+                  variant={priceType === "promo" ? "default" : "outline"}
+                  size="sm"
+                  className="transition-all duration-200 hover:scale-105"
+                >
+                  Promo Price
+                </Button>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="h-[600px] w-full">
         {data.length > 0 ? (

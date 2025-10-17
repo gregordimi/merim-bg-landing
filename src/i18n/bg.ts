@@ -196,7 +196,7 @@ export const content = {
       content: "Политика за поверителност на Merim.org.",
     },
     dashboard: {
-      title: "Преглед на таблото",
+      title: "Преглед на таблото с обобщена информация",
       subtitle:
         "Разгледайте ценовите тенденции и анализи с интерактивни филтри",
       tabs: {
@@ -204,6 +204,7 @@ export const content = {
         category: "По категория",
         settlement: "По населено място",
         retailer: "По магазин",
+        kleidoscope: "Ценови клейдоскоп"
       },
       filters: {
         categoryTitle: "Филтри по категория",
