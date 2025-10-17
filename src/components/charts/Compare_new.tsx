@@ -411,20 +411,47 @@ const CustomizedContent = (props: any) => {
 // --------------------------------------
 // CUSTOM LEGEND
 // --------------------------------------
-const CustomLegend = ({ data }: { data: any[] }) => {
+const CustomLegend = ({
+  data,
+  hiddenGroups,
+  onToggle,
+}: {
+  data: any[];
+  hiddenGroups: Set<string>;
+  onToggle: (groupId: string) => void;
+}) => {
   return (
     <div className="flex flex-wrap gap-4 justify-center mt-4 p-4 bg-gray-50 rounded">
-      {data.map((group, index) => (
-        <div key={index} className="flex items-center gap-2">
-          <div
-            className="w-4 h-4 rounded"
-            style={{ backgroundColor: group.fill }}
-          />
-          <span className="text-sm font-medium text-gray-700">
-            {group.name}
-          </span>
-        </div>
-      ))}
+      {data.map((group, index) => {
+        const isHidden = hiddenGroups.has(group.groupId);
+        return (
+          <button
+            key={index}
+            onClick={() => onToggle(group.groupId)}
+            className={`flex items-center gap-2 px-3 py-2 rounded transition-all hover:bg-gray-200 ${
+              isHidden ? "opacity-40" : "opacity-100"
+            }`}
+            title={isHidden ? "Click to show" : "Click to hide"}
+          >
+            <div
+              className="w-4 h-4 rounded"
+              style={{
+                backgroundColor: group.fill,
+                opacity: isHidden ? 0.3 : 1,
+              }}
+            />
+            <span
+              className={`text-sm font-medium ${
+                isHidden
+                  ? "text-gray-400 line-through"
+                  : "text-gray-700"
+              }`}
+            >
+              {group.name}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 };
@@ -436,6 +463,8 @@ const Compare: React.FC<{ globalFilters: GlobalFilters }> = ({
   globalFilters,
 }) => {
   const [data, setData] = useState<any[]>([]);
+  const [allData, setAllData] = useState<any[]>([]);
+  const [hiddenGroups, setHiddenGroups] = useState<Set<string>>(new Set());
   const [granularity, setGranularity] = useState<"day" | "week" | "month">(
     "day"
   );
@@ -473,12 +502,30 @@ const Compare: React.FC<{ globalFilters: GlobalFilters }> = ({
     if (!result) return;
     try {
       const treemapData = processCompareData(result, priceType);
-      setData(treemapData);
+      setAllData(treemapData);
+      // Filter based on hidden groups
+      const filteredData = treemapData.filter(
+        (group: any) => !hiddenGroups.has(group.groupId)
+      );
+      setData(filteredData);
     } catch (err) {
       console.error("Error processing data", err);
       setData([]);
+      setAllData([]);
     }
-  }, [result, priceType]);
+  }, [result, priceType, hiddenGroups]);
+
+  const toggleGroup = (groupId: string) => {
+    setHiddenGroups((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(groupId)) {
+        newSet.delete(groupId);
+      } else {
+        newSet.add(groupId);
+      }
+      return newSet;
+    });
+  };
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.toString()}</div>;
@@ -529,6 +576,7 @@ const Compare: React.FC<{ globalFilters: GlobalFilters }> = ({
         {data.length > 0 ? (
           <ResponsiveContainer width="100%" height="100%">
             <Treemap
+              key={`treemap-${data.length}-${Array.from(hiddenGroups).join("-")}`}
               data={data}
               dataKey="size"
               stroke="#fff"
@@ -545,7 +593,13 @@ const Compare: React.FC<{ globalFilters: GlobalFilters }> = ({
         )}
       </div>
 
-      {data.length > 0 && <CustomLegend data={data} />}
+      {allData.length > 0 && (
+        <CustomLegend
+          data={allData}
+          hiddenGroups={hiddenGroups}
+          onToggle={toggleGroup}
+        />
+      )}
     </div>
   );
 };
